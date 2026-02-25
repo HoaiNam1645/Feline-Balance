@@ -1,3 +1,4 @@
+import { NavLink } from 'react-router-dom';
 import {
     LayoutDashboard,
     Wallet,
@@ -16,26 +17,26 @@ const menuSections = [
     {
         title: 'Overview',
         items: [
-            { icon: LayoutDashboard, label: 'Dashboard', active: false },
-            { icon: Wallet, label: 'Payment Profiles', active: true, badge: null },
-            { icon: TrendingUp, label: 'Analytics', active: false },
+            { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
+            { icon: Wallet, label: 'Payment Profiles', path: '/profiles' },
+            { icon: ArrowRightLeft, label: 'Topup', path: '/topup' },
         ],
     },
     {
         title: 'Finance',
         items: [
-            { icon: ArrowRightLeft, label: 'Transactions', active: false },
-            { icon: CreditCard, label: 'Settlements', active: false },
-            { icon: FileText, label: 'Reports', active: false },
+            { icon: ArrowRightLeft, label: 'Transactions', path: '/transactions' },
+            { icon: CreditCard, label: 'Settlements', path: '/settlements' },
+            { icon: FileText, label: 'Reports', path: '/reports' },
         ],
     },
     {
         title: 'Management',
         items: [
-            { icon: Users, label: 'Teams', active: false },
-            { icon: Shield, label: 'Permissions', active: false },
-            { icon: Settings, label: 'Settings', active: false },
-            { icon: HelpCircle, label: 'Help & Support', active: false },
+            { icon: Users, label: 'Teams', path: '/teams' },
+            { icon: Shield, label: 'Permissions', path: '/permissions' },
+            { icon: Settings, label: 'Settings', path: '/settings' },
+            { icon: HelpCircle, label: 'Help & Support', path: '/support' },
         ],
     },
 ];
@@ -56,14 +57,15 @@ export default function Sidebar() {
                     <div className="sidebar-section" key={section.title}>
                         <div className="sidebar-section-title">{section.title}</div>
                         {section.items.map((item) => (
-                            <div
+                            <NavLink
                                 key={item.label}
-                                className={`sidebar-item ${item.active ? 'active' : ''}`}
+                                to={item.path}
+                                className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}
                             >
                                 <item.icon className="sidebar-item-icon" size={18} />
                                 <span>{item.label}</span>
                                 {item.badge && <span className="sidebar-badge">{item.badge}</span>}
-                            </div>
+                            </NavLink>
                         ))}
                     </div>
                 ))}

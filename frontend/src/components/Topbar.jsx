@@ -1,14 +1,14 @@
-import { Bell, Search, RefreshCw } from 'lucide-react';
+import { Bell, RefreshCw } from 'lucide-react';
 
-export default function Topbar({ onRefresh, loading }) {
+export default function Topbar({ title = 'Payment Profiles', breadcrumb = 'Payment Profiles', onRefresh, loading }) {
     return (
         <div className="topbar">
             <div className="topbar-left">
                 <div>
                     <div className="topbar-breadcrumb">
-                        <span>Finance</span> / <span style={{ color: 'var(--text-accent)' }}>Payment Profiles</span>
+                        <span>Finance</span> / <span style={{ color: 'var(--text-accent)' }}>{breadcrumb}</span>
                     </div>
-                    <h2>Payment Profiles</h2>
+                    <h2>{title}</h2>
                 </div>
             </div>
             <div className="topbar-right">
