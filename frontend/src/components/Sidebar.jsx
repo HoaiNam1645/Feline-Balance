@@ -15,6 +15,8 @@ import {
     Palette,
     Image as ImageIcon,
     LogOut,
+    UserCheck,
+    DollarSign,
 } from 'lucide-react';
 
 const menuSections = [
@@ -30,6 +32,13 @@ const menuSections = [
             { icon: Wallet, label: 'Payment Profiles', path: '/profiles' },
             { icon: ArrowRightLeft, label: 'Topup', path: '/topup' },
             { icon: ImageIcon, label: 'Media', path: '/media' },
+        ],
+    },
+    {
+        title: 'Human Resources',
+        items: [
+            { icon: UserCheck, label: 'Employees', path: '/employees' },
+            { icon: DollarSign, label: 'Payroll', path: '/payrolls' },
         ],
     },
     {

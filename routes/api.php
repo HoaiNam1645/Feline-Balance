@@ -10,6 +10,10 @@ use App\Http\Controllers\Api\DesignStatisticsController;
 use App\Http\Controllers\Api\MediaTransactionController;
 use App\Http\Controllers\Api\UploadController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\EmployeeController;
+use App\Http\Controllers\Api\EmployeeUploadController;
+use App\Http\Controllers\Api\ContractController;
+use App\Http\Controllers\Api\PayrollController;
 
 /*
 |--------------------------------------------------------------------------
@@ -52,6 +56,28 @@ Route::middleware(['jwt.auth', 'role.admin'])->group(function () {
 
     // Upload (generic)
     Route::post('/upload', [UploadController::class, 'store']);
+
+    // ── HRM Module ──
+    // Employees
+    Route::get('/employees', [EmployeeController::class, 'index']);
+    Route::post('/employees', [EmployeeController::class, 'store']);
+    Route::post('/employees/upload-qr', [EmployeeUploadController::class, 'uploadQr']);
+    Route::get('/employees/{id}', [EmployeeController::class, 'show']);
+    Route::put('/employees/{id}', [EmployeeController::class, 'update']);
+    Route::delete('/employees/{id}', [EmployeeController::class, 'destroy']);
+
+    // Contracts (nested under employee)
+    Route::get('/employees/{employeeId}/contracts', [ContractController::class, 'index']);
+    Route::post('/employees/{employeeId}/contracts', [ContractController::class, 'store']);
+    Route::put('/employees/{employeeId}/contracts/{contractId}', [ContractController::class, 'update']);
+    Route::delete('/employees/{employeeId}/contracts/{contractId}', [ContractController::class, 'destroy']);
+
+    // Payrolls
+    Route::get('/payrolls', [PayrollController::class, 'index']);
+    Route::post('/payrolls', [PayrollController::class, 'store']);
+    Route::put('/payrolls/{id}', [PayrollController::class, 'update']);
+    Route::delete('/payrolls/{id}', [PayrollController::class, 'destroy']);
+    Route::post('/payrolls/generate', [PayrollController::class, 'generate']);
 });
 
 /*

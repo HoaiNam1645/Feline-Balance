@@ -9,7 +9,10 @@ import VendorsPage from './pages/VendorsPage';
 import UsersPage from './pages/UsersPage';
 import DesignStatisticsPage from './pages/DesignStatisticsPage';
 import MediaPage from './pages/MediaPage';
-import ProtectedRoute from './components/ProtectedRoute'; // Import ProtectedRoute
+import EmployeesPage from './pages/EmployeesPage';
+import EmployeeDetailPage from './pages/EmployeeDetailPage';
+import PayrollsPage from './pages/PayrollsPage';
+import ProtectedRoute from './components/ProtectedRoute';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
@@ -117,6 +120,9 @@ export default function App() {
 
               <Route path="/design-statistics" element={<DesignStatisticsPage />} />
               <Route path="/media" element={<MediaPage />} />
+              <Route path="/employees" element={<EmployeesPage />} />
+              <Route path="/employees/:id" element={<EmployeeDetailPage />} />
+              <Route path="/payrolls" element={<PayrollsPage />} />
               <Route path="*" element={<Navigate to="/profiles" replace />} />
             </Routes>
           </main>

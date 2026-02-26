@@ -408,16 +408,6 @@ export default function UsersPage() {
                                             </td>
                                             <td>
                                                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                                                    <div style={{
-                                                        width: '32px', height: '32px', borderRadius: '8px',
-                                                        background: user.role_id === 2
-                                                            ? 'linear-gradient(135deg, #a855f7, #7c3aed)'
-                                                            : 'linear-gradient(135deg, #6366f1, #4f46e5)',
-                                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                                        fontSize: '12px', fontWeight: 700, color: '#fff', flexShrink: 0,
-                                                    }}>
-                                                        {user.name ? user.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2) : 'U'}
-                                                    </div>
                                                     <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{user.name}</span>
                                                 </div>
                                             </td>
