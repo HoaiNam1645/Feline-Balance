@@ -14,6 +14,7 @@ import {
     BarChart3,
     Palette,
     Image as ImageIcon,
+    LogOut,
 } from 'lucide-react';
 
 const menuSections = [
@@ -21,7 +22,6 @@ const menuSections = [
         title: 'Overview',
         items: [
             { icon: LayoutDashboard, label: 'Dashboard', path: '/dashboard' },
-
         ],
     },
     {
@@ -35,11 +35,9 @@ const menuSections = [
     {
         title: 'Management',
         items: [
-            { icon: Users, label: 'Teams', path: '/teams' },
-            { icon: LayoutDashboard, label: 'Vendors', path: '/vendors' },
-            // { icon: Shield, label: 'Permissions', path: '/permissions' },
-            // { icon: Settings, label: 'Settings', path: '/settings' },
-            // { icon: HelpCircle, label: 'Help & Support', path: '/support' },
+            { icon: Users, label: 'Users', path: '/users', roles: ['super_admin'] },
+            { icon: Users, label: 'Teams', path: '/teams', roles: ['super_admin'] },
+            { icon: LayoutDashboard, label: 'Vendors', path: '/vendors', roles: ['super_admin'] },
         ],
     },
     {
@@ -50,11 +48,15 @@ const menuSections = [
     },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ user, onLogout }) {
+    const initials = user?.name
+        ? user.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
+        : 'AD';
+
     return (
         <aside className="sidebar">
             <div className="sidebar-logo">
-                <div className="sidebar-logo-icon">FA</div>
+                <img src="/logo.png" alt="FA Logo" className="sidebar-logo-icon" style={{ padding: 0, objectFit: 'cover' }} />
                 <div className="sidebar-logo-text">
                     <h1>Feline</h1>
                     <span>Accountant</span>
@@ -62,33 +64,56 @@ export default function Sidebar() {
             </div>
 
             <nav className="sidebar-nav">
-                {menuSections.map((section) => (
-                    <div className="sidebar-section" key={section.title}>
-                        <div className="sidebar-section-title">{section.title}</div>
-                        {section.items.map((item) => (
-                            <NavLink
-                                key={item.label}
-                                to={item.path}
-                                className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}
-                            >
-                                <item.icon className="sidebar-item-icon" size={18} />
-                                <span>{item.label}</span>
-                                {item.badge && <span className="sidebar-badge">{item.badge}</span>}
-                            </NavLink>
-                        ))}
-                    </div>
-                ))}
+                {menuSections.map((section) => {
+                    const filteredItems = section.items.filter(
+                        (item) => !item.roles || (user?.role && item.roles.includes(user.role))
+                    );
+
+                    if (filteredItems.length === 0) return null;
+
+                    return (
+                        <div className="sidebar-section" key={section.title}>
+                            <div className="sidebar-section-title">{section.title}</div>
+                            {filteredItems.map((item) => (
+                                <NavLink
+                                    key={item.label}
+                                    to={item.path}
+                                    className={({ isActive }) => `sidebar-item ${isActive ? 'active' : ''}`}
+                                >
+                                    <item.icon className="sidebar-item-icon" size={18} />
+                                    <span>{item.label}</span>
+                                    {item.badge && <span className="sidebar-badge">{item.badge}</span>}
+                                </NavLink>
+                            ))}
+                        </div>
+                    );
+                })}
             </nav>
 
             <div className="sidebar-footer">
                 <div className="sidebar-user">
-                    <div className="sidebar-avatar">AD</div>
+                    <div className="sidebar-avatar">{initials}</div>
                     <div className="sidebar-user-info">
-                        <div className="sidebar-user-name">Admin</div>
-                        <div className="sidebar-user-role">Super Admin</div>
+                        <div className="sidebar-user-name">{user?.name || 'Admin'}</div>
+                        <div className="sidebar-user-role">{user?.role_display || user?.role || 'User'}</div>
                     </div>
+                    {onLogout && (
+                        <button
+                            onClick={onLogout}
+                            title="Logout"
+                            style={{
+                                background: 'none', border: 'none', cursor: 'pointer',
+                                color: 'var(--text-muted)', padding: '6px', borderRadius: '6px',
+                                transition: 'all 0.2s', marginLeft: 'auto',
+                            }}
+                            onMouseEnter={e => { e.currentTarget.style.color = '#ef4444'; e.currentTarget.style.background = 'rgba(239,68,68,0.1)'; }}
+                            onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-muted)'; e.currentTarget.style.background = 'none'; }}
+                        >
+                            <LogOut size={16} />
+                        </button>
+                    )}
                 </div>
             </div>
-        </aside>
+        </aside >
     );
 }

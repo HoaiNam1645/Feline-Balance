@@ -1,30 +1,127 @@
+import { useState, useEffect, useCallback } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Sidebar from './components/Sidebar';
+import LoginPage from './pages/LoginPage';
 import ProfilesPage from './pages/ProfilesPage';
 import TopupPage from './pages/TopupPage';
 import TeamsPage from './pages/TeamsPage';
 import VendorsPage from './pages/VendorsPage';
+import UsersPage from './pages/UsersPage';
 import DesignStatisticsPage from './pages/DesignStatisticsPage';
 import MediaPage from './pages/MediaPage';
+import ProtectedRoute from './components/ProtectedRoute'; // Import ProtectedRoute
+
+const API_BASE = import.meta.env.VITE_API_URL || '';
 
 export default function App() {
+  const [user, setUser] = useState(null);
+  const [token, setToken] = useState(null);
+  const [checking, setChecking] = useState(true);
+
+  // Check for existing token on mount
+  useEffect(() => {
+    const savedToken = localStorage.getItem('token');
+    const savedUser = localStorage.getItem('user');
+
+    if (savedToken && savedUser) {
+      setToken(savedToken);
+      setUser(JSON.parse(savedUser));
+
+      // Verify token is still valid
+      fetch(`${API_BASE}/api/auth/me`, {
+        headers: {
+          'Authorization': `Bearer ${savedToken}`,
+          'Accept': 'application/json',
+        },
+        credentials: 'include',
+      })
+        .then(r => r.json())
+        .then(json => {
+          if (json.success) {
+            setUser(json.data);
+            localStorage.setItem('user', JSON.stringify(json.data));
+          } else {
+            handleLogout();
+          }
+        })
+        .catch(() => handleLogout())
+        .finally(() => setChecking(false));
+    } else {
+      setChecking(false);
+    }
+  }, []);
+
+  const handleLogin = useCallback((userData, authToken) => {
+    setUser(userData);
+    setToken(authToken);
+  }, []);
+
+  const handleLogout = useCallback(() => {
+    const savedToken = localStorage.getItem('token');
+    if (savedToken) {
+      fetch(`${API_BASE}/api/auth/logout`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${savedToken}`,
+          'Accept': 'application/json',
+        },
+        credentials: 'include',
+      }).catch(() => { });
+    }
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    setUser(null);
+    setToken(null);
+  }, []);
+
   return (
     <BrowserRouter>
-      <div className="app-layout">
-        <Sidebar />
-        <main className="main-content">
-          <Routes>
-            <Route path="/" element={<Navigate to="/profiles" replace />} />
-            <Route path="/profiles" element={<ProfilesPage />} />
-            <Route path="/topup" element={<TopupPage />} />
-            <Route path="/teams" element={<TeamsPage />} />
-            <Route path="/vendors" element={<VendorsPage />} />
-            <Route path="/design-statistics" element={<DesignStatisticsPage />} />
-            <Route path="/media" element={<MediaPage />} />
-            <Route path="*" element={<Navigate to="/profiles" replace />} />
-          </Routes>
-        </main>
-      </div>
+      {checking ? (
+        <div style={{
+          minHeight: '100vh',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: '#0f0f23', color: '#6366f1',
+        }}>
+          <div className="spinner" style={{ width: '40px', height: '40px' }} />
+        </div>
+      ) : !user ? (
+        <Routes>
+          <Route path="/login" element={<LoginPage onLogin={handleLogin} />} />
+          <Route path="*" element={<Navigate to="/login" replace />} />
+        </Routes>
+      ) : (
+        <div className="app-layout">
+          <Sidebar user={user} onLogout={handleLogout} />
+          <main className="main-content">
+            <Routes>
+              <Route path="/" element={<Navigate to="/profiles" replace />} />
+              <Route path="/login" element={<Navigate to="/profiles" replace />} />
+              <Route path="/profiles" element={<ProfilesPage />} />
+              <Route path="/topup" element={<TopupPage />} />
+
+              <Route path="/teams" element={
+                <ProtectedRoute user={user} allowedRoles={['super_admin']}>
+                  <TeamsPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/vendors" element={
+                <ProtectedRoute user={user} allowedRoles={['super_admin']}>
+                  <VendorsPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/users" element={
+                <ProtectedRoute user={user} allowedRoles={['super_admin']}>
+                  <UsersPage />
+                </ProtectedRoute>
+              } />
+
+              <Route path="/design-statistics" element={<DesignStatisticsPage />} />
+              <Route path="/media" element={<MediaPage />} />
+              <Route path="*" element={<Navigate to="/profiles" replace />} />
+            </Routes>
+          </main>
+        </div>
+      )}
     </BrowserRouter>
   );
 }
