@@ -20,4 +20,6 @@ Route::post('/vendors', [\App\Http\Controllers\Api\VendorController::class, 'sto
 Route::put('/vendors/{id}', [\App\Http\Controllers\Api\VendorController::class, 'update']);
 Route::delete('/vendors/{id}', [\App\Http\Controllers\Api\VendorController::class, 'destroy']);
 
+Route::get('/design-statistics', [\App\Http\Controllers\Api\DesignStatisticsController::class, 'index']);
+
 Route::post('/upload', [\App\Http\Controllers\Api\UploadController::class, 'store']);

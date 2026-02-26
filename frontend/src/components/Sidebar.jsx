@@ -11,6 +11,8 @@ import {
     CreditCard,
     TrendingUp,
     Shield,
+    BarChart3,
+    Palette,
 } from 'lucide-react';
 
 const menuSections = [
@@ -36,6 +38,12 @@ const menuSections = [
             // { icon: Shield, label: 'Permissions', path: '/permissions' },
             // { icon: Settings, label: 'Settings', path: '/settings' },
             // { icon: HelpCircle, label: 'Help & Support', path: '/support' },
+        ],
+    },
+    {
+        title: 'Analytics',
+        items: [
+            { icon: Palette, label: 'Design Statistics', path: '/design-statistics' },
         ],
     },
 ];

@@ -35,4 +35,10 @@ return [
         ],
     ],
 
+    'feline' => [
+        'base_url' => env('FELINE_API_BASE_URL', 'https://felineez.com/api/v1'),
+        'email' => env('FELINE_API_EMAIL', ''),
+        'password' => env('FELINE_API_PASSWORD', ''),
+    ],
+
 ];
