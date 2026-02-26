@@ -100,6 +100,7 @@ class TransactionService
             'type',
             'team_id',
             'payment_method',
+            'vendor',
             'amount',
             'currency',
             'image',

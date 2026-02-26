@@ -15,6 +15,7 @@ class Transaction extends Model
         'type',
         'team_id',
         'payment_method',
+        'vendor',
         'amount',
         'currency',
         'image',

@@ -5,6 +5,15 @@ import DataTable from '../components/DataTable';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
+const VENDORS = [
+    { value: 'Gearment', label: 'Gearment' },
+    { value: 'Pressify', label: 'Pressify' },
+    { value: 'Printify', label: 'Printify' },
+    { value: 'Merchize', label: 'Merchize' },
+    { value: 'Lemiex', label: 'Lemiex' },
+    { value: 'MKP', label: 'MKP' },
+];
+
 const PAYMENT_METHODS = [
     { value: 'pingpong', label: 'Pingpong' },
     { value: 'paypal', label: 'Paypal' },
@@ -164,9 +173,16 @@ function TransactionModal({ isOpen, onClose, onSubmit, formData, onChange, title
                             </select>
                         </div>
                         <div>
-                            <label className="modal-label">Transaction ID</label>
-                            <input className="filter-input" name="transaction_id" placeholder="VD: tr042026..." value={formData.transaction_id} onChange={onChange} style={{ width: '100%' }} />
+                            <label className="modal-label">Vendor</label>
+                            <select className="filter-select" name="vendor" value={formData.vendor || ''} onChange={onChange} style={{ width: '100%' }}>
+                                <option value="">Select Vendor...</option>
+                                {VENDORS.map(v => <option key={v.value} value={v.value}>{v.label}</option>)}
+                            </select>
                         </div>
+                    </div>
+                    <div>
+                        <label className="modal-label">Transaction ID</label>
+                        <input className="filter-input" name="transaction_id" placeholder="VD: tr042026..." value={formData.transaction_id} onChange={onChange} style={{ width: '100%' }} />
                     </div>
                     <div>
                         <label className="modal-label">Amount</label>
@@ -286,7 +302,7 @@ export default function TopupPage() {
     const [editingId, setEditingId] = useState(null);
     const [formData, setFormData] = useState({
         transaction_id: '', type: 'thu', team_id: '', payment_method: 'pingpong',
-        amount: '', currency: 'USD', status: 'pending', image: '',
+        amount: '', currency: 'USD', status: 'pending', image: '', vendor: ''
     });
 
     const [previewImage, setPreviewImage] = useState(null);
@@ -332,7 +348,7 @@ export default function TopupPage() {
     useEffect(() => { fetchData(); }, [typeFilter, teamFilter, yearFilter, paymentMethodFilter, statusFilter, page]);
     useEffect(() => { setPage(1); }, [typeFilter, teamFilter, yearFilter, paymentMethodFilter, statusFilter, search]);
 
-    const resetForm = () => setFormData({ transaction_id: '', type: 'thu', team_id: '', payment_method: 'pingpong', amount: '', currency: 'USD', status: 'pending', image: '' });
+    const resetForm = () => setFormData({ transaction_id: '', type: 'thu', team_id: '', payment_method: 'pingpong', vendor: '', amount: '', currency: 'USD', status: 'pending', image: '' });
 
     const openCreateModal = () => { setModalMode('create'); resetForm(); setModalOpen(true); };
     const openEditModal = (row) => {
@@ -340,7 +356,7 @@ export default function TopupPage() {
         setEditingId(row.id);
         setFormData({
             transaction_id: row.transaction_id || '', type: row.type || 'thu', team_id: row.team_id || '',
-            payment_method: row.payment_method || 'pingpong', amount: row.amount || '',
+            payment_method: row.payment_method || 'pingpong', vendor: row.vendor || '', amount: row.amount || '',
             currency: row.currency || 'USD', status: row.status || 'pending', image: row.image || '',
         });
         setModalOpen(true);
@@ -399,6 +415,10 @@ export default function TopupPage() {
             render: (row) => <span style={{ color: 'var(--primary-light)', fontWeight: 600 }}>{(PAYMENT_METHODS.find(p => p.value === row.payment_method) || {}).label || row.payment_method}</span>,
         },
         {
+            key: 'vendor', label: 'Vendor', width: '9%',
+            render: (row) => <span style={{ fontWeight: 600 }}>{row.vendor || '—'}</span>,
+        },
+        {
             key: 'type', label: 'Type', width: '7%',
             render: (row) => <TypeBadge type={row.type} />,
         },
@@ -444,7 +464,7 @@ export default function TopupPage() {
         if (!summary || !data.length) return null;
         return (
             <tr>
-                <td style={{ fontWeight: 700, whiteSpace: 'nowrap', padding: '14px 16px' }} colSpan={5}>
+                <td style={{ fontWeight: 700, whiteSpace: 'nowrap', padding: '14px 16px' }} colSpan={6}>
                     TOTAL: {summary.total_transactions ?? 0} transactions
                 </td>
                 <td className="text-right" style={{ fontWeight: 700, padding: '14px 16px' }}>
