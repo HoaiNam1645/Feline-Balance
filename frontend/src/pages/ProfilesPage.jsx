@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { Search, Download, Filter, Database, X } from 'lucide-react';
+import { Search, Download, Filter, Database, X, FileText } from 'lucide-react';
 import Topbar from '../components/Topbar';
 import StatsCards from '../components/StatsCards';
 
@@ -38,10 +38,9 @@ function MoneyCell({ value, className = '' }) {
 function StatusBadge({ status }) {
     if (!status) return <span className="status-badge pending">Unknown</span>;
     const s = status.toLowerCase();
-    let cls = 'pending';
-    if (s === 'active' || s === 'connected') cls = 'active';
-    else if (s === 'inactive' || s === 'disconnected' || s === 'banned') cls = 'inactive';
-    return <span className={`status-badge ${cls}`}>{status}</span>;
+    const cls = s === 'active' ? 'active' : 'inactive';
+    const display = s === 'active' ? 'Active' : s === 'die' ? 'Die' : status;
+    return <span className={`status-badge ${cls}`}>{display}</span>;
 }
 
 export default function ProfilesPage() {
@@ -58,6 +57,34 @@ export default function ProfilesPage() {
     // Inline editing states
     const [editingRowId, setEditingRowId] = useState(null);
     const [editFormData, setEditFormData] = useState({});
+
+    // Log modal states
+    const [logModalProfileId, setLogModalProfileId] = useState(null);
+    const [logs, setLogs] = useState([]);
+    const [loadingLogs, setLoadingLogs] = useState(false);
+    const [logsPage, setLogsPage] = useState(1);
+    const [logsTotalPages, setLogsTotalPages] = useState(1);
+
+    // Fetch logs helper
+    const openLogsModal = async (profileId, pageNum = 1) => {
+        setLogModalProfileId(profileId);
+        setLoadingLogs(true);
+        setLogsPage(pageNum);
+        try {
+            const res = await fetch(`${API_BASE}/api/profiles/${profileId}/logs?page=${pageNum}`);
+            const json = await res.json();
+            if (json.success) {
+                setLogs(json.data.data);
+                setLogsTotalPages(json.data.last_page);
+            } else {
+                addToast('Failed to fetch logs', 'error');
+            }
+        } catch (err) {
+            addToast('Error fetching logs', 'error');
+        } finally {
+            setLoadingLogs(false);
+        }
+    };
 
     // Fetch teams from DB
     useEffect(() => {
@@ -242,9 +269,11 @@ export default function ProfilesPage() {
                             onChange={(e) => setStatusFilter(e.target.value)}
                         >
                             <option value="">All Status</option>
-                            {statuses.map((s) => (
-                                <option key={s} value={s}>{s}</option>
-                            ))}
+                            {statuses.map((s) => {
+                                const lowerS = s ? s.toString().toLowerCase() : '';
+                                const label = lowerS === 'active' ? 'Active' : lowerS === 'die' ? 'Die' : s;
+                                return <option key={s} value={s}>{label}</option>;
+                            })}
                         </select>
                     </div>
 
@@ -352,7 +381,9 @@ export default function ProfilesPage() {
                                                         </div>
                                                     ) : (
                                                         <>
-                                                            <span className="profile-name">{row.profile_name || row.id}</span>
+                                                            <span className="profile-name">
+                                                                {row.profile_name || row.id}
+                                                            </span>
                                                             {row.profile_code && (
                                                                 <span className="profile-code">{row.profile_code}</span>
                                                             )}
@@ -366,7 +397,10 @@ export default function ProfilesPage() {
                                                             <button className="btn btn-ghost" style={{ padding: '4px 8px', fontSize: '11px' }} onClick={handleCancelEdit}>Cancel</button>
                                                         </div>
                                                     ) : (
-                                                        <button className="btn btn-ghost" style={{ padding: '4px 8px', fontSize: '11px' }} onClick={() => handleEditClick(row)}>Edit</button>
+                                                        <div style={{ display: 'flex', gap: '4px' }}>
+                                                            <button className="btn btn-ghost" style={{ padding: '4px 8px', fontSize: '11px' }} onClick={() => handleEditClick(row)}>Edit</button>
+                                                            <button className="btn btn-ghost" style={{ padding: '4px 8px', fontSize: '11px', color: 'var(--accent-light)' }} onClick={() => openLogsModal(row.id)} title="View fetch logs"><FileText size={12} /> Logs</button>
+                                                        </div>
                                                     )}
                                                 </td>
                                                 <td>
@@ -378,9 +412,8 @@ export default function ProfilesPage() {
                                                             value={editFormData.status}
                                                             onChange={handleEditFormChange}
                                                         >
-                                                            <option value="Active">Active</option>
-                                                            <option value="Inactive">Inactive</option>
-                                                            <option value="Pending">Pending</option>
+                                                            <option value="active">Active</option>
+                                                            <option value="die">Die</option>
                                                         </select>
                                                     ) : (
                                                         <StatusBadge status={row.status} />
@@ -557,6 +590,82 @@ export default function ProfilesPage() {
                     </div>
                 ))}
             </div>
+
+            {/* Fetch Logs Modal */}
+            {logModalProfileId && (
+                <div className="modal-overlay" onClick={() => setLogModalProfileId(null)}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '800px', width: '90%' }}>
+                        <div className="modal-header">
+                            <h2>Fetch Logs</h2>
+                            <button className="btn btn-ghost" onClick={() => setLogModalProfileId(null)}><X size={18} /></button>
+                        </div>
+                        <div className="modal-body" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+                            {loadingLogs ? (
+                                <div style={{ textAlign: 'center', padding: '20px' }}>Loading logs...</div>
+                            ) : logs.length === 0 ? (
+                                <div style={{ textAlign: 'center', padding: '20px', color: 'var(--text-muted)' }}>No logs found for this profile.</div>
+                            ) : (
+                                <div>
+                                    <div className="table-scroll" style={{ maxHeight: 'calc(85vh - 180px)', margin: '-20px -24px', padding: '0' }}>
+                                        <table className="data-table" style={{ width: '100%' }}>
+                                            <thead>
+                                                <tr>
+                                                    <th className="sticky-col" style={{ left: 0, minWidth: '160px', zIndex: 10 }}>Time</th>
+                                                    <th style={{ minWidth: '100px' }}>Status</th>
+                                                    <th style={{ minWidth: '100px' }}>Duration</th>
+                                                    <th style={{ minWidth: '300px' }}>Error Message</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {logs.map(log => (
+                                                    <tr key={log.id}>
+                                                        <td className="sticky-col" style={{ left: 0, background: 'var(--bg-table-row)' }}>
+                                                            {new Date(log.fetched_at).toLocaleString()}
+                                                        </td>
+                                                        <td>
+                                                            <span className={`status-badge ${log.status === 'success' ? 'active' : 'inactive'}`}>
+                                                                {log.status}
+                                                            </span>
+                                                        </td>
+                                                        <td>{log.duration_ms ? `${log.duration_ms} ms` : '-'}</td>
+                                                        <td style={{ color: log.status === 'success' ? 'var(--text-muted)' : 'var(--danger)', wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}>
+                                                            {log.error_message || '-'}
+                                                        </td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    {logsTotalPages > 1 && (
+                                        <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '16px' }}>
+                                            <button
+                                                className="btn btn-ghost"
+                                                disabled={logsPage <= 1}
+                                                onClick={() => openLogsModal(logModalProfileId, logsPage - 1)}
+                                                style={{ padding: '4px 12px' }}
+                                            >
+                                                Prev
+                                            </button>
+                                            <span style={{ padding: '4px 12px', fontSize: '13px', background: 'var(--bg-card)', borderRadius: '4px', border: '1px solid var(--border-color)', display: 'inline-flex', alignItems: 'center' }}>
+                                                {logsPage} / {logsTotalPages}
+                                            </span>
+                                            <button
+                                                className="btn btn-ghost"
+                                                disabled={logsPage >= logsTotalPages}
+                                                onClick={() => openLogsModal(logModalProfileId, logsPage + 1)}
+                                                style={{ padding: '4px 12px' }}
+                                            >
+                                                Next
+                                            </button>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 }
@@ -570,7 +679,7 @@ function getDemoData() {
             profile_code: 'TT-US-001',
             seller_id: '7496282814211197303',
             team_id: 2, team_name: 'Team Alpha',
-            status: 'Active',
+            status: 'active',
             bank_last4: '4892',
             beneficiary_name: 'John Doe',
             net_earning: 8520.40,
@@ -585,7 +694,7 @@ function getDemoData() {
             profile_code: 'TT-US-002',
             seller_id: '7496282814211197304',
             team_id: 2, team_name: 'Team Alpha',
-            status: 'Active',
+            status: 'active',
             bank_last4: '3351',
             beneficiary_name: 'Jane Smith',
             net_earning: 6340.20,
@@ -600,7 +709,7 @@ function getDemoData() {
             profile_code: 'TT-US-003',
             seller_id: '7496282814211197305',
             team_id: 3, team_name: 'Team Beta',
-            status: 'Active',
+            status: 'active',
             bank_last4: '7788',
             beneficiary_name: 'Alice Wong',
             net_earning: 12450.80,
@@ -615,7 +724,7 @@ function getDemoData() {
             profile_code: 'TT-US-004',
             seller_id: '7496282814211197306',
             team_id: 3, team_name: 'Team Beta',
-            status: 'Inactive',
+            status: 'die',
             bank_last4: '9012',
             beneficiary_name: 'Bob Lee',
             net_earning: 3120.00,
@@ -630,7 +739,7 @@ function getDemoData() {
             profile_code: 'TT-UK-001',
             seller_id: '7496282814211197307',
             team_id: 4, team_name: 'Team Gamma',
-            status: 'Active',
+            status: 'active',
             bank_last4: '5566',
             beneficiary_name: 'Charlie Brown',
             net_earning: 5430.10,
@@ -645,7 +754,7 @@ function getDemoData() {
             profile_code: 'TT-UK-002',
             seller_id: '7496282814211197308',
             team_id: 4, team_name: 'Team Gamma',
-            status: 'Pending',
+            status: 'die',
             bank_last4: '2244',
             beneficiary_name: 'Diana Prince',
             net_earning: 2890.00,
@@ -660,7 +769,7 @@ function getDemoData() {
             profile_code: 'TT-US-005',
             seller_id: '7496282814211197309',
             team_id: 2, team_name: 'Team Alpha',
-            status: 'Active',
+            status: 'active',
             bank_last4: '6677',
             beneficiary_name: 'Eve Adams',
             net_earning: 4280.00,
@@ -675,7 +784,7 @@ function getDemoData() {
             profile_code: 'TT-DE-001',
             seller_id: '7496282814211197310',
             team_id: 5, team_name: 'Team Delta',
-            status: 'Active',
+            status: 'active',
             bank_last4: '8899',
             beneficiary_name: 'Frank Miller',
             net_earning: 2200.00,

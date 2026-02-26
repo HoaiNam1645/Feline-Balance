@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\EmployeeController;
 use App\Http\Controllers\Api\EmployeeUploadController;
 use App\Http\Controllers\Api\ContractController;
 use App\Http\Controllers\Api\PayrollController;
+use App\Http\Controllers\Api\TikTokFinanceController;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,7 +23,7 @@ use App\Http\Controllers\Api\PayrollController;
 */
 
 Route::post('/auth/login', [AuthController::class, 'login']);
-
+Route::post('/save-tiktok-data', [TikTokFinanceController::class, 'saveData']);
 /*
 |--------------------------------------------------------------------------
 | Protected Routes — admin + super_admin
@@ -37,6 +38,7 @@ Route::middleware(['jwt.auth', 'role.admin'])->group(function () {
     // Profiles
     Route::get('/profiles', [ProfileController::class, 'index']);
     Route::put('/profiles/{id}', [ProfileController::class, 'update']);
+    Route::get('/profiles/{id}/logs', [ProfileController::class, 'logs']);
 
     // Transactions
     Route::get('/transactions', [TransactionController::class, 'index']);

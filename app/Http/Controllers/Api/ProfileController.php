@@ -53,6 +53,10 @@ class ProfileController extends Controller
     public function update(Request $request, string $id): JsonResponse
     {
         try {
+            $request->validate([
+                'status' => 'nullable|in:active,die'
+            ]);
+
             $data = $request->all();
             $profile = $this->profileService->updateProfile($id, $data);
 
@@ -73,6 +77,34 @@ class ProfileController extends Controller
                 'error'   => $e->getMessage(),
                 'data'    => null,
             ], $statusCode);
+        }
+    }
+
+    public function logs(Request $request, string $id): JsonResponse
+    {
+        try {
+            $perPage = $request->get('per_page', 20);
+
+            // Lấy từ bảng fetch_logs
+            $logs = \Illuminate\Support\Facades\DB::table('fetch_logs')
+                ->where('profile_id', $id)
+                ->orderBy('fetched_at', 'desc')
+                ->paginate($perPage);
+
+            return response()->json([
+                'code'    => HttpCode::SUCCESS,
+                'status'  => true,
+                'success' => true,
+                'data'    => $logs,
+            ], HttpCode::SUCCESS);
+        } catch (Exception $e) {
+            return response()->json([
+                'code'    => HttpCode::INTERNAL_SERVER_ERROR,
+                'status'  => false,
+                'success' => false,
+                'message' => ResponseMessage::ERROR,
+                'error'   => $e->getMessage(),
+            ], HttpCode::INTERNAL_SERVER_ERROR);
         }
     }
 }
