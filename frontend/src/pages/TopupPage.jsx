@@ -22,8 +22,8 @@ const CURRENCIES = [
 ];
 
 const TYPES = [
-    { value: 'thu', label: 'Thu' },
-    { value: 'chi', label: 'Chi' },
+    { value: 'income', label: 'Income' },
+    { value: 'expense', label: 'Expense' },
 ];
 
 
@@ -51,15 +51,15 @@ function StatusBadge({ status }) {
 
 function TypeBadge({ type }) {
     if (!type) return null;
-    const isThu = type.toLowerCase() === 'thu';
+    const isIncome = type.toLowerCase() === 'income';
     return (
         <span style={{
             padding: '3px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 600,
-            background: isThu ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.12)',
-            color: isThu ? '#10b981' : '#ef4444',
+            background: isIncome ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.12)',
+            color: isIncome ? '#10b981' : '#ef4444',
             display: 'inline-flex', alignItems: 'center', gap: '4px',
         }}>
-            {isThu ? '↓ Thu' : '↑ Chi'}
+            {isIncome ? '↓ Income' : '↑ Expense'}
         </span>
     );
 }
@@ -267,9 +267,9 @@ function ImagePreview({ src, onClose }) {
 function TopupStatsCards({ summary }) {
     const cards = [
         { label: 'Total Transactions', value: summary?.total_transactions ?? 0, icon: Hash, color: 'purple', sub: 'All filtered transactions', isMoney: false },
-        { label: 'Total Income', value: summary?.total_thu ?? 0, icon: ArrowDownCircle, color: 'green', sub: 'Total income', isMoney: true },
-        { label: 'Total Expense', value: summary?.total_chi ?? 0, icon: ArrowUpCircle, color: 'amber', sub: 'Total expense', isMoney: true },
-        { label: 'Net', value: (summary?.total_thu ?? 0) - (summary?.total_chi ?? 0), icon: DollarSign, color: 'cyan', sub: 'Thu - Chi', isMoney: true },
+        { label: 'Total Income', value: summary?.total_income ?? 0, icon: ArrowDownCircle, color: 'green', sub: 'Total income', isMoney: true },
+        { label: 'Total Expense', value: summary?.total_expense ?? 0, icon: ArrowUpCircle, color: 'amber', sub: 'Total expense', isMoney: true },
+        { label: 'Net', value: (summary?.total_income ?? 0) - (summary?.total_expense ?? 0), icon: DollarSign, color: 'cyan', sub: 'Income - Expense', isMoney: true },
     ];
 
     const fmt = (v) => Number(v).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '$';
@@ -327,7 +327,7 @@ export default function TopupPage() {
     const [modalMode, setModalMode] = useState('create');
     const [editingId, setEditingId] = useState(null);
     const [formData, setFormData] = useState({
-        transaction_id: '', type: 'thu', team_id: '', payment_method: 'pingpong',
+        transaction_id: '', type: 'income', team_id: '', payment_method: 'pingpong',
         amount: '', currency: 'USD', status: 'pending', image: '', vendor_id: ''
     });
 
@@ -378,14 +378,14 @@ export default function TopupPage() {
     useEffect(() => { fetchData(); }, [typeFilter, teamFilter, yearFilter, paymentMethodFilter, statusFilter, page]);
     useEffect(() => { setPage(1); }, [typeFilter, teamFilter, yearFilter, paymentMethodFilter, statusFilter, search]);
 
-    const resetForm = () => setFormData({ transaction_id: '', type: 'thu', team_id: '', payment_method: 'pingpong', vendor_id: '', amount: '', currency: 'USD', status: 'pending', image: '' });
+    const resetForm = () => setFormData({ transaction_id: '', type: 'income', team_id: '', payment_method: 'pingpong', vendor_id: '', amount: '', currency: 'USD', status: 'pending', image: '' });
 
     const openCreateModal = () => { setModalMode('create'); resetForm(); setModalOpen(true); };
     const openEditModal = (row) => {
         setModalMode('edit');
         setEditingId(row.id);
         setFormData({
-            transaction_id: row.transaction_id || '', type: row.type || 'thu', team_id: row.team_id || '',
+            transaction_id: row.transaction_id || '', type: row.type || 'income', team_id: row.team_id || '',
             payment_method: row.payment_method || 'pingpong', vendor_id: row.vendor_id || '', amount: row.amount || '',
             currency: row.currency || 'USD', status: row.status || 'pending', image: row.image || '',
         });
@@ -466,7 +466,7 @@ export default function TopupPage() {
         {
             key: 'amount', label: 'Amount', className: 'text-right', width: '12%',
             render: (row) => (
-                <span style={{ fontWeight: 600, fontVariantNumeric: 'tabular-nums', color: row.type === 'thu' ? 'var(--success)' : 'var(--danger)' }}>
+                <span style={{ fontWeight: 600, fontVariantNumeric: 'tabular-nums', color: row.type === 'income' ? 'var(--success)' : 'var(--danger)' }}>
                     {formatMoney(row.amount, row.currency)}
                 </span>
             ),
@@ -506,8 +506,8 @@ export default function TopupPage() {
                 </td>
                 <td className="text-right" style={{ fontWeight: 700, padding: '14px 16px' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', alignItems: 'flex-end' }}>
-                        <span style={{ color: 'var(--success)', fontSize: '13px' }}>Thu: {Number(summary.page_thu ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}$</span>
-                        <span style={{ color: 'var(--danger)', fontSize: '13px' }}>Chi: {Number(summary.page_chi ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}$</span>
+                        <span style={{ color: 'var(--success)', fontSize: '13px' }}>Income: {Number(summary.page_income ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}$</span>
+                        <span style={{ color: 'var(--danger)', fontSize: '13px' }}>Expense: {Number(summary.page_expense ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}$</span>
                     </div>
                 </td>
                 <td colSpan={4}></td>

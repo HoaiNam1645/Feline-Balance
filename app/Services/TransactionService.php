@@ -48,8 +48,8 @@ class TransactionService
 
         // Summary from filtered query (before pagination)
         $summaryQuery = clone $query;
-        $totalThu = (clone $summaryQuery)->where('type', 'thu')->sum('amount');
-        $totalChi = (clone $summaryQuery)->where('type', 'chi')->sum('amount');
+        $totalIncome = (clone $summaryQuery)->where('type', 'income')->sum('amount');
+        $totalExpense = (clone $summaryQuery)->where('type', 'expense')->sum('amount');
         $totalTransactions = $summaryQuery->count();
         $totalAmount = (clone $query)->sum('amount');
 
@@ -58,8 +58,8 @@ class TransactionService
 
         // Page totals
         $pageItems = collect($paginator->items());
-        $pageThu = $pageItems->where('type', 'thu')->sum('amount');
-        $pageChi = $pageItems->where('type', 'chi')->sum('amount');
+        $pageIncome = $pageItems->where('type', 'income')->sum('amount');
+        $pageExpense = $pageItems->where('type', 'expense')->sum('amount');
 
         // Append team name and vendor name
         $items = collect($paginator->items())->map(function ($item) {
@@ -79,11 +79,11 @@ class TransactionService
             ],
             'summary' => [
                 'total_transactions' => $totalTransactions,
-                'total_thu'          => round($totalThu, 2),
-                'total_chi'          => round($totalChi, 2),
+                'total_income'       => round($totalIncome, 2),
+                'total_expense'      => round($totalExpense, 2),
                 'total_amount'       => round($totalAmount, 2),
-                'page_thu'           => round($pageThu, 2),
-                'page_chi'           => round($pageChi, 2),
+                'page_income'        => round($pageIncome, 2),
+                'page_expense'       => round($pageExpense, 2),
             ],
         ];
     }
