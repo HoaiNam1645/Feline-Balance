@@ -16,8 +16,8 @@ class ProfileService
     {
         $query = Profile::query();
 
-        if (!empty($filters['team'])) {
-            $query->where('team', $filters['team']);
+        if (!empty($filters['team_id'])) {
+            $query->where('team_id', $filters['team_id']);
         }
 
         if (!empty($filters['status'])) {
@@ -58,9 +58,9 @@ class ProfileService
 
         // Paginate results
         $perPage = $filters['per_page'] ?? 15;
-        $paginator = $query->with(['balance', 'monthlySettlements'])
+        $paginator = $query->with(['balance', 'monthlySettlements', 'team'])
             ->select('profiles.*')
-            ->orderBy('team')
+            ->orderBy('team_id')
             ->orderBy('profile_name')
             ->paginate($perPage);
 
@@ -83,7 +83,8 @@ class ProfileService
                 'profile_name'     => $profile->profile_name,
                 'profile_code'     => $profile->profile_code,
                 'seller_id'        => $profile->seller_id,
-                'team'             => $profile->team,
+                'team_id'          => $profile->team_id,
+                'team_name'        => $profile->team?->name ?? null,
                 'status'           => $profile->status,
                 'bank_last4'       => $profile->bank_last4,
                 'beneficiary_name' => $profile->beneficiary_name,
@@ -118,7 +119,7 @@ class ProfileService
             'profile_name',
             'profile_code',
             'seller_id',
-            'team',
+            'team_id',
             'status',
             'bank_last4',
             'beneficiary_name'

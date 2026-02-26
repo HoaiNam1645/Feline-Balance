@@ -24,7 +24,7 @@ class ProfileController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
-            $filters = $request->only(['team', 'status', 'search', 'year', 'page', 'per_page']);
+            $filters = $request->only(['team_id', 'status', 'search', 'year', 'page', 'per_page']);
 
             $result = $this->profileService->getProfiles($filters);
 

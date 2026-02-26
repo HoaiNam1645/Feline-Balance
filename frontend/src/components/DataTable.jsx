@@ -89,7 +89,14 @@ export default function DataTable({
                 </div>
             ) : (
                 <div className="table-scroll">
-                    <table className="data-table" id={tableId}>
+                    <table className="data-table" id={tableId} style={columns.some(c => c.width) ? { tableLayout: 'fixed', width: '100%' } : {}}>
+                        {columns.some(c => c.width) && (
+                            <colgroup>
+                                {columns.map(col => (
+                                    <col key={col.key} style={{ width: col.width || 'auto' }} />
+                                ))}
+                            </colgroup>
+                        )}
                         <thead>
                             <tr>
                                 {columns.map((col) => (
@@ -111,7 +118,7 @@ export default function DataTable({
                             ))}
                         </tbody>
                         {footerRow && (
-                            <tfoot>
+                            <tfoot style={{ position: 'sticky', bottom: 0, zIndex: 2, background: 'var(--bg-card)', boxShadow: '0 -2px 8px rgba(0,0,0,0.2)' }}>
                                 {footerRow}
                             </tfoot>
                         )}

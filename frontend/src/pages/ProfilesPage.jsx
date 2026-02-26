@@ -1,5 +1,5 @@
-import { useState, useEffect, useMemo } from 'react';
-import { Search, Download, Filter, Database } from 'lucide-react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
+import { Search, Download, Filter, Database, X } from 'lucide-react';
 import Topbar from '../components/Topbar';
 import StatsCards from '../components/StatsCards';
 
@@ -22,10 +22,10 @@ const MONTHS = [
 
 function formatMoney(value) {
     if (value == null || value === 0) return null;
-    return '$' + Number(value).toLocaleString('en-US', {
+    return Number(value).toLocaleString('en-US', {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
-    });
+    }) + '$';
 }
 
 function MoneyCell({ value, className = '' }) {
@@ -53,10 +53,28 @@ export default function ProfilesPage() {
     const [teamFilter, setTeamFilter] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
     const [search, setSearch] = useState('');
+    const [teams, setTeams] = useState([]);
 
     // Inline editing states
     const [editingRowId, setEditingRowId] = useState(null);
     const [editFormData, setEditFormData] = useState({});
+
+    // Fetch teams from DB
+    useEffect(() => {
+        fetch(`${API_BASE}/api/teams`)
+            .then(res => res.json())
+            .then(json => { if (json.success) setTeams(json.data); })
+            .catch(() => { });
+    }, []);
+
+    // Toast notifications
+    const [toasts, setToasts] = useState([]);
+    const addToast = useCallback((message, type = 'success') => {
+        const id = Date.now();
+        setToasts(prev => [...prev, { id, message, type }]);
+        setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 3500);
+    }, []);
+    const removeToast = useCallback((id) => setToasts(prev => prev.filter(t => t.id !== id)), []);
 
     // Pagination states
     const [page, setPage] = useState(1);
@@ -67,7 +85,7 @@ export default function ProfilesPage() {
         setError(null);
         try {
             const params = new URLSearchParams({ year, page, per_page: 15 });
-            if (teamFilter) params.append('team', teamFilter);
+            if (teamFilter) params.append('team_id', teamFilter);
             if (statusFilter) params.append('status', statusFilter);
             if (search) params.append('search', search);
 
@@ -105,7 +123,7 @@ export default function ProfilesPage() {
     const handleEditClick = (row) => {
         setEditingRowId(row.id);
         setEditFormData({
-            team: row.team || '',
+            team_id: row.team_id || '',
             profile_name: row.profile_name || '',
             profile_code: row.profile_code || '',
             status: row.status || '',
@@ -131,14 +149,14 @@ export default function ProfilesPage() {
             const json = await res.json();
 
             if (json.success) {
-                // Update local data
-                setData(data.map(item => item.id === id ? { ...item, ...json.data } : item));
                 setEditingRowId(null);
+                addToast('Profile updated successfully!');
+                fetchData();
             } else {
-                alert(json.message || 'Failed to update');
+                addToast(json.message || 'Update failed!', 'error');
             }
         } catch (err) {
-            alert('Error updating profile: ' + err.message);
+            addToast('Error: ' + err.message, 'error');
         }
     };
 
@@ -154,11 +172,7 @@ export default function ProfilesPage() {
         if (e.key === 'Enter') fetchData();
     };
 
-    // Extract unique teams from data for filter
-    const teams = useMemo(() => {
-        const set = new Set(data.map((d) => d.team).filter(Boolean));
-        return [...set].sort();
-    }, [data]);
+
 
     const statuses = useMemo(() => {
         const set = new Set(data.map((d) => d.status).filter(Boolean));
@@ -215,7 +229,7 @@ export default function ProfilesPage() {
                         >
                             <option value="">All Teams</option>
                             {teams.map((t) => (
-                                <option key={t} value={t}>{t}</option>
+                                <option key={t.id} value={t.id}>{t.name}</option>
                             ))}
                         </select>
                     </div>
@@ -275,7 +289,7 @@ export default function ProfilesPage() {
                         </div>
                     ) : (
                         <div className="table-scroll">
-                            <table className="data-table" id="profiles-table">
+                            <table className="data-table" id="profiles-table" style={{ minWidth: '1800px' }}>
                                 <thead>
                                     <tr>
                                         <th className="sticky-col col-team">#</th>
@@ -302,15 +316,18 @@ export default function ProfilesPage() {
                                                 <td className="sticky-col col-team">{idx + 1}</td>
                                                 <td className="sticky-col col-status">
                                                     {isEditing ? (
-                                                        <input
-                                                            className="filter-input"
+                                                        <select
+                                                            className="filter-select"
                                                             style={{ width: '100%', minWidth: '80px', padding: '4px 8px' }}
-                                                            name="team"
-                                                            value={editFormData.team}
+                                                            name="team_id"
+                                                            value={editFormData.team_id}
                                                             onChange={handleEditFormChange}
-                                                        />
+                                                        >
+                                                            <option value="">Select...</option>
+                                                            {teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                                                        </select>
                                                     ) : (
-                                                        <span className="team-badge">{row.team || '—'}</span>
+                                                        <span className="team-badge">{row.team_name || '—'}</span>
                                                     )}
                                                 </td>
                                                 <td className="sticky-col col-name">
@@ -396,14 +413,16 @@ export default function ProfilesPage() {
                                                 <td className="text-right">
                                                     <MoneyCell value={row.total_paid} />
                                                 </td>
-                                                {MONTHS.map((m) => (
-                                                    <td
-                                                        key={m.key}
-                                                        className={`month-col text-right ${row[m.key] ? 'has-value' : ''}`}
-                                                    >
-                                                        <MoneyCell value={row[m.key]} />
-                                                    </td>
-                                                ))}
+                                                {
+                                                    MONTHS.map((m) => (
+                                                        <td
+                                                            key={m.key}
+                                                            className={`month-col text-right ${row[m.key] ? 'has-value' : ''}`}
+                                                        >
+                                                            <MoneyCell value={row[m.key]} />
+                                                        </td>
+                                                    ))
+                                                }
                                             </tr>
                                         );
                                     })}
@@ -517,6 +536,26 @@ export default function ProfilesPage() {
                         </div>
                     )}
                 </div>
+            </div >
+
+            {/* Toast notifications */}
+            <div style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 99999, display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {toasts.map(t => (
+                    <div key={t.id} style={{
+                        padding: '12px 20px', borderRadius: '8px',
+                        background: t.type === 'success' ? 'linear-gradient(135deg, rgba(16,185,129,0.95), rgba(5,150,105,0.95))' :
+                            t.type === 'error' ? 'linear-gradient(135deg, rgba(239,68,68,0.95), rgba(220,38,38,0.95))' :
+                                'linear-gradient(135deg, rgba(99,102,241,0.95), rgba(79,70,229,0.95))',
+                        color: '#fff', fontSize: '13px', fontWeight: 500,
+                        boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+                        display: 'flex', alignItems: 'center', gap: '10px', minWidth: '280px',
+                        animation: 'slideInRight 0.3s ease-out', cursor: 'pointer',
+                    }} onClick={() => removeToast(t.id)}>
+                        <span>{t.type === 'success' ? '✓' : t.type === 'error' ? '✕' : 'ℹ'}</span>
+                        <span style={{ flex: 1 }}>{t.message}</span>
+                        <X size={14} style={{ opacity: 0.7 }} />
+                    </div>
+                ))}
             </div>
         </>
     );
@@ -530,7 +569,7 @@ function getDemoData() {
             profile_name: 'Shop TikTok US 01',
             profile_code: 'TT-US-001',
             seller_id: '7496282814211197303',
-            team: 'Team Alpha',
+            team_id: 2, team_name: 'Team Alpha',
             status: 'Active',
             bank_last4: '4892',
             beneficiary_name: 'John Doe',
@@ -545,7 +584,7 @@ function getDemoData() {
             profile_name: 'Shop TikTok US 02',
             profile_code: 'TT-US-002',
             seller_id: '7496282814211197304',
-            team: 'Team Alpha',
+            team_id: 2, team_name: 'Team Alpha',
             status: 'Active',
             bank_last4: '3351',
             beneficiary_name: 'Jane Smith',
@@ -560,7 +599,7 @@ function getDemoData() {
             profile_name: 'Shop TikTok US 03',
             profile_code: 'TT-US-003',
             seller_id: '7496282814211197305',
-            team: 'Team Beta',
+            team_id: 3, team_name: 'Team Beta',
             status: 'Active',
             bank_last4: '7788',
             beneficiary_name: 'Alice Wong',
@@ -575,7 +614,7 @@ function getDemoData() {
             profile_name: 'Shop TikTok US 04',
             profile_code: 'TT-US-004',
             seller_id: '7496282814211197306',
-            team: 'Team Beta',
+            team_id: 3, team_name: 'Team Beta',
             status: 'Inactive',
             bank_last4: '9012',
             beneficiary_name: 'Bob Lee',
@@ -590,7 +629,7 @@ function getDemoData() {
             profile_name: 'Shop TikTok UK 01',
             profile_code: 'TT-UK-001',
             seller_id: '7496282814211197307',
-            team: 'Team Gamma',
+            team_id: 4, team_name: 'Team Gamma',
             status: 'Active',
             bank_last4: '5566',
             beneficiary_name: 'Charlie Brown',
@@ -605,7 +644,7 @@ function getDemoData() {
             profile_name: 'Shop TikTok UK 02',
             profile_code: 'TT-UK-002',
             seller_id: '7496282814211197308',
-            team: 'Team Gamma',
+            team_id: 4, team_name: 'Team Gamma',
             status: 'Pending',
             bank_last4: '2244',
             beneficiary_name: 'Diana Prince',
@@ -620,7 +659,7 @@ function getDemoData() {
             profile_name: 'Shop TikTok US 05',
             profile_code: 'TT-US-005',
             seller_id: '7496282814211197309',
-            team: 'Team Alpha',
+            team_id: 2, team_name: 'Team Alpha',
             status: 'Active',
             bank_last4: '6677',
             beneficiary_name: 'Eve Adams',
@@ -635,7 +674,7 @@ function getDemoData() {
             profile_name: 'Shop TikTok DE 01',
             profile_code: 'TT-DE-001',
             seller_id: '7496282814211197310',
-            team: 'Team Delta',
+            team_id: 5, team_name: 'Team Delta',
             status: 'Active',
             bank_last4: '8899',
             beneficiary_name: 'Frank Miller',

@@ -22,7 +22,7 @@ class TransactionController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
-            $filters = $request->only(['type', 'payment_method', 'status', 'search', 'page', 'per_page']);
+            $filters = $request->only(['type', 'team_id', 'year', 'payment_method', 'status', 'search', 'page', 'per_page']);
             $result = $this->transactionService->getTransactions($filters);
 
             return response()->json([

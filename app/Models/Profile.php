@@ -15,11 +15,16 @@ class Profile extends Model
         'profile_name',
         'profile_code',
         'seller_id',
-        'team',
+        'team_id',
         'status',
         'bank_last4',
         'beneficiary_name',
     ];
+
+    public function team()
+    {
+        return $this->belongsTo(Team::class);
+    }
 
     public function balance()
     {
