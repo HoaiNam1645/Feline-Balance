@@ -254,30 +254,28 @@ export default function DesignStatisticsPage() {
 
     return (
         <>
-            <Topbar onRefresh={fetchData} loading={loading} />
-            <div className="page-content">
-
-                {/* Header */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
-                    <div>
-                        <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Analytics / Design Statistics</div>
-                        <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)' }}>Design Statistics</h2>
-                    </div>
-
-                    {/* Month/Year Navigation */}
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <button className="btn btn-ghost" onClick={handlePrevMonth} style={{ padding: '8px' }}><ChevronLeft size={18} /></button>
+            <Topbar
+                section="Analytics"
+                breadcrumb="Design Statistics"
+                title="Design Statistics"
+                onRefresh={fetchData}
+                loading={loading}
+                actions={
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        <button className="btn btn-ghost" onClick={handlePrevMonth} style={{ padding: '6px' }}><ChevronLeft size={16} /></button>
                         <div style={{
-                            padding: '8px 20px', borderRadius: '8px',
-                            background: 'var(--bg-card)', border: '1px solid var(--border-color)',
-                            fontWeight: 600, fontSize: '14px', color: 'var(--text-primary)',
-                            minWidth: '160px', textAlign: 'center',
+                            padding: '6px 16px', borderRadius: '8px',
+                            background: 'var(--bg-secondary)', border: '1px solid var(--border-color)',
+                            fontWeight: 600, fontSize: '13px', color: 'var(--text-primary)',
+                            minWidth: '130px', textAlign: 'center',
                         }}>
                             {MONTHS.find(m => m.value === month)?.label} {year}
                         </div>
-                        <button className="btn btn-ghost" onClick={handleNextMonth} style={{ padding: '8px' }}><ChevronRight size={18} /></button>
+                        <button className="btn btn-ghost" onClick={handleNextMonth} style={{ padding: '6px' }}><ChevronRight size={16} /></button>
                     </div>
-                </div>
+                }
+            />
+            <div className="page-content">
 
                 {/* Stats Cards */}
                 <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)', marginBottom: '24px' }}>

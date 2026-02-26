@@ -476,10 +476,9 @@ export default function TopupPage() {
             render: (row) => <StatusBadge status={row.status} />,
         },
         {
-            key: 'image', label: 'Img', width: '6%', style: { textAlign: 'center' }, tdStyle: { textAlign: 'center' },
+            key: 'image', label: 'Image', width: '7%', style: { textAlign: 'center' }, tdStyle: { textAlign: 'center' },
             render: (row) => row.image
-
-                ? <button className="btn btn-ghost" style={{ padding: '4px 8px' }} onClick={() => setPreviewImage(row.image)}><ImageIcon size={16} /></button>
+                ? <img src={row.image} alt="" style={{ width: '36px', height: '36px', borderRadius: '6px', objectFit: 'cover', cursor: 'pointer', border: '1px solid var(--border-color)' }} onClick={() => setPreviewImage(row.image)} />
                 : <span style={{ color: 'var(--text-muted)' }}>—</span>,
         },
         {

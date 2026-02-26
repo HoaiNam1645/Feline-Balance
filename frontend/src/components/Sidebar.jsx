@@ -13,6 +13,7 @@ import {
     Shield,
     BarChart3,
     Palette,
+    Image as ImageIcon,
 } from 'lucide-react';
 
 const menuSections = [
@@ -28,6 +29,7 @@ const menuSections = [
         items: [
             { icon: Wallet, label: 'Payment Profiles', path: '/profiles' },
             { icon: ArrowRightLeft, label: 'Topup', path: '/topup' },
+            { icon: ImageIcon, label: 'Media', path: '/media' },
         ],
     },
     {

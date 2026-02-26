@@ -22,4 +22,10 @@ Route::delete('/vendors/{id}', [\App\Http\Controllers\Api\VendorController::clas
 
 Route::get('/design-statistics', [\App\Http\Controllers\Api\DesignStatisticsController::class, 'index']);
 
+Route::get('/media-transactions', [\App\Http\Controllers\Api\MediaTransactionController::class, 'index']);
+Route::post('/media-transactions', [\App\Http\Controllers\Api\MediaTransactionController::class, 'store']);
+Route::post('/media-transactions/upload', [\App\Http\Controllers\Api\MediaTransactionController::class, 'uploadImage']);
+Route::post('/media-transactions/{id}', [\App\Http\Controllers\Api\MediaTransactionController::class, 'update']);
+Route::delete('/media-transactions/{id}', [\App\Http\Controllers\Api\MediaTransactionController::class, 'destroy']);
+
 Route::post('/upload', [\App\Http\Controllers\Api\UploadController::class, 'store']);

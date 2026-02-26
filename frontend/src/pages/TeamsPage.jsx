@@ -221,19 +221,19 @@ export default function TeamsPage() {
 
     return (
         <>
-            <Topbar onRefresh={fetchTeams} loading={loading} />
-            <div className="page-content">
-
-                {/* Header */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-                    <div>
-                        <div style={{ fontSize: '12px', color: 'var(--text-muted)', marginBottom: '4px' }}>Management / Teams</div>
-                        <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 700, color: 'var(--text-primary)' }}>Team Management</h2>
-                    </div>
-                    <button className="btn btn-primary" onClick={openCreateModal} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '10px 18px' }}>
+            <Topbar
+                section="Management"
+                breadcrumb="Teams"
+                title="Team Management"
+                onRefresh={fetchTeams}
+                loading={loading}
+                actions={
+                    <button className="btn btn-primary" onClick={openCreateModal} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px' }}>
                         <Plus size={16} /> New Team
                     </button>
-                </div>
+                }
+            />
+            <div className="page-content">
 
                 {/* Stats */}
                 <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(2, 1fr)', marginBottom: '24px' }}>

@@ -5,6 +5,7 @@ import TopupPage from './pages/TopupPage';
 import TeamsPage from './pages/TeamsPage';
 import VendorsPage from './pages/VendorsPage';
 import DesignStatisticsPage from './pages/DesignStatisticsPage';
+import MediaPage from './pages/MediaPage';
 
 export default function App() {
   return (
@@ -19,6 +20,7 @@ export default function App() {
             <Route path="/teams" element={<TeamsPage />} />
             <Route path="/vendors" element={<VendorsPage />} />
             <Route path="/design-statistics" element={<DesignStatisticsPage />} />
+            <Route path="/media" element={<MediaPage />} />
             <Route path="*" element={<Navigate to="/profiles" replace />} />
           </Routes>
         </main>
