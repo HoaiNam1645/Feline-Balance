@@ -38,6 +38,10 @@ class TransactionService
             $query->where('team_id', $filters['team_id']);
         }
 
+        if (!empty($filters['vendor_id'])) {
+            $query->where('vendor_id', $filters['vendor_id']);
+        }
+
         if (!empty($filters['year'])) {
             $query->whereYear('created_at', $filters['year']);
         }
@@ -50,17 +54,18 @@ class TransactionService
         $totalAmount = (clone $query)->sum('amount');
 
         $perPage = $filters['per_page'] ?? 15;
-        $paginator = $query->with('team')->latest()->paginate($perPage);
+        $paginator = $query->with(['team', 'vendor'])->latest()->paginate($perPage);
 
         // Page totals
         $pageItems = collect($paginator->items());
         $pageThu = $pageItems->where('type', 'thu')->sum('amount');
         $pageChi = $pageItems->where('type', 'chi')->sum('amount');
 
-        // Append team name to each item
+        // Append team name and vendor name
         $items = collect($paginator->items())->map(function ($item) {
             $arr = $item->toArray();
             $arr['team_name'] = $item->team?->name ?? null;
+            $arr['vendor_name'] = $item->vendor?->name ?? null;
             return $arr;
         });
 
@@ -100,7 +105,7 @@ class TransactionService
             'type',
             'team_id',
             'payment_method',
-            'vendor',
+            'vendor_id',
             'amount',
             'currency',
             'image',

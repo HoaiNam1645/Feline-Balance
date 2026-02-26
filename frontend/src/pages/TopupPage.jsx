@@ -5,15 +5,6 @@ import DataTable from '../components/DataTable';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
 
-const VENDORS = [
-    { value: 'Gearment', label: 'Gearment' },
-    { value: 'Pressify', label: 'Pressify' },
-    { value: 'Printify', label: 'Printify' },
-    { value: 'Merchize', label: 'Merchize' },
-    { value: 'Lemiex', label: 'Lemiex' },
-    { value: 'MKP', label: 'MKP' },
-];
-
 const PAYMENT_METHODS = [
     { value: 'pingpong', label: 'Pingpong' },
     { value: 'paypal', label: 'Paypal' },
@@ -97,8 +88,37 @@ function ToastContainer({ toasts, removeToast }) {
     );
 }
 
+/* ── Confirm Modal ── */
+function ConfirmModal({ isOpen, onClose, onConfirm, title, message }) {
+    if (!isOpen) return null;
+    return (
+        <div style={{
+            position: 'fixed', inset: 0, zIndex: 9999,
+            background: 'rgba(0,0,0,0.7)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }} onClick={onClose}>
+            <div style={{
+                background: 'var(--bg-card)', border: '1px solid var(--border-color)',
+                borderRadius: '12px', width: '420px', maxWidth: '95vw',
+                boxShadow: '0 20px 60px rgba(0,0,0,0.5)', animation: 'slideInUp 0.25s ease-out',
+            }} onClick={e => e.stopPropagation()}>
+                <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border-color)' }}>
+                    <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>{title}</h3>
+                </div>
+                <div style={{ padding: '20px 24px' }}>
+                    <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '14px' }}>{message}</p>
+                </div>
+                <div style={{ padding: '16px 24px', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                    <button className="btn btn-ghost" onClick={onClose} style={{ padding: '8px 16px' }}>Cancel</button>
+                    <button className="btn btn-primary" onClick={onConfirm} style={{ padding: '8px 16px', background: 'linear-gradient(135deg, #ef4444, #dc2626)', border: 'none' }}>Delete</button>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 /* ── Modal Form ── */
-function TransactionModal({ isOpen, onClose, onSubmit, formData, onChange, title, submitLabel, teams = [] }) {
+function TransactionModal({ isOpen, onClose, onSubmit, formData, onChange, title, submitLabel, teams = [], vendors = [] }) {
     const [uploading, setUploading] = useState(false);
 
     if (!isOpen) return null;
@@ -174,9 +194,9 @@ function TransactionModal({ isOpen, onClose, onSubmit, formData, onChange, title
                         </div>
                         <div>
                             <label className="modal-label">Vendor</label>
-                            <select className="filter-select" name="vendor" value={formData.vendor || ''} onChange={onChange} style={{ width: '100%' }}>
+                            <select className="filter-select" name="vendor_id" value={formData.vendor_id || ''} onChange={onChange} style={{ width: '100%' }}>
                                 <option value="">Select Vendor...</option>
-                                {VENDORS.map(v => <option key={v.value} value={v.value}>{v.label}</option>)}
+                                {vendors.map(v => <option key={v.id} value={v.id}>{v.name}</option>)}
                             </select>
                         </div>
                     </div>
@@ -277,12 +297,18 @@ export default function TopupPage() {
     const [error, setError] = useState(null);
     const [summary, setSummary] = useState({});
     const [teams, setTeams] = useState([]);
+    const [vendors, setVendors] = useState([]);
 
     // Fetch teams from DB
     useEffect(() => {
         fetch(`${API_BASE}/api/teams`)
             .then(res => res.json())
             .then(json => { if (json.success) setTeams(json.data); })
+            .catch(() => { });
+
+        fetch(`${API_BASE}/api/vendors`)
+            .then(res => res.json())
+            .then(json => { if (json.success) setVendors(json.data); })
             .catch(() => { });
     }, []);
 
@@ -302,10 +328,14 @@ export default function TopupPage() {
     const [editingId, setEditingId] = useState(null);
     const [formData, setFormData] = useState({
         transaction_id: '', type: 'thu', team_id: '', payment_method: 'pingpong',
-        amount: '', currency: 'USD', status: 'pending', image: '', vendor: ''
+        amount: '', currency: 'USD', status: 'pending', image: '', vendor_id: ''
     });
 
     const [previewImage, setPreviewImage] = useState(null);
+
+    // Confirm Modal state
+    const [confirmOpen, setConfirmOpen] = useState(false);
+    const [deletingId, setDeletingId] = useState(null);
 
     // Toasts
     const [toasts, setToasts] = useState([]);
@@ -348,7 +378,7 @@ export default function TopupPage() {
     useEffect(() => { fetchData(); }, [typeFilter, teamFilter, yearFilter, paymentMethodFilter, statusFilter, page]);
     useEffect(() => { setPage(1); }, [typeFilter, teamFilter, yearFilter, paymentMethodFilter, statusFilter, search]);
 
-    const resetForm = () => setFormData({ transaction_id: '', type: 'thu', team_id: '', payment_method: 'pingpong', vendor: '', amount: '', currency: 'USD', status: 'pending', image: '' });
+    const resetForm = () => setFormData({ transaction_id: '', type: 'thu', team_id: '', payment_method: 'pingpong', vendor_id: '', amount: '', currency: 'USD', status: 'pending', image: '' });
 
     const openCreateModal = () => { setModalMode('create'); resetForm(); setModalOpen(true); };
     const openEditModal = (row) => {
@@ -356,7 +386,7 @@ export default function TopupPage() {
         setEditingId(row.id);
         setFormData({
             transaction_id: row.transaction_id || '', type: row.type || 'thu', team_id: row.team_id || '',
-            payment_method: row.payment_method || 'pingpong', vendor: row.vendor || '', amount: row.amount || '',
+            payment_method: row.payment_method || 'pingpong', vendor_id: row.vendor_id || '', amount: row.amount || '',
             currency: row.currency || 'USD', status: row.status || 'pending', image: row.image || '',
         });
         setModalOpen(true);
@@ -389,15 +419,22 @@ export default function TopupPage() {
         }
     };
 
-    const handleDelete = async (id) => {
-        if (!confirm('Bạn chắc chắn muốn xóa giao dịch này?')) return;
+    const confirmDelete = (id) => {
+        setDeletingId(id);
+        setConfirmOpen(true);
+    };
+
+    const handleDelete = async () => {
         try {
-            const res = await fetch(`${API_BASE}/api/transactions/${id}`, { method: 'DELETE', headers: { 'Accept': 'application/json' } });
+            const res = await fetch(`${API_BASE}/api/transactions/${deletingId}`, { method: 'DELETE', headers: { 'Accept': 'application/json' } });
             const json = await res.json();
             if (json.success) { addToast('Transaction deleted!'); fetchData(); }
             else addToast(json.message || 'Delete failed!', 'error');
         } catch (err) {
             addToast('Error: ' + err.message, 'error');
+        } finally {
+            setConfirmOpen(false);
+            setDeletingId(null);
         }
     };
 
@@ -407,27 +444,27 @@ export default function TopupPage() {
             render: (_, idx) => <span style={{ color: 'var(--text-muted)' }}>{(pagination.current_page - 1) * pagination.per_page + idx + 1}</span>,
         },
         {
-            key: 'team_name', label: 'Team', width: '9%',
+            key: 'team_name', label: 'Team', width: '10%',
             render: (row) => <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{row.team_name || '—'}</span>,
         },
         {
-            key: 'payment_method', label: 'Bank', width: '9%',
+            key: 'payment_method', label: 'Bank', width: '10%',
             render: (row) => <span style={{ color: 'var(--primary-light)', fontWeight: 600 }}>{(PAYMENT_METHODS.find(p => p.value === row.payment_method) || {}).label || row.payment_method}</span>,
         },
         {
-            key: 'vendor', label: 'Vendor', width: '9%',
-            render: (row) => <span style={{ fontWeight: 600 }}>{row.vendor || '—'}</span>,
+            key: 'vendor_name', label: 'Vendor', width: '10%',
+            render: (row) => <span style={{ fontWeight: 600 }}>{row.vendor_name || '—'}</span>,
         },
         {
-            key: 'type', label: 'Type', width: '7%',
+            key: 'type', label: 'Type', width: '5%',
             render: (row) => <TypeBadge type={row.type} />,
         },
         {
-            key: 'transaction_id', label: 'Transaction ID', width: '10%',
-            render: (row) => <span style={{ fontFamily: 'monospace', fontSize: '13px', color: 'var(--text-secondary)' }}>{row.transaction_id || '—'}</span>,
+            key: 'transaction_id', label: 'Transaction ID', width: '15%',
+            render: (row) => <span style={{ fontFamily: 'monospace', fontSize: '13px', color: 'var(--text-secondary)', wordBreak: 'break-all' }}>{row.transaction_id || '—'}</span>,
         },
         {
-            key: 'amount', label: 'Amount', className: 'text-right', width: '8%',
+            key: 'amount', label: 'Amount', className: 'text-right', width: '12%',
             render: (row) => (
                 <span style={{ fontWeight: 600, fontVariantNumeric: 'tabular-nums', color: row.type === 'thu' ? 'var(--success)' : 'var(--danger)' }}>
                     {formatMoney(row.amount, row.currency)}
@@ -435,12 +472,13 @@ export default function TopupPage() {
             ),
         },
         {
-            key: 'status', label: 'Status', width: '4%',
+            key: 'status', label: 'Status', width: '8%',
             render: (row) => <StatusBadge status={row.status} />,
         },
         {
-            key: 'image', label: 'Img', width: '9%', style: { textAlign: 'center' }, tdStyle: { textAlign: 'center' },
+            key: 'image', label: 'Img', width: '6%', style: { textAlign: 'center' }, tdStyle: { textAlign: 'center' },
             render: (row) => row.image
+
                 ? <button className="btn btn-ghost" style={{ padding: '4px 8px' }} onClick={() => setPreviewImage(row.image)}><ImageIcon size={16} /></button>
                 : <span style={{ color: 'var(--text-muted)' }}>—</span>,
         },
@@ -453,7 +491,7 @@ export default function TopupPage() {
             render: (row) => (
                 <div style={{ display: 'flex', gap: '4px', justifyContent: 'flex-end' }}>
                     <button className="btn btn-ghost" style={{ padding: '6px 8px' }} onClick={() => openEditModal(row)} title="Edit"><Pencil size={14} /></button>
-                    <button className="btn btn-ghost" style={{ padding: '6px 8px', color: 'var(--danger)' }} onClick={() => handleDelete(row.id)} title="Delete"><Trash2 size={14} /></button>
+                    <button className="btn btn-ghost" style={{ padding: '6px 8px', color: 'var(--danger)' }} onClick={() => confirmDelete(row.id)} title="Delete"><Trash2 size={14} /></button>
                 </div>
             ),
         },
@@ -568,9 +606,18 @@ export default function TopupPage() {
                 onSubmit={handleSubmit}
                 formData={formData}
                 onChange={handleFormChange}
+                teams={teams}
+                vendors={vendors}
                 title={modalMode === 'create' ? 'New Transaction' : 'Update Transaction'}
                 submitLabel={modalMode === 'create' ? 'Create' : 'Update'}
-                teams={teams}
+            />
+
+            <ConfirmModal
+                isOpen={confirmOpen}
+                onClose={() => setConfirmOpen(false)}
+                onConfirm={handleDelete}
+                title="Confirm Delete"
+                message="Are you sure you want to delete this transaction? This action cannot be undone."
             />
 
             <ImagePreview src={previewImage} onClose={() => setPreviewImage(null)} />
@@ -578,3 +625,4 @@ export default function TopupPage() {
         </>
     );
 }
+

@@ -15,4 +15,9 @@ Route::post('/teams', [\App\Http\Controllers\Api\TeamController::class, 'store']
 Route::put('/teams/{id}', [\App\Http\Controllers\Api\TeamController::class, 'update']);
 Route::delete('/teams/{id}', [\App\Http\Controllers\Api\TeamController::class, 'destroy']);
 
+Route::get('/vendors', [\App\Http\Controllers\Api\VendorController::class, 'index']);
+Route::post('/vendors', [\App\Http\Controllers\Api\VendorController::class, 'store']);
+Route::put('/vendors/{id}', [\App\Http\Controllers\Api\VendorController::class, 'update']);
+Route::delete('/vendors/{id}', [\App\Http\Controllers\Api\VendorController::class, 'destroy']);
+
 Route::post('/upload', [\App\Http\Controllers\Api\UploadController::class, 'store']);

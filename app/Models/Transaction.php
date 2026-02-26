@@ -15,7 +15,7 @@ class Transaction extends Model
         'type',
         'team_id',
         'payment_method',
-        'vendor',
+        'vendor_id',
         'amount',
         'currency',
         'image',
@@ -25,5 +25,10 @@ class Transaction extends Model
     public function team()
     {
         return $this->belongsTo(Team::class);
+    }
+
+    public function vendor()
+    {
+        return $this->belongsTo(Vendor::class);
     }
 }

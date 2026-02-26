@@ -32,6 +32,7 @@ const menuSections = [
         title: 'Management',
         items: [
             { icon: Users, label: 'Teams', path: '/teams' },
+            { icon: LayoutDashboard, label: 'Vendors', path: '/vendors' },
             // { icon: Shield, label: 'Permissions', path: '/permissions' },
             // { icon: Settings, label: 'Settings', path: '/settings' },
             // { icon: HelpCircle, label: 'Help & Support', path: '/support' },
