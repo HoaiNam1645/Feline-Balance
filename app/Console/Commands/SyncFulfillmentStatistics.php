@@ -59,12 +59,13 @@ class SyncFulfillmentStatistics extends Command
             }
         }
 
+        $this->info("[" . now()->toDateTimeString() . "] SyncFulfillmentStatistics completed successfully.");
         Log::info("SYNC_FULFILLMENT_STATISTICS: Command completed successfully.");
     }
 
     private function syncFulfillUnits(FelineService $felineService)
     {
-        $this->info("Syncing Fulfill Units...");
+        $this->info("[" . now()->toDateTimeString() . "] Syncing Fulfill Units...");
         try {
             $result = $felineService->getFulfillUnits();
             $data = $result['data'] ?? [];
@@ -82,11 +83,11 @@ class SyncFulfillmentStatistics extends Command
 
             FulfillUnit::upsert($upsertData, ['id'], ['name', 'classname', 'status']);
             $count = count($upsertData);
-            $this->info("Synced {$count} Fulfill Units.");
+            $this->info("[" . now()->toDateTimeString() . "] Synced {$count} Fulfill Units.");
             Log::info("SYNC_FULFILLMENT_STATISTICS: Synced {$count} Fulfill Units.");
         } catch (\Exception $e) {
             $msg = "Failed to sync fulfill units: " . $e->getMessage();
-            $this->error($msg);
+            $this->error("[" . now()->toDateTimeString() . "] " . $msg);
             Log::error("SYNC_FULFILLMENT_STATISTICS: {$msg}");
         }
     }
@@ -94,7 +95,7 @@ class SyncFulfillmentStatistics extends Command
     private function syncPeriodTypeUnit(FelineService $felineService, $teamUserMap, int $year, int $month, string $type, ?int $fulfillId)
     {
         $unitLabel = $fulfillId === null ? "TOTAL" : "Unit {$fulfillId}";
-        $this->info("Syncing {$type} | {$month}/{$year} | {$unitLabel}");
+        $this->info("[" . now()->toDateTimeString() . "] Syncing {$type} | {$month}/{$year} | {$unitLabel}");
 
         try {
             $result = $felineService->getFulfillmentStatistics($type, $year, $month, $fulfillId);
@@ -155,7 +156,7 @@ class SyncFulfillmentStatistics extends Command
             );
         } catch (\Exception $e) {
             $msg = "Sync failed for {$type} {$month}/{$year} Unit {$fulfillId}: " . $e->getMessage();
-            $this->error($msg);
+            $this->error("[" . now()->toDateTimeString() . "] " . $msg);
             Log::error("SYNC_FULFILLMENT_STATISTICS: {$msg}");
         }
     }

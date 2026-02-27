@@ -68,14 +68,14 @@ class SyncDesignStatistics extends Command
 
     private function syncPeriod(FelineService $felineService, $teamUserMap, int $year, int $month)
     {
-        $this->info("Starting sync for Design Statistics: {$month}/{$year}");
+        $this->info("[" . now()->toDateTimeString() . "] Starting sync for Design Statistics: {$month}/{$year}");
 
         try {
             $result = $felineService->getDesignStatistics($year, $month);
             $data = $result['data'] ?? [];
 
             if (empty($data)) {
-                $this->info("No data returned from API for {$month}/{$year}.");
+                $this->info("[" . now()->toDateTimeString() . "] No data returned from API for {$month}/{$year}.");
                 return;
             }
 
@@ -106,11 +106,11 @@ class SyncDesignStatistics extends Command
             );
 
             $count = count($upsertData);
-            $this->info("Successfully synced {$count} records for {$month}/{$year}.");
+            $this->info("[" . now()->toDateTimeString() . "] Successfully synced {$count} records for {$month}/{$year}.");
             Log::info("SYNC_DESIGN_STATISTICS: Successfully synced {$count} records for {$month}/{$year}.");
         } catch (\Exception $e) {
             $msg = "Sync failed for {$month}/{$year}: " . $e->getMessage();
-            $this->error($msg);
+            $this->error("[" . now()->toDateTimeString() . "] " . $msg);
             Log::error("SYNC_DESIGN_STATISTICS: {$msg}");
         }
     }

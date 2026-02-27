@@ -9,6 +9,10 @@ Artisan::command('inspire', function () {
 
 use Illuminate\Support\Facades\Schedule;
 
+Schedule::command('sync:teams')
+    ->everyTenMinutes()
+    ->appendOutputTo(storage_path('logs/schedule-sync.log'));
+
 Schedule::command('sync:design-statistics')
     ->everyTenMinutes()
     ->appendOutputTo(storage_path('logs/schedule-sync.log'));
