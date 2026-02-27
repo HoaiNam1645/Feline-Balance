@@ -111,4 +111,63 @@ class FelineService
             return $response->json();
         });
     }
+
+    /**
+     * Fetch ALL fulfillment statistics from Feline API for a given type and year/month.
+     * Fetches full data (limit=9999) so we can paginate/filter locally.
+     * Results are cached for 10 minutes to avoid hammering the external API.
+     */
+    public function getFulfillmentStatistics(string $type, int $year, int $month, ?int $fulfillId = null): array
+    {
+        $cacheKey = "feline_fulfillment_stats_{$type}_{$year}_{$month}_{$fulfillId}";
+
+        return Cache::remember($cacheKey, now()->addMinutes(10), function () use ($type, $year, $month, $fulfillId) {
+            $params = [
+                'type' => $type,
+                'page' => 1,
+                'limit' => 9999,
+                'year' => $year,
+                'month' => $month,
+            ];
+
+            if ($fulfillId !== null) {
+                $params['fulfill_id'] = $fulfillId;
+            }
+
+            $response = $this->authenticatedGet("{$this->baseUrl}/order-fulfillments/statistics", $params);
+
+            if (!$response->successful()) {
+                Log::error('Feline fulfillment statistics fetch failed', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+                throw new \Exception('Failed to fetch fulfillment statistics from Feline API');
+            }
+
+            return $response->json();
+        });
+    }
+
+    /**
+     * Fetch ALL fulfill units from Feline API.
+     * Results are cached for 1 hour to avoid frequent external API calls.
+     */
+    public function getFulfillUnits(): array
+    {
+        $cacheKey = "feline_fulfill_units";
+
+        return Cache::remember($cacheKey, now()->addHours(1), function () {
+            $response = $this->authenticatedGet("{$this->baseUrl}/fulfill-units");
+
+            if (!$response->successful()) {
+                Log::error('Feline fulfill units fetch failed', [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                ]);
+                return ['data' => []]; // Fallback to empty
+            }
+
+            return $response->json();
+        });
+    }
 }

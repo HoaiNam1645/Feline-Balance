@@ -151,17 +151,17 @@ export default function DesignStatisticsPage() {
             render: (row) => (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <img
-                        src={row.avatar}
-                        alt={row.name}
+                        src={row.user_avatar}
+                        alt={row.user_name}
                         style={{
                             width: '32px', height: '32px', borderRadius: '50%',
                             objectFit: 'cover', border: '2px solid var(--border-color)',
                         }}
-                        onError={(e) => { e.target.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(row.name) + '&background=6366f1&color=fff&size=32'; }}
+                        onError={(e) => { e.target.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(row.user_name || 'U') + '&background=6366f1&color=fff&size=32'; }}
                     />
                     <div>
-                        <div style={{ fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.3 }}>{row.name}</div>
-                        <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>({row.role?.name || '—'})</div>
+                        <div style={{ fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.3 }}>{row.user_name}</div>
+                        <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>({row.role_name || '—'})</div>
                     </div>
                 </div>
             ),
@@ -169,7 +169,7 @@ export default function DesignStatisticsPage() {
         {
             key: 'team', label: 'Team', width: '14%',
             render: (row) => {
-                const teamName = row.user_detail?.team?.name;
+                const teamName = row.team_name;
                 if (!teamName) return <span style={{ color: 'var(--text-muted)' }}>—</span>;
                 return (
                     <span style={{

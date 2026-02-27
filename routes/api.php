@@ -47,7 +47,8 @@ Route::middleware(['jwt.auth', 'role.admin'])->group(function () {
     Route::delete('/transactions/{id}', [TransactionController::class, 'destroy']);
 
     // Design Statistics
-    Route::get('/design-statistics', [DesignStatisticsController::class, 'index']);
+    Route::get('/design-statistics', [App\Http\Controllers\Api\DesignStatisticsController::class, 'index']);
+    Route::get('/fulfillment-statistics', [App\Http\Controllers\Api\FulfillmentStatisticsController::class, 'index']);
 
     // Media Transactions
     Route::get('/media-transactions', [MediaTransactionController::class, 'index']);

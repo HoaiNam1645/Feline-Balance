@@ -8,6 +8,7 @@ import TeamsPage from './pages/TeamsPage';
 import VendorsPage from './pages/VendorsPage';
 import UsersPage from './pages/UsersPage';
 import DesignStatisticsPage from './pages/DesignStatisticsPage';
+import FulfillmentStatisticsPage from './pages/FulfillmentStatisticsPage';
 import MediaPage from './pages/MediaPage';
 import EmployeesPage from './pages/EmployeesPage';
 import EmployeeDetailPage from './pages/EmployeeDetailPage';
@@ -119,6 +120,7 @@ export default function App() {
               } />
 
               <Route path="/design-statistics" element={<DesignStatisticsPage />} />
+              <Route path="/fulfillment-statistics" element={<FulfillmentStatisticsPage />} />
               <Route path="/media" element={<MediaPage />} />
               <Route path="/employees" element={<EmployeesPage />} />
               <Route path="/employees/:id" element={<EmployeeDetailPage />} />

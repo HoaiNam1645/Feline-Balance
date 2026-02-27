@@ -53,6 +53,7 @@ const menuSections = [
         title: 'Analytics',
         items: [
             { icon: Palette, label: 'Design Statistics', path: '/design-statistics' },
+            { icon: BarChart3, label: 'Fulfillment Statistics', path: '/fulfillment-statistics' },
         ],
     },
 ];
