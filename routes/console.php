@@ -10,3 +10,4 @@ Artisan::command('inspire', function () {
 use Illuminate\Support\Facades\Schedule;
 
 Schedule::command('sync:design-statistics')->everyTenMinutes();
+Schedule::command('sync:fulfillment-statistics')->everyTenMinutes();

@@ -156,19 +156,18 @@ export default function FulfillmentStatisticsPage() {
                 {
                     key: 'user', label: 'USER', width: '25%',
                     render: (row) => {
-                        const userData = row.user || {};
                         return (
                             <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                                 <img
-                                    src={userData.avatar}
-                                    alt={userData.name}
+                                    src={row.avatar}
+                                    alt={row.name}
                                     style={{
                                         width: '32px', height: '32px', borderRadius: '50%',
                                         objectFit: 'cover', border: '2px solid var(--border-color)',
                                     }}
-                                    onError={(e) => { e.target.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(userData.name || 'U') + '&background=6366f1&color=fff&size=32'; }}
+                                    onError={(e) => { e.target.src = 'https://ui-avatars.com/api/?name=' + encodeURIComponent(row.name || 'U') + '&background=6366f1&color=fff&size=32'; }}
                                 />
-                                <div style={{ fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.3 }}>{userData.name || '—'}</div>
+                                <div style={{ fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.3 }}>{row.name || '—'}</div>
                             </div>
                         );
                     },
@@ -180,14 +179,14 @@ export default function FulfillmentStatisticsPage() {
                             padding: '4px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: 600,
                             background: 'rgba(99,102,241,0.12)', color: '#6366f1',
                         }}>
-                            {row.detail?.account_code || '—'}
+                            {row.account_code || '—'}
                         </span>
                     ),
                 },
                 {
                     key: 'status', label: 'STATUS', width: '15%',
                     render: (row) => {
-                        const s = row.status?.name || '—';
+                        const s = row.status_name || '—';
                         return (
                             <span style={{
                                 padding: '4px 12px', borderRadius: '6px', fontSize: '12px', fontWeight: 600,
@@ -203,7 +202,7 @@ export default function FulfillmentStatisticsPage() {
                     key: 'total_ords', label: 'TOTAL ORDS', width: '15%', style: { textAlign: 'center' }, tdStyle: { textAlign: 'center' },
                     render: (row) => (
                         <span style={{ fontWeight: 600, fontSize: '13px', color: '#10b981' }}>
-                            {row.order_fulfillments_count || 0} orders
+                            {row.order_count || 0} orders
                         </span>
                     ),
                 },
@@ -211,7 +210,7 @@ export default function FulfillmentStatisticsPage() {
                     key: 'total_fulfill_price', label: 'TOTAL FULFILL PRICE', width: '15%', style: { textAlign: 'right' }, tdStyle: { textAlign: 'right' },
                     render: (row) => (
                         <span style={{ fontWeight: 600, fontSize: '14px', color: '#f59e0b' }}>
-                            ${Number(row.total_fulfill_price || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                            ${Number(row.total_price || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                         </span>
                     ),
                 },
@@ -239,7 +238,7 @@ export default function FulfillmentStatisticsPage() {
                         />
                         <div>
                             <div style={{ fontWeight: 600, color: 'var(--text-primary)', lineHeight: 1.3 }}>{row.name}</div>
-                            <div style={{ fontSize: '11px', color: '#3b82f6' }}>({row.role?.name || '—'})</div>
+                            <div style={{ fontSize: '11px', color: '#3b82f6' }}>({row.role_name || '—'})</div>
                         </div>
                     </div>
                 ),
@@ -247,7 +246,7 @@ export default function FulfillmentStatisticsPage() {
             {
                 key: 'team', label: 'TEAM', width: '20%',
                 render: (row) => {
-                    const teamName = row.user_detail?.team?.name;
+                    const teamName = row.team_name;
                     if (!teamName) return <span style={{ color: 'var(--text-muted)' }}>—</span>;
                     return (
                         <span style={{
@@ -264,7 +263,7 @@ export default function FulfillmentStatisticsPage() {
                 key: 'total_ords', label: 'TOTAL ORDS', width: '20%', style: { textAlign: 'center' }, tdStyle: { textAlign: 'center' },
                 render: (row) => (
                     <span style={{ fontWeight: 600, fontSize: '13px', color: '#10b981' }}>
-                        {row.order_fulfillments_count || 0} orders
+                        {row.order_count || 0} orders
                     </span>
                 ),
             },
@@ -272,7 +271,7 @@ export default function FulfillmentStatisticsPage() {
                 key: 'total_fulfill_price', label: 'TOTAL FULFILL PRICE', width: '20%', style: { textAlign: 'right' }, tdStyle: { textAlign: 'right' },
                 render: (row) => (
                     <span style={{ fontWeight: 600, fontSize: '14px', color: '#f59e0b' }}>
-                        ${Number(row.total_fulfill_price || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        ${Number(row.total_price || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                     </span>
                 ),
             },

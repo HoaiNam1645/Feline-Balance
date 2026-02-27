@@ -1,0 +1,706 @@
+{
+    "data": [
+        {
+            "id": 144,
+            "role_id": 9,
+            "name": "L\u00ea Th\u1ecb T\u00fa Linh",
+            "avatar": "https:\/\/feline.nyc3.digitaloceanspaces.com\/feline\/avatar\/UGWgELHivZ0zbEqZpwHqT3YXaL2EfGdF8bHAx9lH.jpg",
+            "total_fulfill_price": 2003.1599999999996,
+            "order_fulfillments_count": 104,
+            "role": {
+                "id": 9,
+                "name": "Seller"
+            },
+            "user_detail": {
+                "id": 82,
+                "team_id": 30,
+                "team": {
+                    "id": 30,
+                    "name": "Unicorn Team",
+                    "manager_id": 145
+                }
+            },
+            "managed_team": null
+        },
+        {
+            "id": 151,
+            "role_id": 9,
+            "name": "L\u01b0\u01a1ng Gia Hy",
+            "avatar": "https:\/\/feline.nyc3.digitaloceanspaces.com\/feline\/avatar\/NlNkmIGp1KMPcuVdr5ut3QWZuJaRpIvbY14gHywF.png",
+            "total_fulfill_price": 3835.720000000002,
+            "order_fulfillments_count": 218,
+            "role": {
+                "id": 9,
+                "name": "Seller"
+            },
+            "user_detail": {
+                "id": 89,
+                "team_id": 30,
+                "team": {
+                    "id": 30,
+                    "name": "Unicorn Team",
+                    "manager_id": 145
+                }
+            },
+            "managed_team": null
+        },
+        {
+            "id": 152,
+            "role_id": 9,
+            "name": "\u0110\u1ee9ttt",
+            "avatar": "https:\/\/diskimageshq.nyc3.digitaloceanspaces.com\/laravel-app\/avatar\/mwWv7ME6Lho1dBcmI0vS4hLwyj1xdkXxPspQU9Av.png",
+            "total_fulfill_price": 1209.13,
+            "order_fulfillments_count": 84,
+            "role": {
+                "id": 9,
+                "name": "Seller"
+            },
+            "user_detail": {
+                "id": 90,
+                "team_id": 24,
+                "team": {
+                    "id": 24,
+                    "name": "GoldPine",
+                    "manager_id": 154
+                }
+            },
+            "managed_team": null
+        },
+        {
+            "id": 153,
+            "role_id": 19,
+            "name": "Ng\u1ecdc Anh Pha L\u00ea",
+            "avatar": "https:\/\/feline.nyc3.digitaloceanspaces.com\/feline\/avatar\/79K1LxZK9ekY1EHqXMY1OYEscgupPJ04a5f9jZ9b.jpg",
+            "total_fulfill_price": 2641.43,
+            "order_fulfillments_count": 131,
+            "role": {
+                "id": 19,
+                "name": "HR Manager"
+            },
+            "user_detail": {
+                "id": 91,
+                "team_id": 22,
+                "team": {
+                    "id": 22,
+                    "name": "Fela x Pressify",
+                    "manager_id": 178
+                }
+            },
+            "managed_team": null
+        },
+        {
+            "id": 154,
+            "role_id": 9,
+            "name": "Nguy\u1ec5n Mai Anh",
+            "avatar": "https:\/\/diskimageshq.nyc3.digitaloceanspaces.com\/laravel-app\/avatar\/mwWv7ME6Lho1dBcmI0vS4hLwyj1xdkXxPspQU9Av.png",
+            "total_fulfill_price": 6.79,
+            "order_fulfillments_count": 1,
+            "role": {
+                "id": 9,
+                "name": "Seller"
+            },
+            "user_detail": {
+                "id": 92,
+                "team_id": 24,
+                "team": {
+                    "id": 24,
+                    "name": "GoldPine",
+                    "manager_id": 154
+                }
+            },
+            "managed_team": {
+                "id": 24,
+                "name": "GoldPine",
+                "manager_id": 154
+            }
+        },
+        {
+            "id": 156,
+            "role_id": 9,
+            "name": "Nguy\u1ec5n V\u0103n T\u1ea5n L\u1ed9c",
+            "avatar": "https:\/\/diskimageshq.nyc3.digitaloceanspaces.com\/laravel-app\/avatar\/mwWv7ME6Lho1dBcmI0vS4hLwyj1xdkXxPspQU9Av.png",
+            "total_fulfill_price": 5446.26999999991,
+            "order_fulfillments_count": 893,
+            "role": {
+                "id": 9,
+                "name": "Seller"
+            },
+            "user_detail": {
+                "id": 94,
+                "team_id": 24,
+                "team": {
+                    "id": 24,
+                    "name": "GoldPine",
+                    "manager_id": 154
+                }
+            },
+            "managed_team": null
+        },
+        {
+            "id": 157,
+            "role_id": 9,
+            "name": "Nguy\u1ec5n Quang Huy",
+            "avatar": "https:\/\/diskimageshq.nyc3.digitaloceanspaces.com\/laravel-app\/avatar\/mwWv7ME6Lho1dBcmI0vS4hLwyj1xdkXxPspQU9Av.png",
+            "total_fulfill_price": 1247.8400000000006,
+            "order_fulfillments_count": 136,
+            "role": {
+                "id": 9,
+                "name": "Seller"
+            },
+            "user_detail": {
+                "id": 95,
+                "team_id": 24,
+                "team": {
+                    "id": 24,
+                    "name": "GoldPine",
+                    "manager_id": 154
+                }
+            },
+            "managed_team": null
+        },
+        {
+            "id": 158,
+            "role_id": 9,
+            "name": "Nguy\u1ec5n \u0110\u1ee9c \u0110\u0103ng Kh\u00e1nh",
+            "avatar": "https:\/\/diskimageshq.nyc3.digitaloceanspaces.com\/laravel-app\/avatar\/mwWv7ME6Lho1dBcmI0vS4hLwyj1xdkXxPspQU9Av.png",
+            "total_fulfill_price": 2207.7799999999993,
+            "order_fulfillments_count": 243,
+            "role": {
+                "id": 9,
+                "name": "Seller"
+            },
+            "user_detail": {
+                "id": 96,
+                "team_id": 24,
+                "team": {
+                    "id": 24,
+                    "name": "GoldPine",
+                    "manager_id": 154
+                }
+            },
+            "managed_team": null
+        },
+        {
+            "id": 165,
+            "role_id": 9,
+            "name": "Ho\u00e0ng Th\u1ecb Uy\u1ec3n Nhi",
+            "avatar": "https:\/\/diskimageshq.nyc3.digitaloceanspaces.com\/laravel-app\/avatar\/mwWv7ME6Lho1dBcmI0vS4hLwyj1xdkXxPspQU9Av.png",
+            "total_fulfill_price": 7978.449999999979,
+            "order_fulfillments_count": 738,
+            "role": {
+                "id": 9,
+                "name": "Seller"
+            },
+            "user_detail": {
+                "id": 103,
+                "team_id": 24,
+                "team": {
+                    "id": 24,
+                    "name": "GoldPine",
+                    "manager_id": 154
+                }
+            },
+            "managed_team": null
+        },
+        {
+            "id": 170,
+            "role_id": 9,
+            "name": "Tr\u1ea7n V\u0103n Th\u1eafng",
+            "avatar": "https:\/\/diskimageshq.nyc3.digitaloceanspaces.com\/laravel-app\/avatar\/mwWv7ME6Lho1dBcmI0vS4hLwyj1xdkXxPspQU9Av.png",
+            "total_fulfill_price": 205,
+            "order_fulfillments_count": 10,
+            "role": {
+                "id": 9,
+                "name": "Seller"
+            },
+            "user_detail": {
+                "id": 108,
+                "team_id": 24,
+                "team": {
+                    "id": 24,
+                    "name": "GoldPine",
+                    "manager_id": 154
+                }
+            },
+            "managed_team": null
+        },
+        {
+            "id": 171,
+            "role_id": 9,
+            "name": "Nguy\u1ec5n Th\u1ecb Kim Anh",
+            "avatar": "https:\/\/feline.nyc3.digitaloceanspaces.com\/feline\/avatar\/UYJz6TKSu1IhD8RPHBSevwDTLuQPzmVdFelPUdTj.png",
+            "total_fulfill_price": 189.24999999999991,
+            "order_fulfillments_count": 32,
+            "role": {
+                "id": 9,
+                "name": "Seller"
+            },
+            "user_detail": {
+                "id": 109,
+                "team_id": 24,
+                "team": {
+                    "id": 24,
+                    "name": "GoldPine",
+                    "manager_id": 154
+                }
+            },
+            "managed_team": null
+        },
+        {
+            "id": 173,
+            "role_id": 9,
+            "name": "Danh Duong",
+            "avatar": "https:\/\/feline.nyc3.digitaloceanspaces.com\/feline\/avatar\/Mp7rSCz2PhXnWGkQoGaCkYGbPUsJrWioyxWxD94M.jpg",
+            "total_fulfill_price": 47,
+            "order_fulfillments_count": 2,
+            "role": {
+                "id": 9,
+                "name": "Seller"
+            },
+            "user_detail": {
+                "id": 111,
+                "team_id": 30,
+                "team": {
+                    "id": 30,
+                    "name": "Unicorn Team",
+                    "manager_id": 145
+                }
+            },
+            "managed_team": null
+        },
+        {
+            "id": 181,
+            "role_id": 9,
+            "name": "T\u0103ng Th\u1ecb Li\u00ean",
+            "avatar": "https:\/\/diskimageshq.nyc3.digitaloceanspaces.com\/laravel-app\/avatar\/mwWv7ME6Lho1dBcmI0vS4hLwyj1xdkXxPspQU9Av.png",
+            "total_fulfill_price": 17.98,
+            "order_fulfillments_count": 1,
+            "role": {
+                "id": 9,
+                "name": "Seller"
+            },
+            "user_detail": {
+                "id": 119,
+                "team_id": 26,
+                "team": {
+                    "id": 26,
+                    "name": "KATINAT",
+                    "manager_id": 228
+                }
+            },
+            "managed_team": null
+        },
+        {
+            "id": 195,
+            "role_id": 9,
+            "name": "Quynh",
+            "avatar": "https:\/\/feline.nyc3.digitaloceanspaces.com\/feline\/avatar\/JAksi1PXXoQC38V3e9oWcSW6k7mKL7pgQi058jCl.jpg",
+            "total_fulfill_price": 1220.2999999999993,
+            "order_fulfillments_count": 66,
+            "role": {
+                "id": 9,
+                "name": "Seller"
+            },
+            "user_detail": {
+                "id": 133,
+                "team_id": 22,
+                "team": {
+                    "id": 22,
+                    "name": "Fela x Pressify",
+                    "manager_id": 178
+                }
+            },
+            "managed_team": null
+        },
+        {
+            "id": 200,
+            "role_id": 9,
+            "name": "Nguy\u1ec5n Nh\u1eadt Tr\u00ecnh",
+            "avatar": "https:\/\/feline.nyc3.digitaloceanspaces.com\/feline\/avatar\/sc4aiatDVCssL8piEh39aB5r2koIPePPfPJPy1aq.jpg",
+            "total_fulfill_price": 54.5,
+            "order_fulfillments_count": 1,
+            "role": {
+                "id": 9,
+                "name": "Seller"
+            },
+            "user_detail": {
+                "id": 138,
+                "team_id": 22,
+                "team": {
+                    "id": 22,
+                    "name": "Fela x Pressify",
+                    "manager_id": 178
+                }
+            },
+            "managed_team": null
+        },
+        {
+            "id": 201,
+            "role_id": 9,
+            "name": "Nguy\u1ec5n Ng\u1ecdc T\u00e0i",
+            "avatar": "https:\/\/feline.nyc3.digitaloceanspaces.com\/feline\/avatar\/NOKldEVVGW5rdDL69O4yrHtdNFjK6MHFiiG8aO5P.jpg",
+            "total_fulfill_price": 119.89000000000003,
+            "order_fulfillments_count": 15,
+            "role": {
+                "id": 9,
+                "name": "Seller"
+            },
+            "user_detail": {
+                "id": 139,
+                "team_id": 22,
+                "team": {
+                    "id": 22,
+                    "name": "Fela x Pressify",
+                    "manager_id": 178
+                }
+            },
+            "managed_team": null
+        },
+        {
+            "id": 202,
+            "role_id": 9,
+            "name": "Nguy\u1ec5n Qu\u1ed1c H\u1eadu",
+            "avatar": "https:\/\/feline.nyc3.digitaloceanspaces.com\/feline\/avatar\/LieZO6Z6YRTWof7u2lhPPERCgWtf8BG3l0q27VB4.jpg",
+            "total_fulfill_price": 26.450000000000003,
+            "order_fulfillments_count": 5,
+            "role": {
+                "id": 9,
+                "name": "Seller"
+            },
+            "user_detail": {
+                "id": 140,
+                "team_id": 22,
+                "team": {
+                    "id": 22,
+                    "name": "Fela x Pressify",
+                    "manager_id": 178
+                }
+            },
+            "managed_team": null
+        },
+        {
+            "id": 203,
+            "role_id": 9,
+            "name": "Tr\u01b0\u01a1ng Th\u1ecb Ki\u1ec1u V\u00e2n",
+            "avatar": "https:\/\/diskimageshq.nyc3.digitaloceanspaces.com\/laravel-app\/avatar\/mwWv7ME6Lho1dBcmI0vS4hLwyj1xdkXxPspQU9Av.png",
+            "total_fulfill_price": 1782.9799999999996,
+            "order_fulfillments_count": 99,
+            "role": {
+                "id": 9,
+                "name": "Seller"
+            },
+            "user_detail": {
+                "id": 141,
+                "team_id": 22,
+                "team": {
+                    "id": 22,
+                    "name": "Fela x Pressify",
+                    "manager_id": 178
+                }
+            },
+            "managed_team": null
+        },
+        {
+            "id": 206,
+            "role_id": 9,
+            "name": "Ho\u00e0ng Kh\u00e1nh Uy\u00ean",
+            "avatar": "https:\/\/feline.nyc3.digitaloceanspaces.com\/feline\/avatar\/h2tGaClcROjnqVX5Mez1sO5MvpcrgtE7YyZiduzK.jpg",
+            "total_fulfill_price": 2710.5699999999997,
+            "order_fulfillments_count": 124,
+            "role": {
+                "id": 9,
+                "name": "Seller"
+            },
+            "user_detail": {
+                "id": 144,
+                "team_id": 22,
+                "team": {
+                    "id": 22,
+                    "name": "Fela x Pressify",
+                    "manager_id": 178
+                }
+            },
+            "managed_team": null
+        },
+        {
+            "id": 210,
+            "role_id": 9,
+            "name": "Tr\u01b0\u01a1ng Th\u1ecb Th\u00f9y Mong",
+            "avatar": "https:\/\/feline.nyc3.digitaloceanspaces.com\/feline\/avatar\/KFVPOteogAwHfXeyAevN0lIONNh4GcckspqVHpWc.jpg",
+            "total_fulfill_price": 892.0599999999998,
+            "order_fulfillments_count": 63,
+            "role": {
+                "id": 9,
+                "name": "Seller"
+            },
+            "user_detail": {
+                "id": 148,
+                "team_id": 23,
+                "team": {
+                    "id": 23,
+                    "name": "Feline",
+                    "manager_id": null
+                }
+            },
+            "managed_team": null
+        },
+        {
+            "id": 214,
+            "role_id": 9,
+            "name": "Ng\u00f4 Th\u1ecb Ng\u1ecdc Anh",
+            "avatar": "https:\/\/diskimageshq.nyc3.digitaloceanspaces.com\/laravel-app\/avatar\/mwWv7ME6Lho1dBcmI0vS4hLwyj1xdkXxPspQU9Av.png",
+            "total_fulfill_price": 93.87,
+            "order_fulfillments_count": 8,
+            "role": {
+                "id": 9,
+                "name": "Seller"
+            },
+            "user_detail": {
+                "id": 152,
+                "team_id": 25,
+                "team": {
+                    "id": 25,
+                    "name": "CashStorm Team",
+                    "manager_id": 218
+                }
+            },
+            "managed_team": null
+        },
+        {
+            "id": 218,
+            "role_id": 9,
+            "name": "Cam Ha Nguyen",
+            "avatar": "https:\/\/diskimageshq.nyc3.digitaloceanspaces.com\/laravel-app\/avatar\/mwWv7ME6Lho1dBcmI0vS4hLwyj1xdkXxPspQU9Av.png",
+            "total_fulfill_price": 1625.5200000000018,
+            "order_fulfillments_count": 201,
+            "role": {
+                "id": 9,
+                "name": "Seller"
+            },
+            "user_detail": {
+                "id": 156,
+                "team_id": 25,
+                "team": {
+                    "id": 25,
+                    "name": "CashStorm Team",
+                    "manager_id": 218
+                }
+            },
+            "managed_team": {
+                "id": 25,
+                "name": "CashStorm Team",
+                "manager_id": 218
+            }
+        },
+        {
+            "id": 219,
+            "role_id": 9,
+            "name": "Ph\u1ea1m Th\u1ecb Thu\u00fd Hi\u1ec1n",
+            "avatar": "https:\/\/diskimageshq.nyc3.digitaloceanspaces.com\/laravel-app\/avatar\/mwWv7ME6Lho1dBcmI0vS4hLwyj1xdkXxPspQU9Av.png",
+            "total_fulfill_price": 1444.739999999999,
+            "order_fulfillments_count": 87,
+            "role": {
+                "id": 9,
+                "name": "Seller"
+            },
+            "user_detail": {
+                "id": 157,
+                "team_id": 25,
+                "team": {
+                    "id": 25,
+                    "name": "CashStorm Team",
+                    "manager_id": 218
+                }
+            },
+            "managed_team": null
+        },
+        {
+            "id": 221,
+            "role_id": 9,
+            "name": "\u0110\u1eb7ng Huy",
+            "avatar": "https:\/\/diskimageshq.nyc3.digitaloceanspaces.com\/laravel-app\/avatar\/mwWv7ME6Lho1dBcmI0vS4hLwyj1xdkXxPspQU9Av.png",
+            "total_fulfill_price": 137.47,
+            "order_fulfillments_count": 12,
+            "role": {
+                "id": 9,
+                "name": "Seller"
+            },
+            "user_detail": {
+                "id": 159,
+                "team_id": 30,
+                "team": {
+                    "id": 30,
+                    "name": "Unicorn Team",
+                    "manager_id": 145
+                }
+            },
+            "managed_team": null
+        },
+        {
+            "id": 222,
+            "role_id": 9,
+            "name": "\u0110\u1ed7 Th\u1ecb \u00dd My",
+            "avatar": "https:\/\/diskimageshq.nyc3.digitaloceanspaces.com\/laravel-app\/avatar\/mwWv7ME6Lho1dBcmI0vS4hLwyj1xdkXxPspQU9Av.png",
+            "total_fulfill_price": 25.240000000000002,
+            "order_fulfillments_count": 3,
+            "role": {
+                "id": 9,
+                "name": "Seller"
+            },
+            "user_detail": {
+                "id": 160,
+                "team_id": 23,
+                "team": {
+                    "id": 23,
+                    "name": "Feline",
+                    "manager_id": null
+                }
+            },
+            "managed_team": null
+        },
+        {
+            "id": 229,
+            "role_id": 9,
+            "name": "Nguy\u1ec5n Th\u1ecb Kim Chi",
+            "avatar": "https:\/\/feline.nyc3.digitaloceanspaces.com\/feline\/avatar\/gdSspCtM2R7gqyy9zBSS6rdJtqDSbh8Y4XOSIJym.png",
+            "total_fulfill_price": 1869.2199999999987,
+            "order_fulfillments_count": 141,
+            "role": {
+                "id": 9,
+                "name": "Seller"
+            },
+            "user_detail": {
+                "id": 167,
+                "team_id": 22,
+                "team": {
+                    "id": 22,
+                    "name": "Fela x Pressify",
+                    "manager_id": 178
+                }
+            },
+            "managed_team": null
+        },
+        {
+            "id": 231,
+            "role_id": 9,
+            "name": "Nguy\u1ec5n Th\u1ecb Thu Th\u00f9y",
+            "avatar": "https:\/\/diskimageshq.nyc3.digitaloceanspaces.com\/laravel-app\/avatar\/mwWv7ME6Lho1dBcmI0vS4hLwyj1xdkXxPspQU9Av.png",
+            "total_fulfill_price": 274.9200000000001,
+            "order_fulfillments_count": 48,
+            "role": {
+                "id": 9,
+                "name": "Seller"
+            },
+            "user_detail": {
+                "id": 169,
+                "team_id": 24,
+                "team": {
+                    "id": 24,
+                    "name": "GoldPine",
+                    "manager_id": 154
+                }
+            },
+            "managed_team": null
+        },
+        {
+            "id": 235,
+            "role_id": 9,
+            "name": "Tr\u1ea7n Ng\u1ecdc Tr\u01b0\u1eddng Giang",
+            "avatar": "https:\/\/diskimageshq.nyc3.digitaloceanspaces.com\/laravel-app\/avatar\/mwWv7ME6Lho1dBcmI0vS4hLwyj1xdkXxPspQU9Av.png",
+            "total_fulfill_price": 135.16,
+            "order_fulfillments_count": 13,
+            "role": {
+                "id": 9,
+                "name": "Seller"
+            },
+            "user_detail": {
+                "id": 173,
+                "team_id": 30,
+                "team": {
+                    "id": 30,
+                    "name": "Unicorn Team",
+                    "manager_id": 145
+                }
+            },
+            "managed_team": null
+        },
+        {
+            "id": 241,
+            "role_id": 20,
+            "name": "Mai n\u1ed5 \u0111\u01a1n",
+            "avatar": "https:\/\/diskimageshq.nyc3.digitaloceanspaces.com\/laravel-app\/avatar\/mwWv7ME6Lho1dBcmI0vS4hLwyj1xdkXxPspQU9Av.png",
+            "total_fulfill_price": 196.14000000000001,
+            "order_fulfillments_count": 13,
+            "role": {
+                "id": 20,
+                "name": "Admin"
+            },
+            "user_detail": {
+                "id": 179,
+                "team_id": 27,
+                "team": {
+                    "id": 27,
+                    "name": "Team TA",
+                    "manager_id": 241
+                }
+            },
+            "managed_team": {
+                "id": 27,
+                "name": "Team TA",
+                "manager_id": 241
+            }
+        },
+        {
+            "id": 244,
+            "role_id": 9,
+            "name": "H\u00e0o Nguy\u1ec5n",
+            "avatar": "https:\/\/diskimageshq.nyc3.digitaloceanspaces.com\/laravel-app\/avatar\/mwWv7ME6Lho1dBcmI0vS4hLwyj1xdkXxPspQU9Av.png",
+            "total_fulfill_price": 72.98,
+            "order_fulfillments_count": 5,
+            "role": {
+                "id": 9,
+                "name": "Seller"
+            },
+            "user_detail": {
+                "id": 182,
+                "team_id": 30,
+                "team": {
+                    "id": 30,
+                    "name": "Unicorn Team",
+                    "manager_id": 145
+                }
+            },
+            "managed_team": null
+        },
+        {
+            "id": 245,
+            "role_id": 9,
+            "name": "Ph\u01b0\u1edbc Nguy\u00ean",
+            "avatar": "https:\/\/diskimageshq.nyc3.digitaloceanspaces.com\/laravel-app\/avatar\/mwWv7ME6Lho1dBcmI0vS4hLwyj1xdkXxPspQU9Av.png",
+            "total_fulfill_price": 27.34,
+            "order_fulfillments_count": 3,
+            "role": {
+                "id": 9,
+                "name": "Seller"
+            },
+            "user_detail": {
+                "id": 183,
+                "team_id": 31,
+                "team": {
+                    "id": 31,
+                    "name": "Ph\u01b0\u1edbc Nguy\u00ean's Team",
+                    "manager_id": 245
+                }
+            },
+            "managed_team": {
+                "id": 31,
+                "name": "Ph\u01b0\u1edbc Nguy\u00ean's Team",
+                "manager_id": 245
+            }
+        }
+    ],
+    "prev_page_url": null,
+    "next_page_url": null,
+    "total": 31,
+    "date": "02\/2026"
+}
