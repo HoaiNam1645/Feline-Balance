@@ -34,18 +34,11 @@ class DesignStatisticsController extends Controller
             }
 
             if (!empty($searchTeam)) {
-                $query->where('team_name', 'like', '%' . $searchTeam . '%');
+                $query->where('team_id', $searchTeam);
             }
 
-            // Extract unique teams for dropdown (irrespective of current team filter, but limited to year/month)
-            $teams = DesignStatistic::where('year', $year)
-                ->where('month', $month)
-                ->whereNotNull('team_name')
-                ->distinct()
-                ->pluck('team_name')
-                ->sort()
-                ->values()
-                ->toArray();
+            // Database Teams for Filter Dropdown
+            $teams = \App\Models\Team::orderBy('name')->get(['id', 'name'])->toArray();
 
             // Setup summary query before pagination
             $summaryQuery = clone $query;

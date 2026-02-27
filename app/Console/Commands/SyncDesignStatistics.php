@@ -5,6 +5,8 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use App\Services\FelineService;
 use App\Models\DesignStatistic;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class SyncDesignStatistics extends Command
 {
@@ -28,6 +30,8 @@ class SyncDesignStatistics extends Command
     public function handle(FelineService $felineService)
     {
         $isAll = $this->option('all');
+        Log::info("SYNC_DESIGN_STATISTICS: Command started. [All: {$isAll}, Year: {$this->option('year')}, Month: {$this->option('month')}]");
+
         $periodsToSync = [];
 
         if ($isAll) {
@@ -53,12 +57,16 @@ class SyncDesignStatistics extends Command
             }
         }
 
+        $teamUserMap = DB::table('team_user')->pluck('team_id', 'user_id');
+
         foreach ($periodsToSync as $period) {
-            $this->syncPeriod($felineService, $period['year'], $period['month']);
+            $this->syncPeriod($felineService, $teamUserMap, $period['year'], $period['month']);
         }
+
+        Log::info("SYNC_DESIGN_STATISTICS: Command completed successfully.");
     }
 
-    private function syncPeriod(FelineService $felineService, int $year, int $month)
+    private function syncPeriod(FelineService $felineService, $teamUserMap, int $year, int $month)
     {
         $this->info("Starting sync for Design Statistics: {$month}/{$year}");
 
@@ -74,10 +82,12 @@ class SyncDesignStatistics extends Command
             $upsertData = [];
 
             foreach ($data as $item) {
+                $userId = $item['id'];
                 $upsertData[] = [
-                    'external_user_id' => $item['id'],
+                    'external_user_id' => $userId,
                     'user_name' => $item['name'] ?? 'Unknown User',
                     'user_avatar' => $item['avatar'] ?? null,
+                    'team_id' => $teamUserMap[$userId] ?? null,
                     'team_name' => $item['user_detail']['team']['name'] ?? null,
                     'role_name' => $item['role']['name'] ?? null,
                     'year' => $year,
@@ -92,13 +102,16 @@ class SyncDesignStatistics extends Command
             DesignStatistic::upsert(
                 $upsertData,
                 ['external_user_id', 'year', 'month'], // Unique columns
-                ['user_name', 'user_avatar', 'team_name', 'role_name', 'print_count', 'embroidery_count', 'sticker_count', 'designs_count'] // Update columns
+                ['user_name', 'user_avatar', 'team_id', 'team_name', 'role_name', 'print_count', 'embroidery_count', 'sticker_count', 'designs_count'] // Update columns
             );
 
             $count = count($upsertData);
             $this->info("Successfully synced {$count} records for {$month}/{$year}.");
+            Log::info("SYNC_DESIGN_STATISTICS: Successfully synced {$count} records for {$month}/{$year}.");
         } catch (\Exception $e) {
-            $this->error("Sync failed for {$month}/{$year}: " . $e->getMessage());
+            $msg = "Sync failed for {$month}/{$year}: " . $e->getMessage();
+            $this->error($msg);
+            Log::error("SYNC_DESIGN_STATISTICS: {$msg}");
         }
     }
 }

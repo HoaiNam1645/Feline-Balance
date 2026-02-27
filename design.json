@@ -1,0 +1,464 @@
+{
+    "data": [
+        {
+            "id": 144,
+            "role_id": 9,
+            "name": "L\u00ea Th\u1ecb T\u00fa Linh",
+            "avatar": "https:\/\/feline.nyc3.digitaloceanspaces.com\/feline\/avatar\/UGWgELHivZ0zbEqZpwHqT3YXaL2EfGdF8bHAx9lH.jpg",
+            "designs_count": 2,
+            "print_count": 2,
+            "embroidery_count": 0,
+            "sticker_count": 0,
+            "role": {
+                "id": 9,
+                "name": "Seller"
+            },
+            "user_detail": {
+                "id": 82,
+                "team_id": 30,
+                "team": {
+                    "id": 30,
+                    "name": "Unicorn Team",
+                    "manager_id": 145
+                }
+            },
+            "managed_team": null
+        },
+        {
+            "id": 147,
+            "role_id": 16,
+            "name": "Nguy\u1ec5n Th\u1ecb Th\u00f9y Trang",
+            "avatar": "https:\/\/feline.nyc3.digitaloceanspaces.com\/feline\/avatar\/1elO9o5fVYPHoAINFpKQaiCg6lPTeYUl2lBxMq9Z.jpg",
+            "designs_count": 144,
+            "print_count": 142,
+            "embroidery_count": 2,
+            "sticker_count": 0,
+            "role": {
+                "id": 16,
+                "name": "Fulfillment"
+            },
+            "user_detail": {
+                "id": 85,
+                "team_id": 23,
+                "team": {
+                    "id": 23,
+                    "name": "Feline",
+                    "manager_id": null
+                }
+            },
+            "managed_team": null
+        },
+        {
+            "id": 151,
+            "role_id": 9,
+            "name": "L\u01b0\u01a1ng Gia Hy",
+            "avatar": "https:\/\/feline.nyc3.digitaloceanspaces.com\/feline\/avatar\/NlNkmIGp1KMPcuVdr5ut3QWZuJaRpIvbY14gHywF.png",
+            "designs_count": 7,
+            "print_count": 1,
+            "embroidery_count": 6,
+            "sticker_count": 0,
+            "role": {
+                "id": 9,
+                "name": "Seller"
+            },
+            "user_detail": {
+                "id": 89,
+                "team_id": 30,
+                "team": {
+                    "id": 30,
+                    "name": "Unicorn Team",
+                    "manager_id": 145
+                }
+            },
+            "managed_team": null
+        },
+        {
+            "id": 152,
+            "role_id": 9,
+            "name": "\u0110\u1ee9ttt",
+            "avatar": "https:\/\/diskimageshq.nyc3.digitaloceanspaces.com\/laravel-app\/avatar\/mwWv7ME6Lho1dBcmI0vS4hLwyj1xdkXxPspQU9Av.png",
+            "designs_count": 4,
+            "print_count": 3,
+            "embroidery_count": 1,
+            "sticker_count": 0,
+            "role": {
+                "id": 9,
+                "name": "Seller"
+            },
+            "user_detail": {
+                "id": 90,
+                "team_id": 24,
+                "team": {
+                    "id": 24,
+                    "name": "GoldPine",
+                    "manager_id": 154
+                }
+            },
+            "managed_team": null
+        },
+        {
+            "id": 153,
+            "role_id": 19,
+            "name": "Ng\u1ecdc Anh Pha L\u00ea",
+            "avatar": "https:\/\/feline.nyc3.digitaloceanspaces.com\/feline\/avatar\/79K1LxZK9ekY1EHqXMY1OYEscgupPJ04a5f9jZ9b.jpg",
+            "designs_count": 2,
+            "print_count": 0,
+            "embroidery_count": 2,
+            "sticker_count": 0,
+            "role": {
+                "id": 19,
+                "name": "HR Manager"
+            },
+            "user_detail": {
+                "id": 91,
+                "team_id": 22,
+                "team": {
+                    "id": 22,
+                    "name": "Fela x Pressify",
+                    "manager_id": 178
+                }
+            },
+            "managed_team": null
+        },
+        {
+            "id": 156,
+            "role_id": 9,
+            "name": "Nguy\u1ec5n V\u0103n T\u1ea5n L\u1ed9c",
+            "avatar": "https:\/\/diskimageshq.nyc3.digitaloceanspaces.com\/laravel-app\/avatar\/mwWv7ME6Lho1dBcmI0vS4hLwyj1xdkXxPspQU9Av.png",
+            "designs_count": 1,
+            "print_count": 1,
+            "embroidery_count": 0,
+            "sticker_count": 0,
+            "role": {
+                "id": 9,
+                "name": "Seller"
+            },
+            "user_detail": {
+                "id": 94,
+                "team_id": 24,
+                "team": {
+                    "id": 24,
+                    "name": "GoldPine",
+                    "manager_id": 154
+                }
+            },
+            "managed_team": null
+        },
+        {
+            "id": 157,
+            "role_id": 9,
+            "name": "Nguy\u1ec5n Quang Huy",
+            "avatar": "https:\/\/diskimageshq.nyc3.digitaloceanspaces.com\/laravel-app\/avatar\/mwWv7ME6Lho1dBcmI0vS4hLwyj1xdkXxPspQU9Av.png",
+            "designs_count": 3,
+            "print_count": 3,
+            "embroidery_count": 0,
+            "sticker_count": 0,
+            "role": {
+                "id": 9,
+                "name": "Seller"
+            },
+            "user_detail": {
+                "id": 95,
+                "team_id": 24,
+                "team": {
+                    "id": 24,
+                    "name": "GoldPine",
+                    "manager_id": 154
+                }
+            },
+            "managed_team": null
+        },
+        {
+            "id": 158,
+            "role_id": 9,
+            "name": "Nguy\u1ec5n \u0110\u1ee9c \u0110\u0103ng Kh\u00e1nh",
+            "avatar": "https:\/\/diskimageshq.nyc3.digitaloceanspaces.com\/laravel-app\/avatar\/mwWv7ME6Lho1dBcmI0vS4hLwyj1xdkXxPspQU9Av.png",
+            "designs_count": 2,
+            "print_count": 1,
+            "embroidery_count": 1,
+            "sticker_count": 0,
+            "role": {
+                "id": 9,
+                "name": "Seller"
+            },
+            "user_detail": {
+                "id": 96,
+                "team_id": 24,
+                "team": {
+                    "id": 24,
+                    "name": "GoldPine",
+                    "manager_id": 154
+                }
+            },
+            "managed_team": null
+        },
+        {
+            "id": 165,
+            "role_id": 9,
+            "name": "Ho\u00e0ng Th\u1ecb Uy\u1ec3n Nhi",
+            "avatar": "https:\/\/diskimageshq.nyc3.digitaloceanspaces.com\/laravel-app\/avatar\/mwWv7ME6Lho1dBcmI0vS4hLwyj1xdkXxPspQU9Av.png",
+            "designs_count": 5,
+            "print_count": 2,
+            "embroidery_count": 3,
+            "sticker_count": 0,
+            "role": {
+                "id": 9,
+                "name": "Seller"
+            },
+            "user_detail": {
+                "id": 103,
+                "team_id": 24,
+                "team": {
+                    "id": 24,
+                    "name": "GoldPine",
+                    "manager_id": 154
+                }
+            },
+            "managed_team": null
+        },
+        {
+            "id": 195,
+            "role_id": 9,
+            "name": "Quynh",
+            "avatar": "https:\/\/feline.nyc3.digitaloceanspaces.com\/feline\/avatar\/JAksi1PXXoQC38V3e9oWcSW6k7mKL7pgQi058jCl.jpg",
+            "designs_count": 1,
+            "print_count": 0,
+            "embroidery_count": 1,
+            "sticker_count": 0,
+            "role": {
+                "id": 9,
+                "name": "Seller"
+            },
+            "user_detail": {
+                "id": 133,
+                "team_id": 22,
+                "team": {
+                    "id": 22,
+                    "name": "Fela x Pressify",
+                    "manager_id": 178
+                }
+            },
+            "managed_team": null
+        },
+        {
+            "id": 201,
+            "role_id": 9,
+            "name": "Nguy\u1ec5n Ng\u1ecdc T\u00e0i",
+            "avatar": "https:\/\/feline.nyc3.digitaloceanspaces.com\/feline\/avatar\/NOKldEVVGW5rdDL69O4yrHtdNFjK6MHFiiG8aO5P.jpg",
+            "designs_count": 1,
+            "print_count": 1,
+            "embroidery_count": 0,
+            "sticker_count": 0,
+            "role": {
+                "id": 9,
+                "name": "Seller"
+            },
+            "user_detail": {
+                "id": 139,
+                "team_id": 22,
+                "team": {
+                    "id": 22,
+                    "name": "Fela x Pressify",
+                    "manager_id": 178
+                }
+            },
+            "managed_team": null
+        },
+        {
+            "id": 203,
+            "role_id": 9,
+            "name": "Tr\u01b0\u01a1ng Th\u1ecb Ki\u1ec1u V\u00e2n",
+            "avatar": "https:\/\/diskimageshq.nyc3.digitaloceanspaces.com\/laravel-app\/avatar\/mwWv7ME6Lho1dBcmI0vS4hLwyj1xdkXxPspQU9Av.png",
+            "designs_count": 4,
+            "print_count": 2,
+            "embroidery_count": 2,
+            "sticker_count": 0,
+            "role": {
+                "id": 9,
+                "name": "Seller"
+            },
+            "user_detail": {
+                "id": 141,
+                "team_id": 22,
+                "team": {
+                    "id": 22,
+                    "name": "Fela x Pressify",
+                    "manager_id": 178
+                }
+            },
+            "managed_team": null
+        },
+        {
+            "id": 206,
+            "role_id": 9,
+            "name": "Ho\u00e0ng Kh\u00e1nh Uy\u00ean",
+            "avatar": "https:\/\/feline.nyc3.digitaloceanspaces.com\/feline\/avatar\/h2tGaClcROjnqVX5Mez1sO5MvpcrgtE7YyZiduzK.jpg",
+            "designs_count": 3,
+            "print_count": 2,
+            "embroidery_count": 1,
+            "sticker_count": 0,
+            "role": {
+                "id": 9,
+                "name": "Seller"
+            },
+            "user_detail": {
+                "id": 144,
+                "team_id": 22,
+                "team": {
+                    "id": 22,
+                    "name": "Fela x Pressify",
+                    "manager_id": 178
+                }
+            },
+            "managed_team": null
+        },
+        {
+            "id": 210,
+            "role_id": 9,
+            "name": "Tr\u01b0\u01a1ng Th\u1ecb Th\u00f9y Mong",
+            "avatar": "https:\/\/feline.nyc3.digitaloceanspaces.com\/feline\/avatar\/KFVPOteogAwHfXeyAevN0lIONNh4GcckspqVHpWc.jpg",
+            "designs_count": 9,
+            "print_count": 7,
+            "embroidery_count": 2,
+            "sticker_count": 0,
+            "role": {
+                "id": 9,
+                "name": "Seller"
+            },
+            "user_detail": {
+                "id": 148,
+                "team_id": 23,
+                "team": {
+                    "id": 23,
+                    "name": "Feline",
+                    "manager_id": null
+                }
+            },
+            "managed_team": null
+        },
+        {
+            "id": 214,
+            "role_id": 9,
+            "name": "Ng\u00f4 Th\u1ecb Ng\u1ecdc Anh",
+            "avatar": "https:\/\/diskimageshq.nyc3.digitaloceanspaces.com\/laravel-app\/avatar\/mwWv7ME6Lho1dBcmI0vS4hLwyj1xdkXxPspQU9Av.png",
+            "designs_count": 3,
+            "print_count": 3,
+            "embroidery_count": 0,
+            "sticker_count": 0,
+            "role": {
+                "id": 9,
+                "name": "Seller"
+            },
+            "user_detail": {
+                "id": 152,
+                "team_id": 25,
+                "team": {
+                    "id": 25,
+                    "name": "CashStorm Team",
+                    "manager_id": 218
+                }
+            },
+            "managed_team": null
+        },
+        {
+            "id": 221,
+            "role_id": 9,
+            "name": "\u0110\u1eb7ng Huy",
+            "avatar": "https:\/\/diskimageshq.nyc3.digitaloceanspaces.com\/laravel-app\/avatar\/mwWv7ME6Lho1dBcmI0vS4hLwyj1xdkXxPspQU9Av.png",
+            "designs_count": 3,
+            "print_count": 3,
+            "embroidery_count": 0,
+            "sticker_count": 0,
+            "role": {
+                "id": 9,
+                "name": "Seller"
+            },
+            "user_detail": {
+                "id": 159,
+                "team_id": 30,
+                "team": {
+                    "id": 30,
+                    "name": "Unicorn Team",
+                    "manager_id": 145
+                }
+            },
+            "managed_team": null
+        },
+        {
+            "id": 222,
+            "role_id": 9,
+            "name": "\u0110\u1ed7 Th\u1ecb \u00dd My",
+            "avatar": "https:\/\/diskimageshq.nyc3.digitaloceanspaces.com\/laravel-app\/avatar\/mwWv7ME6Lho1dBcmI0vS4hLwyj1xdkXxPspQU9Av.png",
+            "designs_count": 2,
+            "print_count": 2,
+            "embroidery_count": 0,
+            "sticker_count": 0,
+            "role": {
+                "id": 9,
+                "name": "Seller"
+            },
+            "user_detail": {
+                "id": 160,
+                "team_id": 23,
+                "team": {
+                    "id": 23,
+                    "name": "Feline",
+                    "manager_id": null
+                }
+            },
+            "managed_team": null
+        },
+        {
+            "id": 229,
+            "role_id": 9,
+            "name": "Nguy\u1ec5n Th\u1ecb Kim Chi",
+            "avatar": "https:\/\/feline.nyc3.digitaloceanspaces.com\/feline\/avatar\/gdSspCtM2R7gqyy9zBSS6rdJtqDSbh8Y4XOSIJym.png",
+            "designs_count": 1,
+            "print_count": 1,
+            "embroidery_count": 0,
+            "sticker_count": 0,
+            "role": {
+                "id": 9,
+                "name": "Seller"
+            },
+            "user_detail": {
+                "id": 167,
+                "team_id": 22,
+                "team": {
+                    "id": 22,
+                    "name": "Fela x Pressify",
+                    "manager_id": 178
+                }
+            },
+            "managed_team": null
+        },
+        {
+            "id": 235,
+            "role_id": 9,
+            "name": "Tr\u1ea7n Ng\u1ecdc Tr\u01b0\u1eddng Giang",
+            "avatar": "https:\/\/diskimageshq.nyc3.digitaloceanspaces.com\/laravel-app\/avatar\/mwWv7ME6Lho1dBcmI0vS4hLwyj1xdkXxPspQU9Av.png",
+            "designs_count": 1,
+            "print_count": 1,
+            "embroidery_count": 0,
+            "sticker_count": 0,
+            "role": {
+                "id": 9,
+                "name": "Seller"
+            },
+            "user_detail": {
+                "id": 173,
+                "team_id": 30,
+                "team": {
+                    "id": 30,
+                    "name": "Unicorn Team",
+                    "manager_id": 145
+                }
+            },
+            "managed_team": null
+        }
+    ],
+    "prev_page_url": null,
+    "next_page_url": null,
+    "total": 19,
+    "date": "02\/2026"
+}

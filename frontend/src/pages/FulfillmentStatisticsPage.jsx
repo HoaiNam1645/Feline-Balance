@@ -345,7 +345,7 @@ export default function FulfillmentStatisticsPage() {
 
                         <select className="filter-select" value={teamFilter} onChange={e => setTeamFilter(e.target.value)} style={{ minWidth: '160px' }}>
                             <option value="">Select Team</option>
-                            {teamOptions.map(t => <option key={t} value={t}>{t}</option>)}
+                            {teamOptions.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                         </select>
 
                         <select className="filter-select" value={fulfillUnitFilter} onChange={e => setFulfillUnitFilter(e.target.value)} style={{ minWidth: '160px' }}>

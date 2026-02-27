@@ -170,4 +170,19 @@ class FelineService
             return $response->json();
         });
     }
+
+    public function getTeams(): array
+    {
+        $response = $this->authenticatedGet("{$this->baseUrl}/teams");
+
+        if (!$response->successful()) {
+            Log::error('Feline teams fetch failed', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+            return ['data' => []]; // Fallback to empty
+        }
+
+        return $response->json();
+    }
 }

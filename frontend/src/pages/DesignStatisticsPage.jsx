@@ -302,7 +302,7 @@ export default function DesignStatisticsPage() {
                     {/* Team filter */}
                     <select className="filter-select" value={teamFilter} onChange={e => setTeamFilter(e.target.value)} style={{ minWidth: '160px' }}>
                         <option value="">All Teams</option>
-                        {teamOptions.map(t => <option key={t} value={t}>{t}</option>)}
+                        {teamOptions.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                     </select>
 
                     {/* Year filter */}

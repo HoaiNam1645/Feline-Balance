@@ -11,6 +11,9 @@ class Team extends Model
 
     protected $fillable = [
         'name',
+        'code',
+        'feline_id',
+        'manager_id',
         'description',
         'is_active',
     ];

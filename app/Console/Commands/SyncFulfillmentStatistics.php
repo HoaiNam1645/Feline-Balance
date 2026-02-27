@@ -6,6 +6,8 @@ use Illuminate\Console\Command;
 use App\Services\FelineService;
 use App\Models\FulfillmentStatistic;
 use App\Models\FulfillUnit;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class SyncFulfillmentStatistics extends Command
 {
@@ -15,9 +17,11 @@ class SyncFulfillmentStatistics extends Command
 
     public function handle(FelineService $felineService)
     {
+        $isAll = $this->option('all');
+        Log::info("SYNC_FULFILLMENT_STATISTICS: Command started. [All: {$isAll}, Year: {$this->option('year')}, Month: {$this->option('month')}]");
+
         $this->syncFulfillUnits($felineService);
 
-        $isAll = $this->option('all');
         $periodsToSync = [];
 
         if ($isAll) {
@@ -45,13 +49,17 @@ class SyncFulfillmentStatistics extends Command
         $fulfillUnits = FulfillUnit::pluck('id')->toArray();
         $unitIdsToSync = array_merge([null], $fulfillUnits); // null is for 'Total'
 
+        $teamUserMap = DB::table('team_user')->pluck('team_id', 'user_id');
+
         foreach ($periodsToSync as $period) {
             foreach (['user', 'store'] as $type) {
                 foreach ($unitIdsToSync as $fulfillId) {
-                    $this->syncPeriodTypeUnit($felineService, $period['year'], $period['month'], $type, $fulfillId);
+                    $this->syncPeriodTypeUnit($felineService, $teamUserMap, $period['year'], $period['month'], $type, $fulfillId);
                 }
             }
         }
+
+        Log::info("SYNC_FULFILLMENT_STATISTICS: Command completed successfully.");
     }
 
     private function syncFulfillUnits(FelineService $felineService)
@@ -73,13 +81,17 @@ class SyncFulfillmentStatistics extends Command
             }
 
             FulfillUnit::upsert($upsertData, ['id'], ['name', 'classname', 'status']);
-            $this->info("Synced " . count($upsertData) . " Fulfill Units.");
+            $count = count($upsertData);
+            $this->info("Synced {$count} Fulfill Units.");
+            Log::info("SYNC_FULFILLMENT_STATISTICS: Synced {$count} Fulfill Units.");
         } catch (\Exception $e) {
-            $this->error("Failed to sync fulfill units: " . $e->getMessage());
+            $msg = "Failed to sync fulfill units: " . $e->getMessage();
+            $this->error($msg);
+            Log::error("SYNC_FULFILLMENT_STATISTICS: {$msg}");
         }
     }
 
-    private function syncPeriodTypeUnit(FelineService $felineService, int $year, int $month, string $type, ?int $fulfillId)
+    private function syncPeriodTypeUnit(FelineService $felineService, $teamUserMap, int $year, int $month, string $type, ?int $fulfillId)
     {
         $unitLabel = $fulfillId === null ? "TOTAL" : "Unit {$fulfillId}";
         $this->info("Syncing {$type} | {$month}/{$year} | {$unitLabel}");
@@ -95,6 +107,7 @@ class SyncFulfillmentStatistics extends Command
             $upsertData = [];
 
             foreach ($data as $item) {
+                $teamId = null;
                 $teamName = null;
                 $roleName = null;
                 $accountCode = null;
@@ -102,12 +115,16 @@ class SyncFulfillmentStatistics extends Command
                 $avatar = null;
 
                 if ($type === 'user') {
+                    $userId = $item['id'];
+                    $teamId = $teamUserMap[$userId] ?? null;
                     $teamName = $item['user_detail']['team']['name'] ?? null;
                     $roleName = $item['role']['name'] ?? null;
                     $avatar = $item['avatar'] ?? null;
                 } else {
                     // type === 'store'
-                    $teamName = $item['user']['user_detail']['team']['name'] ?? null; // Usually null for stores based on Felineez API
+                    $userId = $item['user_id'] ?? null;
+                    $teamId = $userId ? ($teamUserMap[$userId] ?? null) : null;
+                    $teamName = $item['user']['user_detail']['team']['name'] ?? null;
                     $avatar = $item['user']['avatar'] ?? null;
                     $accountCode = $item['detail']['account_code'] ?? null;
                     $statusName = $item['status']['name'] ?? null;
@@ -118,6 +135,7 @@ class SyncFulfillmentStatistics extends Command
                     'external_id' => $item['id'],
                     'name' => $item['name'] ?? ($item['store_name'] ?? 'Unknown'),
                     'avatar' => $avatar,
+                    'team_id' => $teamId,
                     'team_name' => $teamName,
                     'role_name' => $roleName,
                     'account_code' => $accountCode,
@@ -133,10 +151,12 @@ class SyncFulfillmentStatistics extends Command
             FulfillmentStatistic::upsert(
                 $upsertData,
                 ['type', 'external_id', 'year', 'month', 'fulfill_unit_id'], // Unique constraint
-                ['name', 'avatar', 'team_name', 'role_name', 'account_code', 'status_name', 'order_count', 'total_price'] // Update columns
+                ['name', 'avatar', 'team_id', 'team_name', 'role_name', 'account_code', 'status_name', 'order_count', 'total_price'] // Update columns
             );
         } catch (\Exception $e) {
-            $this->error("Sync failed for {$type} {$month}/{$year} Unit {$fulfillId}: " . $e->getMessage());
+            $msg = "Sync failed for {$type} {$month}/{$year} Unit {$fulfillId}: " . $e->getMessage();
+            $this->error($msg);
+            Log::error("SYNC_FULFILLMENT_STATISTICS: {$msg}");
         }
     }
 }
