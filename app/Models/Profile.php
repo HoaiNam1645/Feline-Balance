@@ -19,6 +19,9 @@ class Profile extends Model
         'status',
         'bank_last4',
         'beneficiary_name',
+        'seller_name',
+        'bank_full',
+        'fa_code',
     ];
 
     public function team()

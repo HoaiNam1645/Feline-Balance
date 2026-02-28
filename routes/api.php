@@ -17,6 +17,7 @@ use App\Http\Controllers\Api\PayrollController;
 use App\Http\Controllers\Api\TikTokFinanceController;
 use App\Http\Controllers\Api\TeamFinanceController;
 use App\Http\Controllers\Api\StoreController;
+use App\Http\Controllers\Api\RoleController;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,14 +27,14 @@ use App\Http\Controllers\Api\StoreController;
 
 Route::post('/auth/login', [AuthController::class, 'login']);
 Route::post('/save-tiktok-data', [TikTokFinanceController::class, 'saveData']);
+Route::get('/auth/me', [AuthController::class, 'me']);
 /*
 |--------------------------------------------------------------------------
 | Protected Routes — admin + super_admin
 |--------------------------------------------------------------------------
 */
-Route::middleware(['jwt.auth', 'role.admin'])->group(function () {
+Route::middleware(['jwt.auth'])->group(function () {
     // Auth
-    Route::get('/auth/me', [AuthController::class, 'me']);
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::post('/auth/refresh', [AuthController::class, 'refresh']);
 
@@ -41,6 +42,8 @@ Route::middleware(['jwt.auth', 'role.admin'])->group(function () {
     Route::get('/profiles', [ProfileController::class, 'index']);
     Route::put('/profiles/{id}', [ProfileController::class, 'update']);
     Route::get('/profiles/{id}/logs', [ProfileController::class, 'logs']);
+    Route::get('/profiles/{id}/2fa-code', [ProfileController::class, 'get2faCode']);
+    Route::post('/profiles/import-seller-csv', [ProfileController::class, 'importSellerCsv']);
 
     // Transactions
     Route::get('/transactions', [TransactionController::class, 'index']);
@@ -99,13 +102,19 @@ Route::middleware(['jwt.auth', 'role.admin'])->group(function () {
 | Protected Routes — super_admin ONLY
 |--------------------------------------------------------------------------
 */
-Route::middleware(['jwt.auth', 'role.super_admin'])->group(function () {
+Route::middleware(['jwt.auth', 'role.admin'])->group(function () {
     // Users
     Route::get('/users', [UserController::class, 'index']);
     Route::post('/users', [UserController::class, 'store']);
     Route::get('/users/{id}', [UserController::class, 'show']);
     Route::put('/users/{id}', [UserController::class, 'update']);
     Route::delete('/users/{id}', [UserController::class, 'destroy']);
+
+    // Roles
+    Route::get('/roles', [RoleController::class, 'index']);
+    Route::post('/roles', [RoleController::class, 'store']);
+    Route::put('/roles/{id}', [RoleController::class, 'update']);
+    Route::delete('/roles/{id}', [RoleController::class, 'destroy']);
 
     // Teams
     Route::get('/teams', [TeamController::class, 'index']);

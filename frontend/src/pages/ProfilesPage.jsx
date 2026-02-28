@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { Search, Download, Filter, Database, X, FileText } from 'lucide-react';
+import { Search, Download, Filter, Database, X, FileText, Upload, CheckCircle, AlertTriangle, Key } from 'lucide-react';
 import Topbar from '../components/Topbar';
 import StatsCards from '../components/StatsCards';
 
@@ -64,6 +64,18 @@ export default function ProfilesPage() {
     const [loadingLogs, setLoadingLogs] = useState(false);
     const [logsPage, setLogsPage] = useState(1);
     const [logsTotalPages, setLogsTotalPages] = useState(1);
+
+    // Import CSV states
+    const [importModalOpen, setImportModalOpen] = useState(false);
+    const [importFile, setImportFile] = useState(null);
+    const [importing, setImporting] = useState(false);
+    const [importResult, setImportResult] = useState(null);
+
+    // 2FA state
+    const [faModalOpen, setFaModalOpen] = useState(false);
+    const [faProfileName, setFaProfileName] = useState('');
+    const [faCodeResult, setFaCodeResult] = useState('');
+    const [faLoading, setFaLoading] = useState(false);
 
     // Fetch logs helper
     const openLogsModal = async (profileId, pageNum = 1) => {
@@ -147,6 +159,57 @@ export default function ProfilesPage() {
         fetchData();
     }, [year, teamFilter, statusFilter, page]);
 
+    const handleImportSellerCsv = async () => {
+        if (!importFile) return;
+        setImporting(true);
+        const formData = new FormData();
+        formData.append('file', importFile);
+
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch(`${API_BASE}/api/profiles/import-seller-csv`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: formData
+            });
+            const data = await res.json();
+            if (data.success) {
+                setImportResult(data.data);
+                addToast(data.message, 'success');
+                fetchData();
+            } else {
+                addToast(data.message || 'Import failed', 'error');
+            }
+        } catch (err) {
+            addToast(err.message || 'Import failed', 'error');
+        } finally {
+            setImporting(false);
+        }
+    };
+
+    const handleGet2FA = async (id, profileName) => {
+        setFaProfileName(profileName);
+        setFaModalOpen(true);
+        setFaCodeResult('');
+        setFaLoading(true);
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch(`${API_BASE}/api/profiles/${id}/2fa-code`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const json = await res.json();
+            if (json.success) {
+                setFaCodeResult(json.data.code);
+            } else {
+                setFaCodeResult('Error: ' + json.message);
+            }
+        } catch (err) {
+            setFaCodeResult('Error: ' + err.message);
+        } finally {
+            setFaLoading(false);
+        }
+    };
+
     const handleEditClick = (row) => {
         setEditingRowId(row.id);
         setEditFormData({
@@ -155,6 +218,8 @@ export default function ProfilesPage() {
             profile_code: row.profile_code || '',
             status: row.status || '',
             bank_last4: row.bank_last4 || '',
+            bank_full: row.bank_full || '',
+            fa_code: row.fa_code || '',
         });
     };
 
@@ -198,6 +263,17 @@ export default function ProfilesPage() {
     const handleSearch = (e) => {
         if (e.key === 'Enter') fetchData();
     };
+
+    const canSee2FA = useMemo(() => {
+        try {
+            const userStr = localStorage.getItem('user');
+            if (userStr) {
+                const user = JSON.parse(userStr);
+                return ['admin', 'super_admin'].includes(user.role);
+            }
+        } catch (e) { }
+        return false;
+    }, []);
 
 
 
@@ -290,7 +366,10 @@ export default function ProfilesPage() {
                         </select>
                     </div>
 
-                    <div style={{ marginLeft: 'auto' }}>
+                    <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
+                        <button className="btn btn-ghost" onClick={() => { setImportResult(null); setImportFile(null); setImportModalOpen(true); }} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <Upload size={14} /> Import Seller
+                        </button>
                         <button className="btn btn-ghost" id="export-btn">
                             <Download size={14} /> Export
                         </button>
@@ -326,7 +405,10 @@ export default function ProfilesPage() {
                                         <th className="sticky-col col-name">Profile</th>
                                         <th className="sticky-col col-action">Action</th>
                                         <th>Status</th>
+                                        <th>Seller</th>
                                         <th>Bank</th>
+                                        <th>Bank Full</th>
+                                        {canSee2FA && <th>2FA Code</th>}
                                         <th className="text-right">Net Earning</th>
                                         <th className="text-right">On Hold</th>
                                         <th className="text-right">Total Paid</th>
@@ -400,6 +482,9 @@ export default function ProfilesPage() {
                                                         <div style={{ display: 'flex', gap: '4px' }}>
                                                             <button className="btn btn-ghost" style={{ padding: '4px 8px', fontSize: '11px' }} onClick={() => handleEditClick(row)}>Edit</button>
                                                             <button className="btn btn-ghost" style={{ padding: '4px 8px', fontSize: '11px', color: 'var(--accent-light)' }} onClick={() => openLogsModal(row.id)} title="View fetch logs"><FileText size={12} /> Logs</button>
+                                                            {row.has_2fa && (
+                                                                <button className="btn btn-ghost" style={{ padding: '4px 8px', fontSize: '11px', color: '#10b981' }} onClick={() => handleGet2FA(row.id, row.profile_name || row.id)} title="Get 2FA Code"><Key size={12} /> 2FA</button>
+                                                            )}
                                                         </div>
                                                     )}
                                                 </td>
@@ -420,6 +505,9 @@ export default function ProfilesPage() {
                                                     )}
                                                 </td>
                                                 <td>
+                                                    <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{row.seller_name || '—'}</span>
+                                                </td>
+                                                <td>
                                                     {isEditing ? (
                                                         <input
                                                             className="filter-input"
@@ -437,6 +525,34 @@ export default function ProfilesPage() {
                                                         ) : '—'
                                                     )}
                                                 </td>
+                                                <td>
+                                                    {isEditing ? (
+                                                        <input
+                                                            className="filter-input"
+                                                            style={{ width: '120px', padding: '4px 8px' }}
+                                                            name="bank_full"
+                                                            value={editFormData.bank_full}
+                                                            onChange={handleEditFormChange}
+                                                        />
+                                                    ) : (
+                                                        <span style={{ fontSize: '12px', fontFamily: 'monospace', color: 'var(--text-secondary)' }}>{row.bank_full || '—'}</span>
+                                                    )}
+                                                </td>
+                                                {canSee2FA && (
+                                                    <td>
+                                                        {isEditing ? (
+                                                            <input
+                                                                className="filter-input"
+                                                                style={{ width: '100px', padding: '4px 8px' }}
+                                                                name="fa_code"
+                                                                value={editFormData.fa_code}
+                                                                onChange={handleEditFormChange}
+                                                            />
+                                                        ) : (
+                                                            <span style={{ fontSize: '11px', fontFamily: 'monospace', color: 'var(--accent-light)' }}>{row.fa_code || '—'}</span>
+                                                        )}
+                                                    </td>
+                                                )}
                                                 <td className="text-right">
                                                     <MoneyCell value={row.net_earning} />
                                                 </td>
@@ -473,6 +589,9 @@ export default function ProfilesPage() {
                                         <td className="sticky-col col-action" style={{ borderRight: '1px solid var(--border-color)', zIndex: 17, backgroundColor: 'var(--bg-table-header)' }}></td>
                                         <td></td>
                                         <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        {canSee2FA && <td></td>}
                                         <td className="text-right">
                                             <MoneyCell value={totals.net_earning} />
                                         </td>
@@ -571,6 +690,131 @@ export default function ProfilesPage() {
                 </div>
             </div >
 
+            {/* Import CSV Modal */}
+            {importModalOpen && (
+                <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setImportModalOpen(false)}>
+                    <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '12px', width: '600px', maxWidth: '95vw', maxHeight: '90vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.5)', animation: 'slideInUp 0.25s ease-out' }} onClick={e => e.stopPropagation()}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 24px', borderBottom: '1px solid var(--border-color)' }}>
+                            <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>Import Seller Bank & Name</h3>
+                            <button onClick={() => setImportModalOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '4px', borderRadius: '4px' }}><X size={18} /></button>
+                        </div>
+
+                        <div style={{ padding: '24px', overflowY: 'auto' }}>
+                            {!importResult ? (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                                    <div style={{ padding: '16px', background: 'rgba(99, 102, 241, 0.05)', border: '1px dashed var(--primary)', borderRadius: '8px', textAlign: 'center' }}>
+                                        <input type="file" accept=".csv,.xlsx,.xls" onChange={(e) => setImportFile(e.target.files[0])} style={{ display: 'none' }} id="import-csv-file" />
+                                        <label htmlFor="import-csv-file" style={{ cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+                                            <Upload size={32} style={{ color: 'var(--primary)' }} />
+                                            {importFile ? (
+                                                <div style={{ color: 'var(--text-primary)', fontWeight: 500 }}>{importFile.name}</div>
+                                            ) : (
+                                                <div style={{ color: 'var(--text-secondary)' }}>Click to upload CSV or XLSX file<br /><span style={{ fontSize: '12px' }}>Columns: SellerName, AccountNo, Store, Status, 2FACode</span></div>
+                                            )}
+                                        </label>
+                                    </div>
+                                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '8px' }}>
+                                        <button className="btn btn-ghost" onClick={() => setImportModalOpen(false)}>Cancel</button>
+                                        <button className="btn btn-primary" onClick={handleImportSellerCsv} disabled={!importFile || importing}>
+                                            {importing ? 'Importing...' : 'Import Data'}
+                                        </button>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+                                    {/* Summary */}
+                                    <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)', marginBottom: 0 }}>
+                                        <div className="stat-card">
+                                            <div className="stat-card-header">
+                                                <span className="stat-card-label">Matched</span>
+                                                <div className="stat-card-icon green">
+                                                    <CheckCircle size={18} />
+                                                </div>
+                                            </div>
+                                            <div className="stat-card-value" style={{ color: 'var(--success)' }}>
+                                                {importResult.matched}
+                                            </div>
+                                        </div>
+                                        <div className="stat-card">
+                                            <div className="stat-card-header">
+                                                <span className="stat-card-label">Not Matched</span>
+                                                <div className="stat-card-icon" style={{ background: 'var(--danger-bg)', color: 'var(--danger)' }}>
+                                                    <X size={18} />
+                                                </div>
+                                            </div>
+                                            <div className="stat-card-value" style={{ color: 'var(--danger)' }}>
+                                                {importResult.not_matched}
+                                            </div>
+                                        </div>
+                                        <div className="stat-card">
+                                            <div className="stat-card-header">
+                                                <span className="stat-card-label">Bank Changed</span>
+                                                <div className="stat-card-icon amber">
+                                                    <AlertTriangle size={18} />
+                                                </div>
+                                            </div>
+                                            <div className="stat-card-value" style={{ color: 'var(--warning)' }}>
+                                                {importResult.bank_changed}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Changes List */}
+                                    {importResult.bank_change_alerts && importResult.bank_change_alerts.length > 0 && (
+                                        <div className="table-container" style={{ boxShadow: 'none' }}>
+                                            <div style={{ padding: '12px 16px', background: 'var(--bg-table-header)', borderBottom: '1px solid var(--border-color)', fontWeight: 600, color: 'var(--warning)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
+                                                <AlertTriangle size={16} /> Data Updates & Bank Changes
+                                            </div>
+                                            <div style={{ maxHeight: '250px', overflowY: 'auto' }}>
+                                                <table className="data-table">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Profile / Store</th>
+                                                            <th>Old Bank</th>
+                                                            <th>New AccountNo</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {importResult.bank_change_alerts.map((alert, i) => (
+                                                            <tr key={i}>
+                                                                <td style={{ color: 'var(--text-primary)' }}>{alert.profile_name}</td>
+                                                                <td style={{ fontFamily: 'monospace', color: 'var(--text-secondary)' }}>•••• {alert.old_bank || '—'}</td>
+                                                                <td style={{ fontFamily: 'monospace', color: 'var(--warning)', fontWeight: 600 }}>{alert.full_account}</td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {/* Not Matched */}
+                                    {importResult.not_matched > 0 && (
+                                        <div className="table-container" style={{ boxShadow: 'none' }}>
+                                            <div style={{ padding: '12px 16px', background: 'var(--bg-table-header)', borderBottom: '1px solid var(--border-color)', fontWeight: 600, color: 'var(--danger)', display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px' }}>
+                                                <AlertTriangle size={16} /> Unmatched Rows
+                                            </div>
+                                            <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                                                <table className="data-table">
+                                                    <tbody>
+                                                        {importResult.results.filter(r => r.status === 'not_matched').map((row, i) => (
+                                                            <tr key={i}>
+                                                                <td style={{ width: '40%', color: 'var(--text-primary)' }}>{row.store}</td>
+                                                                <td style={{ color: 'var(--text-muted)' }}>{row.reason}</td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
             {/* Toast notifications */}
             <div style={{ position: 'fixed', top: '20px', right: '20px', zIndex: 99999, display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {toasts.map(t => (
@@ -662,6 +906,50 @@ export default function ProfilesPage() {
                                     )}
                                 </div>
                             )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* 2FA Modal */}
+            {faModalOpen && (
+                <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setFaModalOpen(false)}>
+                    <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '12px', width: '400px', maxWidth: '95vw', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,0.5)', animation: 'slideInUp 0.2s ease-out' }} onClick={e => e.stopPropagation()}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid var(--border-color)' }}>
+                            <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <Key size={18} style={{ color: '#10b981' }} />
+                                2FA Code
+                            </h3>
+                            <button onClick={() => setFaModalOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '4px', borderRadius: '4px' }}><X size={18} /></button>
+                        </div>
+                        <div style={{ padding: '24px', textAlign: 'center' }}>
+                            {faLoading ? (
+                                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px', padding: '24px 0' }}>
+                                    <div className="spinner" style={{ width: '32px', height: '32px', borderWidth: '3px' }} />
+                                    <div style={{ color: 'var(--text-secondary)', fontSize: '14px' }}>Connecting to authenticator...</div>
+                                </div>
+                            ) : (
+                                <div style={{
+                                    background: faCodeResult.startsWith('Error') ? 'rgba(239, 68, 68, 0.1)' : 'var(--bg-card)',
+                                    border: faCodeResult.startsWith('Error') ? '1px solid rgba(239, 68, 68, 0.2)' : '1px dashed var(--border-color)',
+                                    padding: '24px',
+                                    borderRadius: '8px',
+                                    marginTop: '8px'
+                                }}>
+                                    {faCodeResult.startsWith('Error') ? (
+                                        <div style={{ color: '#ef4444', fontSize: '14px', wordBreak: 'break-word' }}>
+                                            {faCodeResult}
+                                        </div>
+                                    ) : (
+                                        <div style={{ fontSize: '36px', fontWeight: 800, letterSpacing: '4px', color: 'var(--text-primary)', fontFamily: 'monospace' }}>
+                                            {faCodeResult}
+                                        </div>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                        <div style={{ padding: '16px 20px', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'flex-end' }}>
+                            <button className="btn btn-ghost" onClick={() => setFaModalOpen(false)}>Close</button>
                         </div>
                     </div>
                 </div>

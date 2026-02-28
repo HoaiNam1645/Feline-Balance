@@ -88,6 +88,10 @@ class ProfileService
                 'status'           => $profile->status,
                 'bank_last4'       => $profile->bank_last4,
                 'beneficiary_name' => $profile->beneficiary_name,
+                'seller_name'      => $profile->seller_name,
+                'bank_full'        => $profile->bank_full,
+                'fa_code'          => auth('api')->user() && in_array(auth('api')->user()->role->name ?? '', ['admin', 'super_admin']) ? $profile->fa_code : null,
+                'has_2fa'          => !empty($profile->fa_code),
                 'net_earning'      => $profile->balance ? (float) $profile->balance->net_earning : 0,
                 'on_hold_amount'   => $profile->balance ? (float) $profile->balance->on_hold_amount : 0,
                 'total_paid'       => $profile->balance ? (float) $profile->balance->total_paid : 0,
@@ -122,7 +126,10 @@ class ProfileService
             'team_id',
             'status',
             'bank_last4',
-            'beneficiary_name'
+            'beneficiary_name',
+            'seller_name',
+            'bank_full',
+            'fa_code',
         ])->toArray();
 
         $profile->update($fillableData);

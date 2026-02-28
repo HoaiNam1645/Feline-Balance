@@ -45,6 +45,7 @@ const menuSections = [
     {
         title: 'Management',
         items: [
+            { icon: Shield, label: 'Roles', path: '/roles', roles: ['super_admin'] },
             { icon: Users, label: 'Users', path: '/users', roles: ['super_admin'] },
             { icon: Users, label: 'Teams Finance', path: '/team-finances', roles: ['super_admin', 'admin'] },
             { icon: Users, label: 'Teams Felineez', path: '/teams', roles: ['super_admin'] },

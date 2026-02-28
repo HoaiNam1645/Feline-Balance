@@ -7,6 +7,7 @@ import TopupPage from './pages/TopupPage';
 import TeamsPage from './pages/TeamsPage';
 import VendorsPage from './pages/VendorsPage';
 import UsersPage from './pages/UsersPage';
+import RolesPage from './pages/RolesPage';
 import DesignStatisticsPage from './pages/DesignStatisticsPage';
 import FulfillmentStatisticsPage from './pages/FulfillmentStatisticsPage';
 import MediaPage from './pages/MediaPage';
@@ -118,6 +119,11 @@ export default function App() {
               <Route path="/users" element={
                 <ProtectedRoute user={user} allowedRoles={['super_admin']}>
                   <UsersPage />
+                </ProtectedRoute>
+              } />
+              <Route path="/roles" element={
+                <ProtectedRoute user={user} allowedRoles={['super_admin']}>
+                  <RolesPage />
                 </ProtectedRoute>
               } />
               <Route path="/team-finances" element={
