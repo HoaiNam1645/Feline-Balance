@@ -396,10 +396,10 @@ class DashboardController extends Controller
             ->where('fulfillment_statistics.fulfill_unit_id', 0)
             ->when($month, fn($q) => $q->where('fulfillment_statistics.month', $month))
             ->leftJoin('teams', 'fulfillment_statistics.team_id', '=', 'teams.id')
-            ->selectRaw("COALESCE(teams.name, 'Unknown') as team_name,
+            ->selectRaw("COALESCE(teams.name, fulfillment_statistics.team_name, 'Unknown') as team_name,
                 SUM(fulfillment_statistics.order_count) as total_orders,
                 SUM(fulfillment_statistics.total_price) as total_price")
-            ->groupByRaw("COALESCE(teams.name, 'Unknown')")
+            ->groupByRaw("COALESCE(teams.name, fulfillment_statistics.team_name, 'Unknown')")
             ->orderByDesc('total_orders')
             ->get();
 
