@@ -18,6 +18,7 @@ use App\Http\Controllers\Api\TikTokFinanceController;
 use App\Http\Controllers\Api\TeamFinanceController;
 use App\Http\Controllers\Api\StoreController;
 use App\Http\Controllers\Api\RoleController;
+use App\Http\Controllers\Api\DashboardController;
 
 /*
 |--------------------------------------------------------------------------
@@ -37,6 +38,9 @@ Route::middleware(['jwt.auth'])->group(function () {
     // Auth
     Route::post('/auth/logout', [AuthController::class, 'logout']);
     Route::post('/auth/refresh', [AuthController::class, 'refresh']);
+
+    // Dashboard
+    Route::get('/dashboard', [DashboardController::class, 'index']);
 
     // Profiles
     Route::get('/profiles', [ProfileController::class, 'index']);

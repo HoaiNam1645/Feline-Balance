@@ -16,6 +16,7 @@ import EmployeeDetailPage from './pages/EmployeeDetailPage';
 import PayrollsPage from './pages/PayrollsPage';
 import TeamFinancePage from './pages/TeamFinance/TeamFinance';
 import StorePage from './pages/StorePage';
+import DashboardPage from './pages/DashboardPage';
 import ProtectedRoute from './components/ProtectedRoute';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
@@ -101,8 +102,9 @@ export default function App() {
           <Sidebar user={user} onLogout={handleLogout} />
           <main className="main-content">
             <Routes>
-              <Route path="/" element={<Navigate to="/profiles" replace />} />
-              <Route path="/login" element={<Navigate to="/profiles" replace />} />
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/login" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/dashboard" element={<DashboardPage />} />
               <Route path="/profiles" element={<ProfilesPage />} />
               <Route path="/topup" element={<TopupPage />} />
 
@@ -139,7 +141,7 @@ export default function App() {
               <Route path="/employees" element={<EmployeesPage />} />
               <Route path="/employees/:id" element={<EmployeeDetailPage />} />
               <Route path="/payrolls" element={<PayrollsPage />} />
-              <Route path="*" element={<Navigate to="/profiles" replace />} />
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>
           </main>
         </div>

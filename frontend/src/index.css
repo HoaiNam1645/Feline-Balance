@@ -27,6 +27,7 @@
   --bg-table-row: #161b2f;
   --bg-table-row-hover: #1c2240;
   --bg-table-row-alt: #131729;
+  --bg-tertiary: #232946;
 
   /* Borders */
   --border-color: rgba(99, 102, 241, 0.15);
@@ -1016,4 +1017,13 @@ body {
     transform: translateY(0);
     opacity: 1;
   }
+}
+
+/* ── Dashboard Chart Bars ── */
+.chart-bar:hover {
+  filter: brightness(1.2);
+}
+
+.chart-bar:hover .chart-bar-tooltip {
+  opacity: 1 !important;
 }

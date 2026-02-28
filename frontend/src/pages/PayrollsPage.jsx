@@ -188,6 +188,8 @@ export default function PayrollsPage() {
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [deletingId, setDeletingId] = useState(null);
 
+    const [showFormula, setShowFormula] = useState(false);
+
     const [toasts, setToasts] = useState([]);
     const addToast = useCallback((msg, type = 'success') => {
         const id = Date.now();
@@ -404,7 +406,18 @@ export default function PayrollsPage() {
                                         <th>Leave</th>
                                         <th>Ins. Deduction</th>
                                         <th>Bonus/Penalty</th>
-                                        <th>Net Salary</th>
+                                        <th>
+                                            <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                                                Net Salary
+                                                <button
+                                                    onClick={() => setShowFormula(true)}
+                                                    style={{ display: 'flex', alignItems: 'center', color: 'var(--primary)', background: 'none', border: 'none', cursor: 'pointer', padding: 4, borderRadius: 4 }}
+                                                    title="View Calculation Formula"
+                                                >
+                                                    <Calculator size={16} />
+                                                </button>
+                                            </div>
+                                        </th>
                                         <th>Status</th>
                                         <th style={{ width: 100, textAlign: 'right' }}>Actions</th>
                                     </tr>
@@ -466,9 +479,45 @@ export default function PayrollsPage() {
                         <button className="btn btn-ghost" disabled={page === totalPages} onClick={() => setPage(page + 1)} style={{ padding: '8px 16px' }}>Next</button>
                     </div>
                 )}
-            </div>
+            </div >
 
             <PayrollFormModal isOpen={modalOpen} onClose={() => setModalOpen(false)} onSubmit={handleSubmit} formData={formData} onChange={handleFormChange} title={modalMode === 'create' ? 'New Payroll' : 'Update Payroll'} submitLabel={modalMode === 'create' ? 'Create' : 'Update'} submitting={submitting} employees={employees} />
+
+            {/* Formula Modal */}
+            {showFormula && (
+                <div style={{ position: 'fixed', inset: 0, zIndex: 10000, background: 'rgba(0,0,0,.7)', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setShowFormula(false)}>
+                    <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: 12, width: 500, maxWidth: '95vw', boxShadow: '0 20px 60px rgba(0,0,0,.5)', animation: 'slideInUp .25s ease-out' }} onClick={e => e.stopPropagation()}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', borderBottom: '1px solid var(--border-color)' }}>
+                            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <Calculator size={18} /> Cách tính lương
+                            </h3>
+                            <button onClick={() => setShowFormula(false)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}><X size={18} /></button>
+                        </div>
+                        <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
+                            <div style={{ padding: 12, borderRadius: 8, background: 'rgba(99,102,241,0.05)', border: '1px solid rgba(99,102,241,0.1)' }}>
+                                <strong style={{ display: 'block', marginBottom: 6, color: 'var(--primary)', fontSize: 13 }}>1. Khấu trừ Bảo hiểm (BHXH):</strong>
+                                <code style={{ fontSize: 14, color: 'var(--text-primary)' }}>Lương hợp đồng × 10.5%</code>
+                                <small style={{ display: 'block', marginTop: 4, color: 'var(--text-muted)' }}>(Chỉ áp dụng nếu nhân viên có đóng bảo hiểm)</small>
+                            </div>
+
+                            <div style={{ padding: 12, borderRadius: 8, background: 'rgba(16,185,129,0.05)', border: '1px solid rgba(16,185,129,0.1)' }}>
+                                <strong style={{ display: 'block', marginBottom: 6, color: '#10b981', fontSize: 13 }}>2. Lương theo ngày công:</strong>
+                                <code style={{ fontSize: 14, color: 'var(--text-primary)' }}>(Lương HĐ ÷ Ngày công chuẩn) × (Ngày đi làm + Phép có lương)</code>
+                                <small style={{ display: 'block', marginTop: 4, color: 'var(--text-muted)' }}>(Ngày công chuẩn mặc định là 27 nếu không thiết lập khác)</small>
+                            </div>
+
+                            <div style={{ padding: 12, borderRadius: 8, background: 'rgba(245,158,11,0.05)', border: '1px solid rgba(245,158,11,0.1)' }}>
+                                <strong style={{ display: 'block', marginBottom: 6, color: '#f59e0b', fontSize: 13 }}>3. Lương thực nhận (Net):</strong>
+                                <code style={{ fontSize: 14, color: 'var(--text-primary)' }}>Lương theo ngày công − BHXH + Thưởng − Phạt</code>
+                            </div>
+                        </div>
+                        <div style={{ padding: '12px 20px', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'flex-end' }}>
+                            <button className="btn btn-primary" onClick={() => setShowFormula(false)} style={{ padding: '8px 24px' }}>Đã hiểu</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <ConfirmModal isOpen={confirmOpen} onClose={() => setConfirmOpen(false)} onConfirm={handleDelete} title="Confirm Delete" message="Are you sure you want to delete this payroll?" />
             <ToastContainer toasts={toasts} removeToast={removeToast} />
         </>
