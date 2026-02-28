@@ -16,8 +16,10 @@ class User extends Authenticatable implements JWTSubject
         'name',
         'username',
         'email',
+        'phone',
         'password',
         'role_id',
+        'team_finance_id',
         'is_active',
     ];
 
@@ -74,5 +76,20 @@ class User extends Authenticatable implements JWTSubject
     public function isAdmin(): bool
     {
         return in_array($this->role_id, [self::ROLE_ADMIN, self::ROLE_SUPER_ADMIN]);
+    }
+
+    public function stores()
+    {
+        return $this->hasMany(Store::class, 'user_id');
+    }
+
+    public function team()
+    {
+        return $this->belongsTo(TeamFinance::class, 'team_finance_id');
+    }
+
+    public function leadingTeams()
+    {
+        return $this->hasMany(TeamFinance::class, 'team_leader');
     }
 }

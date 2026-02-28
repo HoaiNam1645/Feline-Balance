@@ -31,6 +31,7 @@ const menuSections = [
         items: [
             { icon: Wallet, label: 'Payment Profiles', path: '/profiles' },
             { icon: ArrowRightLeft, label: 'Topup', path: '/topup' },
+            { icon: CreditCard, label: 'Stores', path: '/stores' },
             { icon: ImageIcon, label: 'Media', path: '/media' },
         ],
     },
@@ -45,7 +46,8 @@ const menuSections = [
         title: 'Management',
         items: [
             { icon: Users, label: 'Users', path: '/users', roles: ['super_admin'] },
-            { icon: Users, label: 'Teams', path: '/teams', roles: ['super_admin'] },
+            { icon: Users, label: 'Teams Finance', path: '/team-finances', roles: ['super_admin', 'admin'] },
+            { icon: Users, label: 'Teams Felineez', path: '/teams', roles: ['super_admin'] },
             { icon: LayoutDashboard, label: 'Vendors', path: '/vendors', roles: ['super_admin'] },
         ],
     },

@@ -15,6 +15,8 @@ use App\Http\Controllers\Api\EmployeeUploadController;
 use App\Http\Controllers\Api\ContractController;
 use App\Http\Controllers\Api\PayrollController;
 use App\Http\Controllers\Api\TikTokFinanceController;
+use App\Http\Controllers\Api\TeamFinanceController;
+use App\Http\Controllers\Api\StoreController;
 
 /*
 |--------------------------------------------------------------------------
@@ -81,6 +83,15 @@ Route::middleware(['jwt.auth', 'role.admin'])->group(function () {
     Route::put('/payrolls/{id}', [PayrollController::class, 'update']);
     Route::delete('/payrolls/{id}', [PayrollController::class, 'destroy']);
     Route::post('/payrolls/generate', [PayrollController::class, 'generate']);
+
+    // Stores
+    Route::get('/stores', [StoreController::class, 'index']);
+    Route::post('/stores', [StoreController::class, 'store']);
+    Route::get('/stores/{id}', [StoreController::class, 'show']);
+    Route::put('/stores/{id}', [StoreController::class, 'update']);
+    Route::delete('/stores/{id}', [StoreController::class, 'destroy']);
+    Route::get('/stores/{id}/payment-history', [StoreController::class, 'paymentHistory']);
+    Route::post('/stores/import-csv', [StoreController::class, 'importCsv']);
 });
 
 /*
@@ -101,6 +112,15 @@ Route::middleware(['jwt.auth', 'role.super_admin'])->group(function () {
     Route::post('/teams', [TeamController::class, 'store']);
     Route::put('/teams/{id}', [TeamController::class, 'update']);
     Route::delete('/teams/{id}', [TeamController::class, 'destroy']);
+
+    // Team Finances
+    Route::get('/team-finances', [TeamFinanceController::class, 'index']);
+    Route::post('/team-finances', [TeamFinanceController::class, 'store']);
+    Route::get('/team-finances/{id}', [TeamFinanceController::class, 'show']);
+    Route::put('/team-finances/{id}', [TeamFinanceController::class, 'update']);
+    Route::delete('/team-finances/{id}', [TeamFinanceController::class, 'destroy']);
+    Route::post('/team-finances/{id}/members', [TeamFinanceController::class, 'assignMembers']);
+    Route::delete('/team-finances/{id}/members/{userId}', [TeamFinanceController::class, 'removeMember']);
 
     // Vendors
     Route::get('/vendors', [VendorController::class, 'index']);

@@ -13,6 +13,8 @@ import MediaPage from './pages/MediaPage';
 import EmployeesPage from './pages/EmployeesPage';
 import EmployeeDetailPage from './pages/EmployeeDetailPage';
 import PayrollsPage from './pages/PayrollsPage';
+import TeamFinancePage from './pages/TeamFinance/TeamFinance';
+import StorePage from './pages/StorePage';
 import ProtectedRoute from './components/ProtectedRoute';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
@@ -118,6 +120,12 @@ export default function App() {
                   <UsersPage />
                 </ProtectedRoute>
               } />
+              <Route path="/team-finances" element={
+                <ProtectedRoute user={user} allowedRoles={['super_admin', 'admin']}>
+                  <TeamFinancePage />
+                </ProtectedRoute>
+              } />
+              <Route path="/stores" element={<StorePage />} />
 
               <Route path="/design-statistics" element={<DesignStatisticsPage />} />
               <Route path="/fulfillment-statistics" element={<FulfillmentStatisticsPage />} />
