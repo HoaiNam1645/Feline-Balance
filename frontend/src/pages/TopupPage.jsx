@@ -456,7 +456,7 @@ export default function TopupPage() {
             render: (row) => <span style={{ fontWeight: 600 }}>{row.vendor_name || '—'}</span>,
         },
         {
-            key: 'type', label: 'Type', width: '5%',
+            key: 'type', label: 'Type', width: '9%',
             render: (row) => <TypeBadge type={row.type} />,
         },
         {

@@ -227,11 +227,6 @@ export default function VendorsPage() {
                 title="Vendor Management"
                 onRefresh={fetchVendors}
                 loading={loading}
-                actions={
-                    <button className="btn btn-primary" onClick={openCreateModal} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px' }}>
-                        <Plus size={16} /> New Vendor
-                    </button>
-                }
             />
             <div className="page-content">
 
@@ -253,6 +248,12 @@ export default function VendorsPage() {
                         <div className="stat-card-value">{vendors.length}</div>
                         <div className="stat-card-sub">Currently active</div>
                     </div>
+                </div>
+
+                <div className="filters-bar" style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
+                    <button className="btn btn-primary" onClick={openCreateModal} style={{ display: 'flex', alignItems: 'center', gap: '6px', height: '100%' }}>
+                        <Plus size={16} /> New Vendor
+                    </button>
                 </div>
 
                 {/* Table */}

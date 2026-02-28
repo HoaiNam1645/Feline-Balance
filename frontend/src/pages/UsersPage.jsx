@@ -208,7 +208,10 @@ export default function UsersPage() {
     const fetchUsers = async () => {
         setLoading(true);
         try {
-            const res = await fetch(`${API_BASE}/api/users?page=${page}&search=${search}&per_page=15`);
+            const token = localStorage.getItem('token');
+            const res = await fetch(`${API_BASE}/api/users?page=${page}&search=${search}&per_page=15`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
             const json = await res.json();
             if (json.success && json.data) {
                 setUsers(json.data.users.data || []);
@@ -267,9 +270,14 @@ export default function UsersPage() {
                 delete submitData.password;
             }
 
+            const token = localStorage.getItem('token');
             const res = await fetch(url, {
                 method,
-                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
                 body: JSON.stringify(submitData),
             });
             const json = await res.json();
@@ -295,7 +303,11 @@ export default function UsersPage() {
 
     const handleDelete = async () => {
         try {
-            const res = await fetch(`${API_BASE}/api/users/${deletingId}`, { method: 'DELETE' });
+            const token = localStorage.getItem('token');
+            const res = await fetch(`${API_BASE}/api/users/${deletingId}`, {
+                method: 'DELETE',
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
             const json = await res.json();
             if (json.success) {
                 addToast('User deleted successfully!');
@@ -322,11 +334,6 @@ export default function UsersPage() {
                 title="User Management"
                 onRefresh={fetchUsers}
                 loading={loading}
-                actions={
-                    <button className="btn btn-primary" onClick={openCreateModal} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px' }}>
-                        <Plus size={16} /> New User
-                    </button>
-                }
             />
             <div className="page-content">
 
@@ -358,22 +365,29 @@ export default function UsersPage() {
                     </div>
                 </div>
 
-                {/* Search bar */}
-                <div style={{ marginBottom: '16px' }}>
-                    <form onSubmit={handleSearchSubmit} style={{ display: 'flex', gap: '8px', maxWidth: '360px' }}>
-                        <div style={{ position: 'relative', flex: 1 }}>
-                            <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                            <input
-                                className="filter-input"
-                                type="text"
-                                placeholder="Search by name, email, username..."
-                                value={searchInput}
-                                onChange={e => setSearchInput(e.target.value)}
-                                style={{ width: '100%', paddingLeft: '36px' }}
-                            />
-                        </div>
-                        <button type="submit" className="btn btn-ghost" style={{ padding: '8px 14px' }}>Search</button>
-                    </form>
+                {/* Filters & Actions */}
+                <div className="filters-bar" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
+                    <div style={{ display: 'flex', gap: '12px', flex: 1 }}>
+                        <form onSubmit={handleSearchSubmit} style={{ display: 'flex', gap: '8px', maxWidth: '360px', width: '100%' }}>
+                            <div className="filter-group" style={{ position: 'relative', flex: 1 }}>
+                                <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                                <input
+                                    className="filter-input"
+                                    type="text"
+                                    placeholder="Search by name, email, username..."
+                                    value={searchInput}
+                                    onChange={e => setSearchInput(e.target.value)}
+                                    style={{ width: '100%', paddingLeft: '36px' }}
+                                />
+                            </div>
+                            <button type="submit" className="btn btn-ghost" style={{ padding: '8px 14px' }}>Search</button>
+                        </form>
+                    </div>
+                    <div>
+                        <button className="btn btn-primary" onClick={openCreateModal} style={{ display: 'flex', alignItems: 'center', gap: '6px', height: '100%' }}>
+                            <Plus size={16} /> New User
+                        </button>
+                    </div>
                 </div>
 
                 {/* Table */}

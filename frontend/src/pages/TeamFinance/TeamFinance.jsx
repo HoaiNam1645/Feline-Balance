@@ -80,7 +80,7 @@ export default function TeamFinancePage() {
 
     // Confirm remove member
     const [confirmRemoveOpen, setConfirmRemoveOpen] = useState(false);
-    const [removeInfo, setRemoveInfo] = useState({teamId: null, userId: null, teamName: '', userName: ''});
+    const [removeInfo, setRemoveInfo] = useState({ teamId: null, userId: null, teamName: '', userName: '' });
 
     // Toasts
     const [toasts, setToasts] = useState([]);
@@ -99,7 +99,7 @@ export default function TeamFinancePage() {
             });
             const json = await res.json();
             setTeams(json);
-            
+
             // Also fetch users for selection
             const userRes = await fetch(`${API_BASE}/api/users?per_page=100`, {
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
@@ -157,8 +157,8 @@ export default function TeamFinancePage() {
 
             const res = await fetch(url, {
                 method,
-                headers: { 
-                    'Content-Type': 'application/json', 
+                headers: {
+                    'Content-Type': 'application/json',
                     'Accept': 'application/json',
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 },
@@ -186,7 +186,7 @@ export default function TeamFinancePage() {
 
     const handleDelete = async () => {
         try {
-            const res = await fetch(`${API_BASE}/api/team-finances/${deletingId}`, { 
+            const res = await fetch(`${API_BASE}/api/team-finances/${deletingId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
             });
@@ -210,8 +210,8 @@ export default function TeamFinancePage() {
         try {
             const res = await fetch(`${API_BASE}/api/team-finances/${selectedTeam.id}/members`, {
                 method: 'POST',
-                headers: { 
-                    'Content-Type': 'application/json', 
+                headers: {
+                    'Content-Type': 'application/json',
                     'Accept': 'application/json',
                     'Authorization': `Bearer ${localStorage.getItem('token')}`
                 },
@@ -233,13 +233,13 @@ export default function TeamFinancePage() {
     };
 
     const confirmRemoveMember = (teamId, teamName, userId, userName) => {
-        setRemoveInfo({teamId, teamName, userId, userName});
+        setRemoveInfo({ teamId, teamName, userId, userName });
         setConfirmRemoveOpen(true);
     };
 
     const handleRemoveMember = async () => {
         try {
-            const {teamId, userId} = removeInfo;
+            const { teamId, userId } = removeInfo;
             const res = await fetch(`${API_BASE}/api/team-finances/${teamId}/members/${userId}`, {
                 method: 'DELETE',
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
@@ -266,13 +266,13 @@ export default function TeamFinancePage() {
                 title="Team Finance Management"
                 onRefresh={fetchTeams}
                 loading={loading}
-                actions={
-                    <button className="btn btn-primary" onClick={openCreateModal} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px' }}>
-                        <Plus size={16} /> New Team
-                    </button>
-                }
             />
             <div className="page-content">
+                <div className="filters-bar" style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>
+                    <button className="btn btn-primary" onClick={openCreateModal} style={{ display: 'flex', alignItems: 'center', gap: '6px', height: '100%' }}>
+                        <Plus size={16} /> New Team
+                    </button>
+                </div>
                 <div className="table-container">
                     {loading ? (
                         <div className="table-loading"><div className="spinner" /><span>Loading...</span></div>
@@ -304,7 +304,7 @@ export default function TeamFinancePage() {
                                             </td>
                                             <td>
                                                 {team.leader ? (
-                                                    <span style={{ 
+                                                    <span style={{
                                                         display: 'inline-flex', alignItems: 'center', gap: '6px',
                                                         padding: '4px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: 600,
                                                         background: 'rgba(52, 211, 153, 0.1)', color: '#10b981'
@@ -323,12 +323,12 @@ export default function TeamFinancePage() {
                                                                 display: 'flex', alignItems: 'center', gap: '6px', border: '1px solid var(--border-color)'
                                                             }}>
                                                                 {m.name}
-                                                                <button 
+                                                                <button
                                                                     title="Remove member"
-                                                                    style={{ 
-                                                                        background: 'none', border: 'none', padding: 0, margin: 0, 
-                                                                        cursor: 'pointer', display: 'flex', alignItems: 'center', 
-                                                                        color: 'var(--text-muted)', transition: 'color 0.2s' 
+                                                                    style={{
+                                                                        background: 'none', border: 'none', padding: 0, margin: 0,
+                                                                        cursor: 'pointer', display: 'flex', alignItems: 'center',
+                                                                        color: 'var(--text-muted)', transition: 'color 0.2s'
                                                                     }}
                                                                     onMouseEnter={e => e.currentTarget.style.color = 'var(--danger)'}
                                                                     onMouseLeave={e => e.currentTarget.style.color = 'var(--text-muted)'}
@@ -429,8 +429,8 @@ export default function TeamFinancePage() {
                         </div>
                         <div style={{ padding: '24px' }}>
                             <div style={{ marginBottom: '16px' }}>
-                                <input 
-                                    className="filter-input" type="text" placeholder="Search members..." 
+                                <input
+                                    className="filter-input" type="text" placeholder="Search members..."
                                     style={{ width: '100%' }}
                                     onChange={(e) => {
                                         const searchTerm = e.target.value.toLowerCase();
@@ -444,15 +444,15 @@ export default function TeamFinancePage() {
                             </div>
                             <div style={{ maxHeight: '350px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1px', border: '1px solid var(--border-color)', borderRadius: '8px', background: 'var(--bg-base)' }}>
                                 {allUsers.map(user => (
-                                    <label key={user.id} className="member-list-label" style={{ 
+                                    <label key={user.id} className="member-list-label" style={{
                                         display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer',
                                         padding: '12px 16px', borderBottom: '1px solid var(--border-color)',
                                         background: selectedUsers.includes(user.id.toString()) ? 'rgba(99,102,241,0.05)' : 'var(--bg-card)',
                                         transition: 'background 0.2s', margin: 0,
                                         borderLeft: selectedUsers.includes(user.id.toString()) ? '3px solid var(--primary)' : '3px solid transparent'
                                     }}>
-                                        <input 
-                                            type="checkbox" 
+                                        <input
+                                            type="checkbox"
                                             checked={selectedUsers.includes(user.id.toString())}
                                             onChange={(e) => {
                                                 if (e.target.checked) setSelectedUsers([...selectedUsers, user.id.toString()]);

@@ -502,16 +502,6 @@ export default function StorePage() {
                 title="Store Management"
                 onRefresh={fetchStores}
                 loading={loading}
-                actions={
-                    <div style={{ display: 'flex', gap: '8px' }}>
-                        <button className="btn btn-ghost" onClick={() => { setImportFile(null); setImportResult(null); setImportModalOpen(true); }} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px' }}>
-                            <Upload size={16} /> Import CSV
-                        </button>
-                        <button className="btn btn-primary" onClick={openCreateModal} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px' }}>
-                            <Plus size={16} /> New Store
-                        </button>
-                    </div>
-                }
             />
             <div className="page-content">
 
@@ -543,27 +533,37 @@ export default function StorePage() {
                     </div>
                 </div>
 
-                {/* Filters */}
-                <div style={{ marginBottom: '16px', display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'flex-end' }}>
-                    <form onSubmit={handleSearchSubmit} style={{ display: 'flex', gap: '8px' }}>
-                        <div style={{ position: 'relative' }}>
-                            <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                            <input
-                                className="filter-input" type="text" placeholder="Search name, account..."
-                                value={searchInput} onChange={e => setSearchInput(e.target.value)}
-                                style={{ width: '220px', paddingLeft: '36px' }}
-                            />
-                        </div>
-                        <button type="submit" className="btn btn-ghost" style={{ padding: '8px 14px' }}>Search</button>
-                    </form>
-                    <select className="filter-input" value={filterTeam} onChange={e => { setFilterTeam(e.target.value); setPage(1); }} style={{ width: '180px' }}>
-                        <option value="">All Teams</option>
-                        {teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-                    </select>
-                    <select className="filter-input" value={filterUser} onChange={e => { setFilterUser(e.target.value); setPage(1); }} style={{ width: '180px' }}>
-                        <option value="">All Users</option>
-                        {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
-                    </select>
+                {/* Filters & Actions */}
+                <div className="filters-bar" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
+                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center', flex: 1 }}>
+                        <form onSubmit={handleSearchSubmit} style={{ display: 'flex', gap: '8px' }}>
+                            <div style={{ position: 'relative' }}>
+                                <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                                <input
+                                    className="filter-input" type="text" placeholder="Search name, account..."
+                                    value={searchInput} onChange={e => setSearchInput(e.target.value)}
+                                    style={{ width: '220px', paddingLeft: '36px' }}
+                                />
+                            </div>
+                            <button type="submit" className="btn btn-ghost" style={{ padding: '8px 14px' }}>Search</button>
+                        </form>
+                        <select className="filter-input" value={filterTeam} onChange={e => { setFilterTeam(e.target.value); setPage(1); }} style={{ width: '180px' }}>
+                            <option value="">All Teams</option>
+                            {teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                        </select>
+                        <select className="filter-input" value={filterUser} onChange={e => { setFilterUser(e.target.value); setPage(1); }} style={{ width: '180px' }}>
+                            <option value="">All Users</option>
+                            {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
+                        </select>
+                    </div>
+                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <button className="btn btn-ghost" onClick={() => { setImportFile(null); setImportResult(null); setImportModalOpen(true); }} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', height: '100%' }}>
+                            <Upload size={16} /> Import CSV
+                        </button>
+                        <button className="btn btn-primary" onClick={openCreateModal} style={{ display: 'flex', alignItems: 'center', gap: '6px', height: '100%' }}>
+                            <Plus size={16} /> New Store
+                        </button>
+                    </div>
                 </div>
 
                 {/* Table */}
