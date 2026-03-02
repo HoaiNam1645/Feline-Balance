@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Search, Plus, Trash2, Pencil, X, Filter, Image as ImageIcon, ArrowDownCircle, ArrowUpCircle, DollarSign, Hash, Upload } from 'lucide-react';
 import Topbar from '../components/Topbar';
 import DataTable from '../components/DataTable';
@@ -312,14 +313,34 @@ export default function TopupPage() {
             .catch(() => { });
     }, []);
 
-    const [typeFilter, setTypeFilter] = useState('');
-    const [teamFilter, setTeamFilter] = useState('');
-    const [yearFilter, setYearFilter] = useState(new Date().getFullYear());
-    const [paymentMethodFilter, setPaymentMethodFilter] = useState('');
-    const [statusFilter, setStatusFilter] = useState('');
-    const [search, setSearch] = useState('');
+    const [searchParams, setSearchParams] = useSearchParams();
+    const updateParam = useCallback((key, value) => {
+        setSearchParams(prev => {
+            if (value) prev.set(key, String(value));
+            else prev.delete(key);
+            return prev;
+        }, { replace: true });
+    }, [setSearchParams]);
 
-    const [page, setPage] = useState(1);
+    const typeFilter = searchParams.get('type') || '';
+    const setTypeFilter = (v) => updateParam('type', v);
+
+    const teamFilter = searchParams.get('team_id') || '';
+    const setTeamFilter = (v) => updateParam('team_id', v);
+
+    const yearFilter = searchParams.has('year') ? Number(searchParams.get('year')) : new Date().getFullYear();
+    const setYearFilter = (v) => updateParam('year', v);
+
+    const paymentMethodFilter = searchParams.get('payment_method') || '';
+    const setPaymentMethodFilter = (v) => updateParam('payment_method', v);
+
+    const statusFilter = searchParams.get('status') || '';
+    const setStatusFilter = (v) => updateParam('status', v);
+
+    const page = Number(searchParams.get('page')) || 1;
+    const setPage = (v) => updateParam('page', v);
+
+    const [search, setSearch] = useState('');
     const [pagination, setPagination] = useState({ current_page: 1, last_page: 1, per_page: 15, total: 0 });
 
     // Modal
@@ -543,35 +564,70 @@ export default function TopupPage() {
 
                     <div className="filter-group">
                         <Filter size={14} style={{ color: 'var(--text-muted)' }} />
-                        <select className="filter-select year-select" value={yearFilter} onChange={(e) => setYearFilter(e.target.value)}>
+                        <select className="filter-select year-select" value={yearFilter} onChange={(e) => {
+                            const v = e.target.value;
+                            setSearchParams(prev => {
+                                if (v) prev.set('year', String(v)); else prev.delete('year');
+                                prev.delete('page');
+                                return prev;
+                            }, { replace: true });
+                        }}>
                             <option value="">Year</option>
                             {[2024, 2025, 2026].map(y => <option key={y} value={y}>{y}</option>)}
                         </select>
                     </div>
 
                     <div className="filter-group">
-                        <select className="filter-select" value={teamFilter} onChange={(e) => setTeamFilter(e.target.value)}>
+                        <select className="filter-select" value={teamFilter} onChange={(e) => {
+                            const v = e.target.value;
+                            setSearchParams(prev => {
+                                if (v) prev.set('team_id', v); else prev.delete('team_id');
+                                prev.delete('page');
+                                return prev;
+                            }, { replace: true });
+                        }}>
                             <option value="">All Teams</option>
                             {teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                         </select>
                     </div>
 
                     <div className="filter-group">
-                        <select className="filter-select" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
+                        <select className="filter-select" value={typeFilter} onChange={(e) => {
+                            const v = e.target.value;
+                            setSearchParams(prev => {
+                                if (v) prev.set('type', v); else prev.delete('type');
+                                prev.delete('page');
+                                return prev;
+                            }, { replace: true });
+                        }}>
                             <option value="">All Types</option>
                             {TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
                         </select>
                     </div>
 
                     <div className="filter-group">
-                        <select className="filter-select" value={paymentMethodFilter} onChange={(e) => setPaymentMethodFilter(e.target.value)}>
+                        <select className="filter-select" value={paymentMethodFilter} onChange={(e) => {
+                            const v = e.target.value;
+                            setSearchParams(prev => {
+                                if (v) prev.set('payment_method', v); else prev.delete('payment_method');
+                                prev.delete('page');
+                                return prev;
+                            }, { replace: true });
+                        }}>
                             <option value="">All Banks</option>
                             {PAYMENT_METHODS.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
                         </select>
                     </div>
 
                     <div className="filter-group">
-                        <select className="filter-select" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
+                        <select className="filter-select" value={statusFilter} onChange={(e) => {
+                            const v = e.target.value;
+                            setSearchParams(prev => {
+                                if (v) prev.set('status', v); else prev.delete('status');
+                                prev.delete('page');
+                                return prev;
+                            }, { replace: true });
+                        }}>
                             <option value="">All Status</option>
                             {STATUSES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
                         </select>

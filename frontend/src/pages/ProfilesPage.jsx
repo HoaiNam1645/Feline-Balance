@@ -1,5 +1,6 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
-import { Search, Download, Filter, Database, X, FileText, Upload, CheckCircle, AlertTriangle, Key, Shield } from 'lucide-react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { Search, Plus, Trash2, Pencil, X, Filter, FolderKanban, ShieldCheck, Download, AlertTriangle, AlertCircle, RefreshCw, Upload, FileSpreadsheet, CheckCircle, Save, Database, Key, CheckCircle2, Clock, FileText } from 'lucide-react';
 import Topbar from '../components/Topbar';
 import StatsCards from '../components/StatsCards';
 
@@ -44,13 +45,29 @@ function StatusBadge({ status }) {
 }
 
 export default function ProfilesPage() {
+    const [searchParams, setSearchParams] = useSearchParams();
+    const updateParam = useCallback((key, value) => {
+        setSearchParams(prev => {
+            if (value) prev.set(key, String(value));
+            else prev.delete(key);
+            return prev;
+        }, { replace: true });
+    }, [setSearchParams]);
+
     const [data, setData] = useState([]);
     const [summary, setSummary] = useState({});
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [year, setYear] = useState(new Date().getFullYear());
-    const [teamFilter, setTeamFilter] = useState('');
-    const [statusFilter, setStatusFilter] = useState('');
+
+    const year = searchParams.has('year') ? Number(searchParams.get('year')) : new Date().getFullYear();
+    const setYear = (v) => updateParam('year', v);
+
+    const teamFilter = searchParams.get('team_id') || '';
+    const setTeamFilter = (v) => updateParam('team_id', v);
+
+    const statusFilter = searchParams.get('status') || '';
+    const setStatusFilter = (v) => updateParam('status', v);
+
     const [search, setSearch] = useState('');
     const [teams, setTeams] = useState([]);
 
@@ -170,7 +187,8 @@ export default function ProfilesPage() {
     const removeToast = useCallback((id) => setToasts(prev => prev.filter(t => t.id !== id)), []);
 
     // Pagination states
-    const [page, setPage] = useState(1);
+    const page = Number(searchParams.get('page')) || 1;
+    const setPage = (v) => updateParam('page', v);
     const [pagination, setPagination] = useState({ current_page: 1, last_page: 1, total: 0 });
 
     const fetchData = async () => {

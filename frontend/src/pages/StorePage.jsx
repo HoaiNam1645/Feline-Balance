@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Store as StoreIcon, Plus, Pencil, Trash2, X, Search, Eye, DollarSign, CreditCard, Calendar, Upload, FileSpreadsheet, CheckCircle, AlertTriangle, Filter } from 'lucide-react';
 import Topbar from '../components/Topbar';
 
@@ -290,15 +291,31 @@ export default function StorePage() {
     const [teams, setTeams] = useState([]);
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [page, setPage] = useState(1);
+
+    const [searchParams, setSearchParams] = useSearchParams();
+    const updateParam = useCallback((key, value) => {
+        setSearchParams(prev => {
+            if (value) prev.set(key, String(value));
+            else prev.delete(key);
+            return prev;
+        }, { replace: true });
+    }, [setSearchParams]);
+
+    const page = Number(searchParams.get('page')) || 1;
+    const setPage = (v) => updateParam('page', v);
+
+    const filterTeam = searchParams.get('team_id') || '';
+    const setFilterTeam = (v) => updateParam('team_id', v);
+
+    const filterUser = searchParams.get('user_id') || '';
+    const setFilterUser = (v) => updateParam('user_id', v);
+
     const [totalPages, setTotalPages] = useState(1);
     const [totalStores, setTotalStores] = useState(0);
 
-    // Filters
+    // Search
     const [searchInput, setSearchInput] = useState('');
     const [search, setSearch] = useState('');
-    const [filterTeam, setFilterTeam] = useState('');
-    const [filterUser, setFilterUser] = useState('');
 
     // Store Modal
     const [modalOpen, setModalOpen] = useState(false);
@@ -330,7 +347,7 @@ export default function StorePage() {
     }, []);
     const removeToast = useCallback((id) => setToasts(prev => prev.filter(t => t.id !== id)), []);
 
-    const fetchStores = async () => {
+    const fetchStores = useCallback(async () => {
         setLoading(true);
         try {
             let url = `${API_BASE}/api/stores?page=${page}&search=${search}&per_page=15`;
@@ -353,9 +370,19 @@ export default function StorePage() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [page, search, filterTeam, filterUser]);
 
-    useEffect(() => { fetchStores(); }, [page, search, filterTeam, filterUser]);
+    useEffect(() => { fetchStores(); }, [fetchStores]);
+
+    // Reset page to 1 when filters or search change
+    const prevFiltersRef = useRef({ filterTeam, filterUser, search });
+    useEffect(() => {
+        const prev = prevFiltersRef.current;
+        if (prev.filterTeam !== filterTeam || prev.filterUser !== filterUser || prev.search !== search) {
+            prevFiltersRef.current = { filterTeam, filterUser, search };
+            if (page !== 1) updateParam('page', '');
+        }
+    }, [filterTeam, filterUser, search]);
 
     const handleSearchSubmit = (e) => {
         e.preventDefault();
@@ -546,14 +573,28 @@ export default function StorePage() {
 
                     <div className="filter-group">
                         <Filter size={14} style={{ color: 'var(--text-muted)' }} />
-                        <select className="filter-select" value={filterTeam} onChange={e => { setFilterTeam(e.target.value); setPage(1); }}>
+                        <select className="filter-select" value={filterTeam} onChange={e => {
+                            const v = e.target.value;
+                            setSearchParams(prev => {
+                                if (v) prev.set('team_id', v); else prev.delete('team_id');
+                                prev.delete('page');
+                                return prev;
+                            }, { replace: true });
+                        }}>
                             <option value="">All Teams</option>
                             {teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                         </select>
                     </div>
 
                     <div className="filter-group">
-                        <select className="filter-select" value={filterUser} onChange={e => { setFilterUser(e.target.value); setPage(1); }}>
+                        <select className="filter-select" value={filterUser} onChange={e => {
+                            const v = e.target.value;
+                            setSearchParams(prev => {
+                                if (v) prev.set('user_id', v); else prev.delete('user_id');
+                                prev.delete('page');
+                                return prev;
+                            }, { replace: true });
+                        }}>
                             <option value="">All Users</option>
                             {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
                         </select>

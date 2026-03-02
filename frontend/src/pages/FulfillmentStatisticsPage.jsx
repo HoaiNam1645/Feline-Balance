@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Search, BarChart3, Package, DollarSign, Store, X, ChevronLeft, ChevronRight, Users, Filter } from 'lucide-react';
 import Topbar from '../components/Topbar';
 import DataTable from '../components/DataTable';
@@ -63,13 +64,36 @@ export default function FulfillmentStatisticsPage() {
     const [fulfillUnitOptions, setFulfillUnitOptions] = useState([]);
 
     const now = new Date();
-    const [year, setYear] = useState(now.getFullYear());
-    const [month, setMonth] = useState(now.getMonth() + 1);
-    const [userFilter, setUserFilter] = useState('');
-    const [teamFilter, setTeamFilter] = useState('');
-    const [fulfillUnitFilter, setFulfillUnitFilter] = useState('');
-    const [type, setType] = useState('user'); // 'user' or 'store'
-    const [page, setPage] = useState(1);
+    const [searchParams, setSearchParams] = useSearchParams();
+    const updateParam = useCallback((key, value) => {
+        setSearchParams(prev => {
+            if (value) prev.set(key, String(value));
+            else prev.delete(key);
+            return prev;
+        }, { replace: true });
+    }, [setSearchParams]);
+
+    const year = searchParams.has('year') ? Number(searchParams.get('year')) : now.getFullYear();
+    const setYear = (v) => updateParam('year', v);
+
+    const month = searchParams.has('month') ? Number(searchParams.get('month')) : (now.getMonth() + 1);
+    const setMonth = (v) => updateParam('month', v);
+
+    const userFilter = searchParams.get('user') || '';
+    const setUserFilter = (v) => updateParam('user', v);
+
+    const teamFilter = searchParams.get('team_id') || '';
+    const setTeamFilter = (v) => updateParam('team_id', v);
+
+    const fulfillUnitFilter = searchParams.get('fulfill_unit_id') || '';
+    const setFulfillUnitFilter = (v) => updateParam('fulfill_unit_id', v);
+
+    const type = searchParams.get('type') || 'user';
+    const setType = (v) => updateParam('type', v);
+
+    const page = Number(searchParams.get('page')) || 1;
+    const setPage = (v) => updateParam('page', v);
+
     const [pagination, setPagination] = useState({ current_page: 1, last_page: 1, per_page: 20, total: 0 });
 
     // Toasts

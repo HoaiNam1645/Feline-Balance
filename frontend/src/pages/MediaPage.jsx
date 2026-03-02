@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Search, Plus, Trash2, Pencil, X, Image as ImageIcon, DollarSign, Hash, Upload, Clock, CheckCircle2, Filter } from 'lucide-react';
 import Topbar from '../components/Topbar';
 import DataTable from '../components/DataTable';
@@ -26,7 +27,7 @@ function StatusBadge({ status }) {
     const s = status.toLowerCase();
     let cls = 'pending';
     if (s === 'complete') cls = 'active';
-    return <span className={`status-badge ${cls}`}>{status.charAt(0).toUpperCase() + status.slice(1)}</span>;
+    return <span className={`status - badge ${cls} `}>{status.charAt(0).toUpperCase() + status.slice(1)}</span>;
 }
 
 /* ── Toast ── */
@@ -229,21 +230,40 @@ export default function MediaPage() {
     const [teams, setTeams] = useState([]);
     const [summary, setSummary] = useState(null);
     const [pagination, setPagination] = useState({ current_page: 1, last_page: 1, per_page: 15, total: 0 });
-    const [page, setPage] = useState(1);
+    const [searchParams, setSearchParams] = useSearchParams();
+
+    const updateParam = useCallback((key, value) => {
+        setSearchParams(prev => {
+            if (value) prev.set(key, String(value));
+            else prev.delete(key);
+            return prev;
+        }, { replace: true });
+    }, [setSearchParams]);
 
     // Filters
+    const page = Number(searchParams.get('page')) || 1;
+    const setPage = (v) => updateParam('page', v);
+
     const [search, setSearch] = useState('');
-    const [teamFilter, setTeamFilter] = useState('');
-    const [bankFilter, setBankFilter] = useState('');
-    const [statusFilter, setStatusFilter] = useState('');
-    const [yearFilter, setYearFilter] = useState('');
+
+    const teamFilter = searchParams.get('team_id') || '';
+    const setTeamFilter = (v) => updateParam('team_id', v);
+
+    const bankFilter = searchParams.get('bank') || '';
+    const setBankFilter = (v) => updateParam('bank', v);
+
+    const statusFilter = searchParams.get('status') || '';
+    const setStatusFilter = (v) => updateParam('status', v);
+
+    const yearFilter = searchParams.has('year') ? Number(searchParams.get('year')) : ''; // Changed default to '' to match previous useState behavior
+    const setYearFilter = (v) => updateParam('year', v);
 
     // Modal
     const [modalOpen, setModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState('create');
     const [editingId, setEditingId] = useState(null);
     const now = new Date();
-    const defaultDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}T${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    const defaultDate = `${now.getFullYear()} -${String(now.getMonth() + 1).padStart(2, '0')} -${String(now.getDate()).padStart(2, '0')}T${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')} `;
     const [formData, setFormData] = useState({
         team_id: '', image: '', transaction_code: '', bank: 'Vietcombank',
         transaction_date: defaultDate, amount: '', status: 'pending',
@@ -311,7 +331,7 @@ export default function MediaPage() {
         const n = new Date();
         setFormData({
             team_id: '', image: '', transaction_code: '', bank: 'Vietcombank',
-            transaction_date: `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}T${String(n.getHours()).padStart(2, '0')}:${String(n.getMinutes()).padStart(2, '0')}`,
+            transaction_date: `${n.getFullYear()} -${String(n.getMonth() + 1).padStart(2, '0')} -${String(n.getDate()).padStart(2, '0')}T${String(n.getHours()).padStart(2, '0')}:${String(n.getMinutes()).padStart(2, '0')} `,
             amount: '', status: 'pending',
         });
         setModalOpen(true);
@@ -425,7 +445,7 @@ export default function MediaPage() {
                 return (
                     <span style={{
                         padding: '3px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 600,
-                        background: `${colors[row.bank] || '#6366f1'}18`,
+                        background: `${colors[row.bank] || '#6366f1'} 18`,
                         color: colors[row.bank] || '#6366f1',
                     }}>
                         {row.bank || '—'}
@@ -511,28 +531,56 @@ export default function MediaPage() {
 
                     <div className="filter-group">
                         <Filter size={14} style={{ color: 'var(--text-muted)' }} />
-                        <select className="filter-select year-select" value={yearFilter} onChange={(e) => { setYearFilter(e.target.value); setPage(1); }}>
+                        <select className="filter-select year-select" value={yearFilter} onChange={(e) => {
+                            const v = e.target.value;
+                            setSearchParams(prev => {
+                                if (v) prev.set('year', v); else prev.delete('year');
+                                prev.delete('page');
+                                return prev;
+                            }, { replace: true });
+                        }}>
                             <option value="">Year</option>
                             {[2024, 2025, 2026].map(y => <option key={y} value={y}>{y}</option>)}
                         </select>
                     </div>
 
                     <div className="filter-group">
-                        <select className="filter-select" value={teamFilter} onChange={(e) => { setTeamFilter(e.target.value); setPage(1); }}>
+                        <select className="filter-select" value={teamFilter} onChange={(e) => {
+                            const v = e.target.value;
+                            setSearchParams(prev => {
+                                if (v) prev.set('team_id', v); else prev.delete('team_id');
+                                prev.delete('page');
+                                return prev;
+                            }, { replace: true });
+                        }}>
                             <option value="">All Teams</option>
                             {teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                         </select>
                     </div>
 
                     <div className="filter-group">
-                        <select className="filter-select" value={bankFilter} onChange={(e) => { setBankFilter(e.target.value); setPage(1); }}>
+                        <select className="filter-select" value={bankFilter} onChange={(e) => {
+                            const v = e.target.value;
+                            setSearchParams(prev => {
+                                if (v) prev.set('bank', v); else prev.delete('bank');
+                                prev.delete('page');
+                                return prev;
+                            }, { replace: true });
+                        }}>
                             <option value="">All Banks</option>
                             {BANKS.map(b => <option key={b.value} value={b.value}>{b.label}</option>)}
                         </select>
                     </div>
 
                     <div className="filter-group">
-                        <select className="filter-select" value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}>
+                        <select className="filter-select" value={statusFilter} onChange={(e) => {
+                            const v = e.target.value;
+                            setSearchParams(prev => {
+                                if (v) prev.set('status', v); else prev.delete('status');
+                                prev.delete('page');
+                                return prev;
+                            }, { replace: true });
+                        }}>
                             <option value="">All Status</option>
                             {STATUSES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
                         </select>

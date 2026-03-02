@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Users, Plus, Pencil, Trash2, X, Search, CheckCircle, XCircle, FileText, Eye, Shield } from 'lucide-react';
 import Topbar from '../components/Topbar';
 
@@ -255,13 +255,26 @@ export default function EmployeesPage() {
     const navigate = useNavigate();
     const [employees, setEmployees] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [page, setPage] = useState(1);
+    const [searchParams, setSearchParams] = useSearchParams();
+    const updateParam = useCallback((key, value) => {
+        setSearchParams(prev => {
+            if (value) prev.set(key, String(value));
+            else prev.delete(key);
+            return prev;
+        }, { replace: true });
+    }, [setSearchParams]);
+
+    const page = Number(searchParams.get('page')) || 1;
+    const setPage = (v) => updateParam('page', v);
+
+    const statusFilter = searchParams.get('status') || '';
+    const setStatusFilter = (v) => updateParam('status', v);
+
     const [totalPages, setTotalPages] = useState(1);
     const [total, setTotal] = useState(0);
     const [nameFilter, setNameFilter] = useState('');
     const [phoneFilter, setPhoneFilter] = useState('');
     const [cccdFilter, setCccdFilter] = useState('');
-    const [statusFilter, setStatusFilter] = useState('');
 
     const [modalOpen, setModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState('create');

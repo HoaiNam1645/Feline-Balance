@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { DollarSign, Plus, Pencil, Trash2, X, Search, CheckCircle, Clock, Zap, Calculator } from 'lucide-react';
 import Topbar from '../components/Topbar';
 
@@ -166,13 +167,31 @@ export default function PayrollsPage() {
     const [summary, setSummary] = useState({});
     const [employees, setEmployees] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [page, setPage] = useState(1);
-    const [totalPages, setTotalPages] = useState(1);
+    const [searchParams, setSearchParams] = useSearchParams();
+    const updateParam = useCallback((key, value) => {
+        setSearchParams(prev => {
+            if (value) prev.set(key, String(value));
+            else prev.delete(key);
+            return prev;
+        }, { replace: true });
+    }, [setSearchParams]);
 
-    const [filterMonth, setFilterMonth] = useState(new Date().getMonth() + 1);
-    const [filterYear, setFilterYear] = useState(new Date().getFullYear());
-    const [filterStatus, setFilterStatus] = useState('');
-    const [filterEmployeeId, setFilterEmployeeId] = useState('');
+    const page = Number(searchParams.get('page')) || 1;
+    const setPage = (v) => updateParam('page', v);
+
+    const filterMonth = searchParams.has('month') ? Number(searchParams.get('month')) : new Date().getMonth() + 1;
+    const setFilterMonth = (v) => updateParam('month', v);
+
+    const filterYear = searchParams.has('year') ? Number(searchParams.get('year')) : new Date().getFullYear();
+    const setFilterYear = (v) => updateParam('year', v);
+
+    const filterStatus = searchParams.get('status') || '';
+    const setFilterStatus = (v) => updateParam('status', v);
+
+    const filterEmployeeId = searchParams.get('employee_id') || '';
+    const setFilterEmployeeId = (v) => updateParam('employee_id', v);
+
+    const [totalPages, setTotalPages] = useState(1);
     const [filterMinSalary, setFilterMinSalary] = useState('');
     const [filterMaxSalary, setFilterMaxSalary] = useState('');
     const [filterWorkDays, setFilterWorkDays] = useState('');
@@ -340,15 +359,36 @@ export default function PayrollsPage() {
                             </select>
                         </div>
                         <div className="filter-group">
-                            <select className="filter-select year-select" value={filterMonth} onChange={e => { setFilterMonth(Number(e.target.value)); setPage(1); }} style={{ width: 130 }}>
+                            <select className="filter-select year-select" value={filterMonth} onChange={e => {
+                                const v = Number(e.target.value);
+                                setSearchParams(prev => {
+                                    prev.set('month', String(v));
+                                    prev.delete('page');
+                                    return prev;
+                                }, { replace: true });
+                            }} style={{ width: 130 }}>
                                 {Array.from({ length: 12 }, (_, i) => <option key={i + 1} value={i + 1}>Month {i + 1}</option>)}
                             </select>
                         </div>
                         <div className="filter-group">
-                            <input className="filter-input" type="number" min="2020" max="2099" value={filterYear} onChange={e => { setFilterYear(Number(e.target.value)); setPage(1); }} style={{ width: 100 }} />
+                            <input className="filter-input" type="number" min="2020" max="2099" value={filterYear} onChange={e => {
+                                const v = Number(e.target.value);
+                                setSearchParams(prev => {
+                                    prev.set('year', String(v));
+                                    prev.delete('page');
+                                    return prev;
+                                }, { replace: true });
+                            }} style={{ width: 100 }} />
                         </div>
                         <div className="filter-group">
-                            <select className="filter-select" value={filterStatus} onChange={e => { setFilterStatus(e.target.value); setPage(1); }} style={{ width: 150 }}>
+                            <select className="filter-select" value={filterStatus} onChange={e => {
+                                const v = e.target.value;
+                                setSearchParams(prev => {
+                                    if (v) prev.set('status', v); else prev.delete('status');
+                                    prev.delete('page');
+                                    return prev;
+                                }, { replace: true });
+                            }} style={{ width: 150 }}>
                                 <option value="">All statuses</option>
                                 <option value="pending">Pending</option>
                                 <option value="completed">Paid</option>

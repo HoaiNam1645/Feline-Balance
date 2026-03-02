@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
     BarChart3, TrendingUp, TrendingDown, DollarSign, Store, Image as ImageIcon,
     Palette, Package, ArrowUpCircle, ArrowDownCircle, Hash, RefreshCw, Filter,
@@ -307,14 +308,29 @@ function ChartCard({ title, subtitle, children, style = {}, legend }) {
    ═══════════════════════════════════════════ */
 
 export default function DashboardPage() {
+    const [searchParams, setSearchParams] = useSearchParams();
+
     const [data, setData] = useState(null);
     const [teams, setTeams] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    const [activeTab, setActiveTab] = useState('overview');
-    const [year, setYear] = useState(new Date().getFullYear());
-    const [month, setMonth] = useState('');
-    const [teamId, setTeamId] = useState('');
+    const activeTab = searchParams.get('tab') || 'overview';
+    const year = Number(searchParams.get('year')) || new Date().getFullYear();
+    const month = searchParams.get('month') || '';
+    const teamId = searchParams.get('team_id') || '';
+
+    const updateParam = (key, value) => {
+        setSearchParams(prev => {
+            if (value) prev.set(key, value);
+            else prev.delete(key);
+            return prev;
+        }, { replace: true });
+    };
+
+    const setActiveTab = (val) => updateParam('tab', val);
+    const setYear = (val) => updateParam('year', val);
+    const setMonth = (val) => updateParam('month', val);
+    const setTeamId = (val) => updateParam('team_id', val);
 
     const fetchDashboard = useCallback(async () => {
         setLoading(true);
@@ -514,14 +530,30 @@ function TopupTab({ data, year, month }) {
    ██  TAB: STORES
    ═══════════════════════════════════════════ */
 function StoresTab({ teams }) {
-    // ── Payment History local filter (default: all-time) ──
-    const [phYear, setPhYear] = useState('');
-    const [phMonth, setPhMonth] = useState('');
+    const [searchParams, setSearchParams] = useSearchParams();
 
-    // ── Stores section local filter (default: current year) ──
-    const [storeYear, setStoreYear] = useState(new Date().getFullYear());
-    const [storeMonth, setStoreMonth] = useState('');
-    const [storeTeamId, setStoreTeamId] = useState('');
+    const updateParam = (key, value) => {
+        setSearchParams(prev => {
+            if (value) prev.set(key, value);
+            else prev.delete(key);
+            return prev;
+        }, { replace: true });
+    };
+
+    // ── Payment History filter (default: all-time) ──
+    const phYear = searchParams.get('ph_year') || '';
+    const phMonth = searchParams.get('ph_month') || '';
+
+    // ── Stores section filter (default: current year) ──
+    const storeYear = Number(searchParams.get('store_year')) || new Date().getFullYear();
+    const storeMonth = searchParams.get('store_month') || '';
+    const storeTeamId = searchParams.get('store_team_id') || '';
+
+    const setPhYear = (v) => updateParam('ph_year', v);
+    const setPhMonth = (v) => updateParam('ph_month', v);
+    const setStoreYear = (v) => updateParam('store_year', v);
+    const setStoreMonth = (v) => updateParam('store_month', v);
+    const setStoreTeamId = (v) => updateParam('store_team_id', v);
 
     const [localData, setLocalData] = useState(null);
     const [loading, setLoading] = useState(true);
