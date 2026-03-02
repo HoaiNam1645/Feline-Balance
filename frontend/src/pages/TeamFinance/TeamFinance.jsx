@@ -262,8 +262,8 @@ export default function TeamFinancePage({ onMenuClick }) {
         <>
             <Topbar
                 section="Management"
-                breadcrumb="Team Finances"
-                title="Team Finance Management"
+                breadcrumb="Payouts"
+                title="Payout Management"
                 onRefresh={fetchTeams}
                 loading={loading}
                 onMenuClick={onMenuClick}
