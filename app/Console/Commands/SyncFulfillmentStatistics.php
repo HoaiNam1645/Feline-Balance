@@ -97,12 +97,18 @@ class SyncFulfillmentStatistics extends Command
         $unitLabel = $fulfillId === null ? "TOTAL" : "Unit {$fulfillId}";
         $this->info("[" . now()->toDateTimeString() . "] Syncing {$type} | {$month}/{$year} | {$unitLabel}");
 
+        // Build a team name lookup from local DB: team_id => team_name
+        static $teamNameMap = null;
+        if ($teamNameMap === null) {
+            $teamNameMap = DB::table('teams')->pluck('name', 'id');
+        }
+
         try {
             $result = $felineService->getFulfillmentStatistics($type, $year, $month, $fulfillId);
             $data = $result['data'] ?? [];
 
             if (empty($data)) {
-                return; // Suppress "Empty" logs for specific units to keep console clean
+                return;
             }
 
             $upsertData = [];
@@ -114,6 +120,7 @@ class SyncFulfillmentStatistics extends Command
                 $accountCode = null;
                 $statusName = null;
                 $avatar = null;
+                $name = 'Unknown';
 
                 if ($type === 'user') {
                     $userId = $item['id'];
@@ -121,20 +128,26 @@ class SyncFulfillmentStatistics extends Command
                     $teamName = $item['user_detail']['team']['name'] ?? null;
                     $roleName = $item['role']['name'] ?? null;
                     $avatar = $item['avatar'] ?? null;
+                    $name = $item['name'] ?? 'Unknown';
                 } else {
                     // type === 'store'
+                    // store JSON: { id, store_name, user_id, user: {id, name, avatar}, status: {name}, detail: {account_code}, tiktok_detail: {shop_code} }
                     $userId = $item['user_id'] ?? null;
                     $teamId = $userId ? ($teamUserMap[$userId] ?? null) : null;
-                    $teamName = $item['user']['user_detail']['team']['name'] ?? null;
+                    // store API doesn't nest user_detail.team — resolve team_name via local DB
+                    $teamName = $teamId ? ($teamNameMap[$teamId] ?? null) : null;
                     $avatar = $item['user']['avatar'] ?? null;
                     $accountCode = $item['detail']['account_code'] ?? null;
                     $statusName = $item['status']['name'] ?? null;
+
+                    // name column = user name (from data.user.name)
+                    $name = $item['user']['name'] ?? 'Unknown';
                 }
 
                 $upsertData[] = [
                     'type' => $type,
                     'external_id' => $item['id'],
-                    'name' => $item['name'] ?? ($item['store_name'] ?? 'Unknown'),
+                    'name' => $name,
                     'avatar' => $avatar,
                     'team_id' => $teamId,
                     'team_name' => $teamName,

@@ -38,8 +38,8 @@ const menuSections = [
     {
         title: 'Human Resources',
         items: [
-            { icon: UserCheck, label: 'Employees', path: '/employees' },
-            { icon: DollarSign, label: 'Payroll', path: '/payrolls' },
+            { icon: UserCheck, label: 'Employees', path: '/employees', roles: ['super_admin', 'admin'] },
+            { icon: DollarSign, label: 'Payroll', path: '/payrolls', roles: ['super_admin', 'admin'] },
         ],
     },
     {

@@ -59,6 +59,15 @@ export default function ProfilesPage({ onMenuClick }) {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
+    const userRole = useMemo(() => {
+        try {
+            const u = JSON.parse(localStorage.getItem('user'));
+            return u?.role || '';
+        } catch { return ''; }
+    }, []);
+    const isSeller = userRole === 'Seller' || userRole === 'seller';
+
+
     const year = searchParams.has('year') ? Number(searchParams.get('year')) : new Date().getFullYear();
     const setYear = (v) => updateParam('year', v);
 
@@ -115,28 +124,34 @@ export default function ProfilesPage({ onMenuClick }) {
         setTwoFaStatus('');
 
         setLogModalProfileId(profileId);
-        setLogModalTab('fetch');
-        setLoadingLogs(true);
-        setLogsPage(pageNum);
-        try {
-            const res = await fetch(`${API_BASE}/api/profiles/${profileId}/logs?page=${pageNum}`);
-            const json = await res.json();
-            if (json.success) {
-                setLogs(json.data.data);
-                setLogsTotalPages(json.data.last_page);
-            } else {
-                addToast('Failed to fetch logs', 'error');
+        if (isSeller) {
+            setLogModalTab('2fa');
+            fetchTwoFaLogs(1, {}, profileId);
+        } else {
+            setLogModalTab('fetch');
+            setLoadingLogs(true);
+            setLogsPage(pageNum);
+            try {
+                const res = await fetch(`${API_BASE}/api/profiles/${profileId}/logs?page=${pageNum}`);
+                const json = await res.json();
+                if (json.success) {
+                    setLogs(json.data.data);
+                    setLogsTotalPages(json.data.last_page);
+                } else {
+                    addToast('Failed to fetch logs', 'error');
+                }
+            } catch (err) {
+                addToast('Error fetching logs', 'error');
+            } finally {
+                setLoadingLogs(false);
             }
-        } catch (err) {
-            addToast('Error fetching logs', 'error');
-        } finally {
-            setLoadingLogs(false);
         }
     };
 
     // Fetch 2FA logs helper — filtered by profile
-    const fetchTwoFaLogs = async (pageNum = 1, filters = {}) => {
-        if (!logModalProfileId) return;
+    const fetchTwoFaLogs = async (pageNum = 1, filters = {}, pId = null) => {
+        const targetId = pId || logModalProfileId;
+        if (!targetId) return;
         setLoadingTwoFaLogs(true);
         setTwoFaLogsPage(pageNum);
 
@@ -154,7 +169,7 @@ export default function ProfilesPage({ onMenuClick }) {
                 ...(statusParam && { status: statusParam }),
             }).toString();
 
-            const res = await fetch(`${API_BASE}/api/profiles/${logModalProfileId}/2fa-logs?${queryParams}`, {
+            const res = await fetch(`${API_BASE}/api/profiles/${targetId}/2fa-logs?${queryParams}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const json = await res.json();
@@ -488,7 +503,7 @@ export default function ProfilesPage({ onMenuClick }) {
                                         <th>Status</th>
                                         <th>Seller</th>
                                         <th>Bank</th>
-                                        <th>Bank Full</th>
+                                        {!isSeller && <th>Bank Full</th>}
                                         {canSee2FA && <th>2FA Code</th>}
                                         <th className="text-right">Net Earning</th>
                                         <th className="text-right">On Hold</th>
@@ -606,19 +621,22 @@ export default function ProfilesPage({ onMenuClick }) {
                                                         ) : '—'
                                                     )}
                                                 </td>
-                                                <td>
-                                                    {isEditing ? (
-                                                        <input
-                                                            className="filter-input"
-                                                            style={{ width: '120px', padding: '4px 8px' }}
-                                                            name="bank_full"
-                                                            value={editFormData.bank_full}
-                                                            onChange={handleEditFormChange}
-                                                        />
-                                                    ) : (
-                                                        <span style={{ fontSize: '12px', fontFamily: 'monospace', color: 'var(--text-secondary)' }}>{row.bank_full || '—'}</span>
-                                                    )}
-                                                </td>
+                                                {!isSeller && (
+                                                    <td>
+                                                        {isEditing ? (
+                                                            <input
+                                                                className="filter-input"
+                                                                style={{ width: '120px', padding: '4px 8px' }}
+                                                                name="bank_full"
+                                                                value={editFormData.bank_full}
+                                                                onChange={handleEditFormChange}
+                                                                placeholder="e.g. 123456789"
+                                                            />
+                                                        ) : (
+                                                            <span style={{ fontSize: '12px', fontFamily: 'monospace', color: 'var(--text-secondary)' }}>{row.bank_full || '—'}</span>
+                                                        )}
+                                                    </td>
+                                                )}
                                                 {canSee2FA && (
                                                     <td>
                                                         {isEditing ? (
@@ -927,18 +945,20 @@ export default function ProfilesPage({ onMenuClick }) {
 
                         {/* Tab bar */}
                         <div style={{ display: 'flex', gap: 2, padding: '0 20px 0', borderBottom: '1px solid var(--border-color)' }}>
-                            <button
-                                onClick={() => { setLogModalTab('fetch'); if (logs.length === 0) openLogsModal(logModalProfileId, 1); }}
-                                style={{
-                                    padding: '10px 16px', fontSize: 13, fontWeight: logModalTab === 'fetch' ? 700 : 500,
-                                    color: logModalTab === 'fetch' ? 'var(--primary)' : 'var(--text-secondary)',
-                                    background: 'none', border: 'none', cursor: 'pointer',
-                                    borderBottom: logModalTab === 'fetch' ? '2px solid var(--primary)' : '2px solid transparent',
-                                    display: 'flex', alignItems: 'center', gap: 6, marginBottom: -1,
-                                }}
-                            >
-                                <FileText size={14} /> Fetch Logs
-                            </button>
+                            {!isSeller && (
+                                <button
+                                    onClick={() => { setLogModalTab('fetch'); if (logs.length === 0) openLogsModal(logModalProfileId, 1); }}
+                                    style={{
+                                        padding: '10px 16px', fontSize: 13, fontWeight: logModalTab === 'fetch' ? 700 : 500,
+                                        color: logModalTab === 'fetch' ? 'var(--primary)' : 'var(--text-secondary)',
+                                        background: 'none', border: 'none', cursor: 'pointer',
+                                        borderBottom: logModalTab === 'fetch' ? '2px solid var(--primary)' : '2px solid transparent',
+                                        display: 'flex', alignItems: 'center', gap: 6, marginBottom: -1,
+                                    }}
+                                >
+                                    <FileText size={14} /> Fetch Logs
+                                </button>
+                            )}
                             <button
                                 onClick={() => { setLogModalTab('2fa'); fetchTwoFaLogs(1); }}
                                 style={{

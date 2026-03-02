@@ -151,9 +151,21 @@ export default function App() {
                 <Route path="/design-statistics" element={<DesignStatisticsPage onMenuClick={() => setSidebarOpen(true)} />} />
                 <Route path="/fulfillment-statistics" element={<FulfillmentStatisticsPage onMenuClick={() => setSidebarOpen(true)} />} />
                 <Route path="/media" element={<MediaPage onMenuClick={() => setSidebarOpen(true)} />} />
-                <Route path="/employees" element={<EmployeesPage onMenuClick={() => setSidebarOpen(true)} />} />
-                <Route path="/employees/:id" element={<EmployeeDetailPage onMenuClick={() => setSidebarOpen(true)} />} />
-                <Route path="/payrolls" element={<PayrollsPage onMenuClick={() => setSidebarOpen(true)} />} />
+                <Route path="/employees" element={
+                  <ProtectedRoute user={user} allowedRoles={['super_admin', 'admin']}>
+                    <EmployeesPage onMenuClick={() => setSidebarOpen(true)} />
+                  </ProtectedRoute>
+                } />
+                <Route path="/employees/:id" element={
+                  <ProtectedRoute user={user} allowedRoles={['super_admin', 'admin']}>
+                    <EmployeeDetailPage onMenuClick={() => setSidebarOpen(true)} />
+                  </ProtectedRoute>
+                } />
+                <Route path="/payrolls" element={
+                  <ProtectedRoute user={user} allowedRoles={['super_admin', 'admin']}>
+                    <PayrollsPage onMenuClick={() => setSidebarOpen(true)} />
+                  </ProtectedRoute>
+                } />
                 <Route path="*" element={<Navigate to="/dashboard" replace />} />
               </Routes>
             </main>

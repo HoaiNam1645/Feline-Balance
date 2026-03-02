@@ -104,6 +104,9 @@ Route::middleware(['jwt.auth'])->group(function () {
 
     // Roles (Read-only for all authenticated users to populate dropdowns)
     Route::get('/roles', [RoleController::class, 'index']);
+    Route::get('/teams', [TeamController::class, 'index']);
+    Route::get('/team-finances', [TeamFinanceController::class, 'index']);
+    Route::get('/vendors', [VendorController::class, 'index']);
 });
 
 /*
@@ -125,13 +128,11 @@ Route::middleware(['jwt.auth', 'role.admin'])->group(function () {
     Route::delete('/roles/{id}', [RoleController::class, 'destroy']);
 
     // Teams
-    Route::get('/teams', [TeamController::class, 'index']);
     Route::post('/teams', [TeamController::class, 'store']);
     Route::put('/teams/{id}', [TeamController::class, 'update']);
     Route::delete('/teams/{id}', [TeamController::class, 'destroy']);
 
     // Team Finances
-    Route::get('/team-finances', [TeamFinanceController::class, 'index']);
     Route::post('/team-finances', [TeamFinanceController::class, 'store']);
     Route::get('/team-finances/{id}', [TeamFinanceController::class, 'show']);
     Route::put('/team-finances/{id}', [TeamFinanceController::class, 'update']);
@@ -140,7 +141,6 @@ Route::middleware(['jwt.auth', 'role.admin'])->group(function () {
     Route::delete('/team-finances/{id}/members/{userId}', [TeamFinanceController::class, 'removeMember']);
 
     // Vendors
-    Route::get('/vendors', [VendorController::class, 'index']);
     Route::post('/vendors', [VendorController::class, 'store']);
     Route::put('/vendors/{id}', [VendorController::class, 'update']);
     Route::delete('/vendors/{id}', [VendorController::class, 'destroy']);
