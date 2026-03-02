@@ -175,7 +175,7 @@ function UserFormModal({ isOpen, onClose, onSubmit, formData, onChange, title, s
 }
 
 /* ── Main Page ── */
-export default function UsersPage() {
+export default function UsersPage({ onMenuClick }) {
     const [users, setUsers] = useState([]);
     const [roles, setRoles] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -334,6 +334,7 @@ export default function UsersPage() {
                 title="User Management"
                 onRefresh={fetchUsers}
                 loading={loading}
+                onMenuClick={onMenuClick}
             />
             <div className="page-content">
 

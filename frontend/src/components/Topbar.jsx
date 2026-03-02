@@ -1,9 +1,19 @@
-import { Bell, RefreshCw } from 'lucide-react';
+import { Bell, RefreshCw, Menu } from 'lucide-react';
 
-export default function Topbar({ section = 'Finance', title = 'Payment Profiles', breadcrumb = 'Payment Profiles', onRefresh, loading, actions }) {
+export default function Topbar({ section = 'Finance', title = 'Payment Profiles', breadcrumb = 'Payment Profiles', onRefresh, loading, actions, onMenuClick }) {
     return (
         <div className="topbar">
             <div className="topbar-left">
+                {/* Hamburger — hidden on desktop via CSS */}
+                <button
+                    className="topbar-btn hamburger-btn"
+                    style={{ display: 'none' }}
+                    onClick={onMenuClick}
+                    title="Menu"
+                    aria-label="Open sidebar"
+                >
+                    <Menu size={18} />
+                </button>
                 <div>
                     <div className="topbar-breadcrumb">
                         <span>{section}</span> / <span style={{ color: 'var(--text-accent)' }}>{breadcrumb}</span>

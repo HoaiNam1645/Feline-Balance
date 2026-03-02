@@ -251,7 +251,7 @@ function EmployeeFormModal({ isOpen, onClose, onSubmit, formData, onChange, titl
 const emptyForm = { name: '', date_of_birth: '', gender: 'male', cccd: '', hometown: '', email: '', phone: '', bank_code: '', bank_name: '', qr_code: '', has_insurance: false, insurance_number: '', start_date: '', end_date: '', status: 'active', note: '', contracts: [] };
 
 /* ── Main Page ── */
-export default function EmployeesPage() {
+export default function EmployeesPage({ onMenuClick }) {
     const navigate = useNavigate();
     const [employees, setEmployees] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -433,7 +433,7 @@ export default function EmployeesPage() {
         <>
             <Topbar
                 section="Human Resources" breadcrumb="Employees" title="Employee Management"
-                onRefresh={fetchEmployees} loading={loading}
+                onRefresh={fetchEmployees} loading={loading} onMenuClick={onMenuClick}
             />
             <div className="page-content">
                 {/* Stats */}

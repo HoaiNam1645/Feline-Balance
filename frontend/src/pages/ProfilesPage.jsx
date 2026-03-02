@@ -44,7 +44,7 @@ function StatusBadge({ status }) {
     return <span className={`status-badge ${cls}`}>{display}</span>;
 }
 
-export default function ProfilesPage() {
+export default function ProfilesPage({ onMenuClick }) {
     const [searchParams, setSearchParams] = useSearchParams();
     const updateParam = useCallback((key, value) => {
         setSearchParams(prev => {
@@ -106,6 +106,14 @@ export default function ProfilesPage() {
 
     // Fetch logs helper
     const openLogsModal = async (profileId, pageNum = 1) => {
+        // Clear 2FA logs state when opening a new profile
+        setTwoFaLogs([]);
+        setTwoFaLogsPage(1);
+        setTwoFaLogsTotalPages(1);
+        setTwoFaSort('desc');
+        setTwoFaRole('');
+        setTwoFaStatus('');
+
         setLogModalProfileId(profileId);
         setLogModalTab('fetch');
         setLoadingLogs(true);
@@ -126,8 +134,9 @@ export default function ProfilesPage() {
         }
     };
 
-    // Fetch 2FA logs helper
+    // Fetch 2FA logs helper — filtered by profile
     const fetchTwoFaLogs = async (pageNum = 1, filters = {}) => {
+        if (!logModalProfileId) return;
         setLoadingTwoFaLogs(true);
         setTwoFaLogsPage(pageNum);
 
@@ -145,13 +154,13 @@ export default function ProfilesPage() {
                 ...(statusParam && { status: statusParam }),
             }).toString();
 
-            const res = await fetch(`${API_BASE}/api/2fa-logs?${queryParams}`, {
+            const res = await fetch(`${API_BASE}/api/profiles/${logModalProfileId}/2fa-logs?${queryParams}`, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
             const json = await res.json();
             if (json.success) {
                 setTwoFaLogs(json.data);
-                setTwoFaLogsTotalPages(json.pagination.last_page);
+                setTwoFaLogsTotalPages(json.pagination?.last_page || 1);
             }
         } catch (err) {
             addToast('Error fetching 2FA logs', 'error');
@@ -376,7 +385,7 @@ export default function ProfilesPage() {
 
     return (
         <>
-            <Topbar onRefresh={fetchData} loading={loading} />
+            <Topbar onRefresh={fetchData} loading={loading} onMenuClick={onMenuClick} />
             <div className="page-content">
                 <StatsCards summary={summary} />
 
@@ -931,7 +940,7 @@ export default function ProfilesPage() {
                                 <FileText size={14} /> Fetch Logs
                             </button>
                             <button
-                                onClick={() => { setLogModalTab('2fa'); if (twoFaLogs.length === 0) fetchTwoFaLogs(1); }}
+                                onClick={() => { setLogModalTab('2fa'); fetchTwoFaLogs(1); }}
                                 style={{
                                     padding: '10px 16px', fontSize: 13, fontWeight: logModalTab === '2fa' ? 700 : 500,
                                     color: logModalTab === '2fa' ? 'var(--primary)' : 'var(--text-secondary)',
@@ -940,7 +949,7 @@ export default function ProfilesPage() {
                                     display: 'flex', alignItems: 'center', gap: 6, marginBottom: -1,
                                 }}
                             >
-                                <Shield size={14} /> 2FA Logs
+                                <ShieldCheck size={14} /> 2FA Logs
                             </button>
                         </div>
 

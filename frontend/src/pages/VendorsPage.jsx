@@ -110,7 +110,7 @@ function VendorFormModal({ isOpen, onClose, onSubmit, formData, onChange, title,
 }
 
 /* ── Main Page ── */
-export default function VendorsPage() {
+export default function VendorsPage({ onMenuClick }) {
     const [vendors, setVendors] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -227,6 +227,7 @@ export default function VendorsPage() {
                 title="Vendor Management"
                 onRefresh={fetchVendors}
                 loading={loading}
+                onMenuClick={onMenuClick}
             />
             <div className="page-content">
 

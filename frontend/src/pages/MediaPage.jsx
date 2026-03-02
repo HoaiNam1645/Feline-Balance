@@ -224,7 +224,7 @@ function StatsCards({ summary }) {
 }
 
 /* ── Main Page ── */
-export default function MediaPage() {
+export default function MediaPage({ onMenuClick }) {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [teams, setTeams] = useState([]);
@@ -511,6 +511,7 @@ export default function MediaPage() {
                 title="Media Management"
                 onRefresh={fetchData}
                 loading={loading}
+                onMenuClick={onMenuClick}
             />
 
             <div className="page-content">

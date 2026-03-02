@@ -286,7 +286,7 @@ function StoreFormModal({ isOpen, onClose, onSubmit, formData, onChange, title, 
 }
 
 /* ── Main Page ── */
-export default function StorePage() {
+export default function StorePage({ onMenuClick }) {
     const [stores, setStores] = useState([]);
     const [teams, setTeams] = useState([]);
     const [users, setUsers] = useState([]);
@@ -529,6 +529,7 @@ export default function StorePage() {
                 title="Store Management"
                 onRefresh={fetchStores}
                 loading={loading}
+                onMenuClick={onMenuClick}
             />
             <div className="page-content">
 

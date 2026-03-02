@@ -292,7 +292,7 @@ function TopupStatsCards({ summary }) {
 }
 
 /* ── Main Page ── */
-export default function TopupPage() {
+export default function TopupPage({ onMenuClick }) {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -542,7 +542,7 @@ export default function TopupPage() {
 
     return (
         <>
-            <Topbar title="Topup History" breadcrumb="Topup" onRefresh={fetchData} loading={loading} />
+            <Topbar title="Topup History" breadcrumb="Topup" onRefresh={fetchData} loading={loading} onMenuClick={onMenuClick} />
 
             <div className="page-content">
                 {/* Stats Cards */}

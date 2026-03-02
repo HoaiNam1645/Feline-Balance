@@ -52,7 +52,7 @@ const MONTHS = [
 ];
 
 /* ── Main Page ── */
-export default function DesignStatisticsPage() {
+export default function DesignStatisticsPage({ onMenuClick }) {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -280,6 +280,7 @@ export default function DesignStatisticsPage() {
                 title="Design Statistics"
                 onRefresh={fetchData}
                 loading={loading}
+                onMenuClick={onMenuClick}
                 actions={
                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                         <button className="btn btn-ghost" onClick={handlePrevMonth} style={{ padding: '6px' }}><ChevronLeft size={16} /></button>

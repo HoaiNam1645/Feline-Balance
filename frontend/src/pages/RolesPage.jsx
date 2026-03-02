@@ -116,7 +116,7 @@ function RoleFormModal({ isOpen, onClose, onSubmit, formData, onChange, title, s
 }
 
 /* ── Main Page ── */
-export default function RolesPage() {
+export default function RolesPage({ onMenuClick }) {
     const [roles, setRoles] = useState([]);
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
@@ -262,7 +262,7 @@ export default function RolesPage() {
 
     return (
         <>
-            <Topbar section="Management" title="Role Management" onRefresh={fetchRoles} loading={loading} />
+            <Topbar section="Management" title="Role Management" onRefresh={fetchRoles} loading={loading} onMenuClick={onMenuClick} />
             <div className="page-content">
                 <div className="filters-bar">
                     <div className="filter-group">

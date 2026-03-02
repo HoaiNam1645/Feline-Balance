@@ -61,13 +61,13 @@ const menuSections = [
     },
 ];
 
-export default function Sidebar({ user, onLogout }) {
+export default function Sidebar({ user, onLogout, isOpen }) {
     const initials = user?.name
         ? user.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
         : 'AD';
 
     return (
-        <aside className="sidebar">
+        <aside className={`sidebar${isOpen ? ' open' : ''}`}>
             <div className="sidebar-logo">
                 <img src="/logo.png" alt="FA Logo" className="sidebar-logo-icon" style={{ padding: 0, objectFit: 'cover' }} />
                 <div className="sidebar-logo-text">

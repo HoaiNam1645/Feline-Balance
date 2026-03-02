@@ -47,6 +47,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::put('/profiles/{id}', [ProfileController::class, 'update']);
     Route::get('/profiles/{id}/logs', [ProfileController::class, 'logs']);
     Route::get('/profiles/{id}/2fa-code', [ProfileController::class, 'get2faCode']);
+    Route::get('/profiles/{id}/2fa-logs', [ProfileController::class, 'profileTwoFaLogs']);
     Route::get('/2fa-logs', [ProfileController::class, 'twoFaLogs']);
     Route::post('/profiles/import-seller-csv', [ProfileController::class, 'importSellerCsv']);
 

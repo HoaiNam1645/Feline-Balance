@@ -246,6 +246,53 @@ class ProfileController extends Controller
     }
 
     /**
+     * Get 2FA logs for a specific profile.
+     */
+    public function profileTwoFaLogs(Request $request, $id): JsonResponse
+    {
+        try {
+            // Find the profile name to filter logs
+            $profile = \App\Models\Profile::find($id);
+            if (!$profile) {
+                return response()->json(['success' => false, 'message' => 'Profile not found'], 404);
+            }
+
+            $query = TwoFaLog::query()->where('profile_id', $profile->id);
+
+            $sortDir = $request->query('sort', 'desc');
+            $query->orderBy('created_at', $sortDir);
+
+            if ($request->filled('user_role')) {
+                $query->where('user_role', $request->query('user_role'));
+            }
+
+            if ($request->filled('status')) {
+                $status = $request->query('status') === 'success' ? 1 : 0;
+                $query->where('success', $status);
+            }
+
+            $perPage = $request->query('per_page', 20);
+            $paginator = $query->paginate($perPage);
+
+            return response()->json([
+                'success' => true,
+                'data' => $paginator->items(),
+                'pagination' => [
+                    'current_page' => $paginator->currentPage(),
+                    'last_page'    => $paginator->lastPage(),
+                    'per_page'     => $paginator->perPage(),
+                    'total'        => $paginator->total(),
+                ],
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error fetching profile 2FA logs: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
      * Import CSV or XLSX to update seller_name and bank_full for profiles.
      * CSV columns: SellerName | AccountNo | Store
      * Match logic: last 4 digits of AccountNo == bank_last4 AND Store == profile_name

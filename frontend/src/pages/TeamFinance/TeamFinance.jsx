@@ -57,7 +57,7 @@ function ConfirmModal({ isOpen, onClose, onConfirm, title, message }) {
     );
 }
 
-export default function TeamFinancePage() {
+export default function TeamFinancePage({ onMenuClick }) {
     const [teams, setTeams] = useState([]);
     const [allUsers, setAllUsers] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -266,6 +266,7 @@ export default function TeamFinancePage() {
                 title="Team Finance Management"
                 onRefresh={fetchTeams}
                 loading={loading}
+                onMenuClick={onMenuClick}
             />
             <div className="page-content">
                 <div className="filters-bar" style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '16px' }}>

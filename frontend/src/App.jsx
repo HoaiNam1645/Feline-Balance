@@ -25,6 +25,7 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
   const [checking, setChecking] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Check for existing token on mount
   useEffect(() => {
@@ -57,6 +58,11 @@ export default function App() {
     } else {
       setChecking(false);
     }
+  }, []);
+
+  // Close sidebar when route changes
+  useEffect(() => {
+    setSidebarOpen(false);
   }, []);
 
   const handleLogin = useCallback((userData, authToken) => {
@@ -99,48 +105,53 @@ export default function App() {
         </Routes>
       ) : (
         <div className="app-layout">
-          <Sidebar user={user} onLogout={handleLogout} />
+          {/* Mobile sidebar overlay */}
+          <div
+            className={`sidebar-overlay ${sidebarOpen ? 'visible' : ''}`}
+            onClick={() => setSidebarOpen(false)}
+          />
+          <Sidebar user={user} onLogout={handleLogout} isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
           <main className="main-content">
             <Routes>
               <Route path="/" element={<Navigate to="/dashboard" replace />} />
               <Route path="/login" element={<Navigate to="/dashboard" replace />} />
-              <Route path="/dashboard" element={<DashboardPage />} />
-              <Route path="/profiles" element={<ProfilesPage />} />
-              <Route path="/topup" element={<TopupPage />} />
+              <Route path="/dashboard" element={<DashboardPage onMenuClick={() => setSidebarOpen(true)} />} />
+              <Route path="/profiles" element={<ProfilesPage onMenuClick={() => setSidebarOpen(true)} />} />
+              <Route path="/topup" element={<TopupPage onMenuClick={() => setSidebarOpen(true)} />} />
 
               <Route path="/teams" element={
                 <ProtectedRoute user={user} allowedRoles={['super_admin']}>
-                  <TeamsPage />
+                  <TeamsPage onMenuClick={() => setSidebarOpen(true)} />
                 </ProtectedRoute>
               } />
               <Route path="/vendors" element={
                 <ProtectedRoute user={user} allowedRoles={['super_admin']}>
-                  <VendorsPage />
+                  <VendorsPage onMenuClick={() => setSidebarOpen(true)} />
                 </ProtectedRoute>
               } />
               <Route path="/users" element={
                 <ProtectedRoute user={user} allowedRoles={['super_admin']}>
-                  <UsersPage />
+                  <UsersPage onMenuClick={() => setSidebarOpen(true)} />
                 </ProtectedRoute>
               } />
               <Route path="/roles" element={
                 <ProtectedRoute user={user} allowedRoles={['super_admin']}>
-                  <RolesPage />
+                  <RolesPage onMenuClick={() => setSidebarOpen(true)} />
                 </ProtectedRoute>
               } />
               <Route path="/team-finances" element={
                 <ProtectedRoute user={user} allowedRoles={['super_admin', 'admin']}>
-                  <TeamFinancePage />
+                  <TeamFinancePage onMenuClick={() => setSidebarOpen(true)} />
                 </ProtectedRoute>
               } />
-              <Route path="/stores" element={<StorePage />} />
+              <Route path="/stores" element={<StorePage onMenuClick={() => setSidebarOpen(true)} />} />
 
-              <Route path="/design-statistics" element={<DesignStatisticsPage />} />
-              <Route path="/fulfillment-statistics" element={<FulfillmentStatisticsPage />} />
-              <Route path="/media" element={<MediaPage />} />
-              <Route path="/employees" element={<EmployeesPage />} />
-              <Route path="/employees/:id" element={<EmployeeDetailPage />} />
-              <Route path="/payrolls" element={<PayrollsPage />} />
+              <Route path="/design-statistics" element={<DesignStatisticsPage onMenuClick={() => setSidebarOpen(true)} />} />
+              <Route path="/fulfillment-statistics" element={<FulfillmentStatisticsPage onMenuClick={() => setSidebarOpen(true)} />} />
+              <Route path="/media" element={<MediaPage onMenuClick={() => setSidebarOpen(true)} />} />
+              <Route path="/employees" element={<EmployeesPage onMenuClick={() => setSidebarOpen(true)} />} />
+              <Route path="/employees/:id" element={<EmployeeDetailPage onMenuClick={() => setSidebarOpen(true)} />} />
+              <Route path="/payrolls" element={<PayrollsPage onMenuClick={() => setSidebarOpen(true)} />} />
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>
           </main>

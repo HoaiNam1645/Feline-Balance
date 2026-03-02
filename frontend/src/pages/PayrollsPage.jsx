@@ -162,7 +162,7 @@ function PayrollFormModal({ isOpen, onClose, onSubmit, formData, onChange, title
 const emptyPayrollForm = { employee_id: '', contract_id: '', month: new Date().getMonth() + 1, year: new Date().getFullYear(), work_days: 27, paid_leave_days: 0, unpaid_leave_days: 0, bonus: 0, penalty: 0, payment_status: 'pending', note: '' };
 
 /* ── Main Page ── */
-export default function PayrollsPage() {
+export default function PayrollsPage({ onMenuClick }) {
     const [payrolls, setPayrolls] = useState([]);
     const [summary, setSummary] = useState({});
     const [employees, setEmployees] = useState([]);
@@ -322,7 +322,7 @@ export default function PayrollsPage() {
         <>
             <Topbar
                 section="Human Resources" breadcrumb="Payroll" title="Payroll"
-                onRefresh={fetchPayrolls} loading={loading}
+                onRefresh={fetchPayrolls} loading={loading} onMenuClick={onMenuClick}
             />
             <div className="page-content">
                 {/* Stats */}

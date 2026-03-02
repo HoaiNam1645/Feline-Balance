@@ -110,7 +110,7 @@ function TeamFormModal({ isOpen, onClose, onSubmit, formData, onChange, title, s
 }
 
 /* ── Main Page ── */
-export default function TeamsPage() {
+export default function TeamsPage({ onMenuClick }) {
     const [teams, setTeams] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -227,6 +227,7 @@ export default function TeamsPage() {
                 title="Team Management"
                 onRefresh={fetchTeams}
                 loading={loading}
+                onMenuClick={onMenuClick}
             />
             <div className="page-content">
 

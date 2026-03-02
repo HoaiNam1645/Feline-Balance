@@ -307,7 +307,7 @@ function ChartCard({ title, subtitle, children, style = {}, legend }) {
    ██  MAIN DASHBOARD PAGE
    ═══════════════════════════════════════════ */
 
-export default function DashboardPage() {
+export default function DashboardPage({ onMenuClick }) {
     const [searchParams, setSearchParams] = useSearchParams();
 
     const [data, setData] = useState(null);
@@ -373,7 +373,7 @@ export default function DashboardPage() {
 
     return (
         <>
-            <Topbar section="Overview" breadcrumb="Dashboard" title="Dashboard" onRefresh={fetchDashboard} loading={loading} />
+            <Topbar section="Overview" breadcrumb="Dashboard" title="Dashboard" onRefresh={fetchDashboard} loading={loading} onMenuClick={onMenuClick} />
             <div className="page-content">
                 {/* Tab Bar */}
                 <div style={{

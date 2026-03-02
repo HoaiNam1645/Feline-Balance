@@ -196,7 +196,7 @@ function ContractCard({ contract, isCurrent, onEdit, onDelete }) {
 /* ════════════════════════════════════════════════════════════════ */
 const emptyContractForm = { type: 'probation', salary: '', standard_work_days: '27', start_date: '', end_date: '', is_current: true };
 
-export default function EmployeeDetailPage() {
+export default function EmployeeDetailPage({ onMenuClick }) {
     const { id } = useParams();
     const navigate = useNavigate();
 
@@ -337,7 +337,7 @@ export default function EmployeeDetailPage() {
     if (loading) {
         return (
             <>
-                <Topbar section="Human Resources" breadcrumb="Employee Detail" title="Loading..." />
+                <Topbar section="Human Resources" breadcrumb="Employee Detail" title="Loading..." onMenuClick={onMenuClick} />
                 <div className="page-content" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 400 }}>
                     <div className="spinner" style={{ width: 32, height: 32 }} />
                 </div>
@@ -349,7 +349,7 @@ export default function EmployeeDetailPage() {
     if (!employee) {
         return (
             <>
-                <Topbar section="Human Resources" breadcrumb="Employee Detail" title="Not Found" />
+                <Topbar section="Human Resources" breadcrumb="Employee Detail" title="Not Found" onMenuClick={onMenuClick} />
                 <div className="page-content" style={{ textAlign: 'center', paddingTop: 100 }}>
                     <User size={60} style={{ color: 'var(--text-muted)', marginBottom: 16 }} />
                     <h3 style={{ color: 'var(--text-primary)' }}>Employee Not Found</h3>
@@ -380,6 +380,7 @@ export default function EmployeeDetailPage() {
                 section="Human Resources" breadcrumb="Employee Detail"
                 title={employee.name}
                 onRefresh={fetchEmployee} loading={loading}
+                onMenuClick={onMenuClick}
             />
             <div className="page-content">
                 {/* Back button */}
