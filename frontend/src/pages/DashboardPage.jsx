@@ -833,26 +833,39 @@ function DesignTab({ data, year, month }) {
    ██  TAB: FULFILLMENT STATISTICS
    ═══════════════════════════════════════════ */
 function FulfillmentTab({ data, year, month }) {
-    const { summary, monthly, by_team, top_fulfillers } = data;
+    const { summary, monthly, monthly_store, by_team, top_fulfillers, top_stores } = data;
     const chartData = useMemo(() => fillChartData(monthly, ['total_orders', 'total_price'], year, month), [monthly, year, month]);
+    const storeChartData = useMemo(() => fillChartData(monthly_store, ['total_orders', 'store_count'], year, month), [monthly_store, year, month]);
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             {summary && (
-                <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
-                    <StatCard label="Total Orders" value={fmtNumber(summary.total_orders)} icon={Package} color={COLORS.teal} sub="Fulfilled orders" />
-                    <StatCard label="Total Revenue" value={fmtMoney(summary.total_price)} icon={DollarSign} color={COLORS.primary} sub="Fulfillment price" />
+                <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
+                    <StatCard label="Total Orders" value={fmtNumber(summary.total_orders)} icon={Package} color={COLORS.teal} sub="By fulfillers" />
+                    <StatCard label="Total Revenue" value={fmtMoney(summary.total_price)} icon={DollarSign} color={COLORS.primary} sub="User fulfillment" />
+                    <StatCard label="Active Stores" value={fmtNumber(summary.total_stores)} icon={Store} color={COLORS.purple} sub="Unique stores" />
+                    <StatCard label="Store Orders" value={fmtNumber(summary.store_total_orders)} icon={CreditCard} color={COLORS.cyan} sub="By store" />
                 </div>
             )}
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-                <ChartCard title="Monthly Orders" subtitle="Order volume trend">
+                <ChartCard title="Monthly Orders (User)" subtitle="Fulfiller order volume">
                     <SmoothAreaChart
                         data={chartData}
                         areas={[{ dataKey: 'total_orders', name: 'Orders', color: COLORS.teal }]}
                         formatter={fmtNumber}
                     />
                 </ChartCard>
+                <ChartCard title="Monthly Orders (Store)" subtitle="Store order volume">
+                    <SmoothAreaChart
+                        data={storeChartData}
+                        areas={[{ dataKey: 'total_orders', name: 'Store Orders', color: COLORS.purple }]}
+                        formatter={fmtNumber}
+                    />
+                </ChartCard>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
                 <ChartCard title="Monthly Revenue" subtitle="Revenue trend">
                     <SmoothAreaChart
                         data={chartData}
@@ -861,10 +874,17 @@ function FulfillmentTab({ data, year, month }) {
                         yFormatter={fmtMoneyShort}
                     />
                 </ChartCard>
+                <ChartCard title="Active Stores / Month" subtitle="Unique stores per month">
+                    <SmoothAreaChart
+                        data={storeChartData}
+                        areas={[{ dataKey: 'store_count', name: 'Stores', color: COLORS.cyan }]}
+                        formatter={fmtNumber}
+                    />
+                </ChartCard>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-                <ChartCard title="Top Fulfillers" subtitle="By order count">
+                <ChartCard title="Top Fulfillers" subtitle="By order count (User)">
                     <MiniRankingTable
                         items={top_fulfillers}
                         columns={[
@@ -874,6 +894,20 @@ function FulfillmentTab({ data, year, month }) {
                         ]}
                     />
                 </ChartCard>
+                <ChartCard title="Top Stores" subtitle="By order count (Store)">
+                    <MiniRankingTable
+                        items={top_stores}
+                        columns={[
+                            { key: 'account_code', label: 'Store', bold: true, render: r => r.account_code || `Store #${r.external_id}` },
+                            { key: 'name', label: 'Owner', color: COLORS.purple },
+                            { key: 'total_orders', label: 'Orders', align: 'right', bold: true, color: COLORS.teal, render: r => fmtNumber(r.total_orders) },
+                            { key: 'total_price', label: 'Revenue', align: 'right', color: COLORS.primary, render: r => fmtMoney(r.total_price) },
+                        ]}
+                    />
+                </ChartCard>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 20 }}>
                 <ChartCard title="Team Comparison" subtitle="Orders by team">
                     <HorizontalBar items={by_team} valueKey="total_orders" color={COLORS.teal} formatValue={fmtNumber} />
                 </ChartCard>

@@ -470,7 +470,19 @@ class DashboardController extends Controller
         $totalOrders = (clone $base)->sum('order_count');
         $totalPrice = (clone $base)->sum('total_price');
 
-        // Monthly
+        // Store-level summary
+        $storeBase = DB::table('fulfillment_statistics')
+            ->where('year', $year)
+            ->where('type', 'store')
+            ->where('fulfill_unit_id', 0);
+        if ($month) $storeBase->where('month', $month);
+        if ($teamId) $storeBase->where('team_id', $teamId);
+
+        $totalStores = (clone $storeBase)->distinct('external_id')->count('external_id');
+        $storeTotalOrders = (clone $storeBase)->sum('order_count');
+        $storeTotalPrice = (clone $storeBase)->sum('total_price');
+
+        // Monthly (user type)
         $monthly = DB::table('fulfillment_statistics')
             ->where('year', $year)
             ->where('type', 'user')
@@ -478,6 +490,18 @@ class DashboardController extends Controller
             ->when($month, fn($q) => $q->where('month', $month))
             ->when($teamId, fn($q) => $q->where('team_id', $teamId))
             ->selectRaw("month, SUM(order_count) as total_orders, SUM(total_price) as total_price")
+            ->groupBy('month')
+            ->orderBy('month')
+            ->get();
+
+        // Monthly (store type)
+        $monthlyStore = DB::table('fulfillment_statistics')
+            ->where('year', $year)
+            ->where('type', 'store')
+            ->where('fulfill_unit_id', 0)
+            ->when($month, fn($q) => $q->where('month', $month))
+            ->when($teamId, fn($q) => $q->where('team_id', $teamId))
+            ->selectRaw("month, COUNT(DISTINCT external_id) as store_count, SUM(order_count) as total_orders, SUM(total_price) as total_price")
             ->groupBy('month')
             ->orderBy('month')
             ->get();
@@ -496,7 +520,7 @@ class DashboardController extends Controller
             ->orderByDesc('total_orders')
             ->get();
 
-        // Top fulfillers
+        // Top fulfillers (user)
         $topFulfillers = DB::table('fulfillment_statistics')
             ->where('year', $year)
             ->where('type', 'user')
@@ -509,14 +533,32 @@ class DashboardController extends Controller
             ->limit(10)
             ->get();
 
+        // Top stores
+        $topStores = DB::table('fulfillment_statistics')
+            ->where('year', $year)
+            ->where('type', 'store')
+            ->where('fulfill_unit_id', 0)
+            ->when($month, fn($q) => $q->where('month', $month))
+            ->when($teamId, fn($q) => $q->where('team_id', $teamId))
+            ->selectRaw("external_id, name, account_code, SUM(order_count) as total_orders, SUM(total_price) as total_price")
+            ->groupBy('external_id', 'name', 'account_code')
+            ->orderByDesc('total_orders')
+            ->limit(10)
+            ->get();
+
         return [
             'summary' => [
                 'total_orders' => $totalOrders,
                 'total_price' => round($totalPrice, 2),
+                'total_stores' => $totalStores,
+                'store_total_orders' => $storeTotalOrders,
+                'store_total_price' => round($storeTotalPrice, 2),
             ],
             'monthly' => $monthly,
+            'monthly_store' => $monthlyStore,
             'by_team' => $byTeam,
             'top_fulfillers' => $topFulfillers,
+            'top_stores' => $topStores,
         ];
     }
 }
