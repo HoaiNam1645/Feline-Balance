@@ -422,7 +422,7 @@ function OverviewTab({ data, year, month }) {
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
             {summary && (
-                <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
+                <div className="stats-grid">
                     <StatCard label="Total Income" value={fmtMoney(summary.total_income)} icon={ArrowDownCircle} color={COLORS.income} sub="From all topup" />
                     <StatCard label="Total Expense" value={fmtMoney(summary.total_expense)} icon={ArrowUpCircle} color={COLORS.expense} sub="From all topup" />
                     <StatCard label="Net Profit" value={fmtMoney(summary.net_profit)} icon={TrendingUp} color={COLORS.primary} sub="Income − Expense" />
