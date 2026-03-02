@@ -366,26 +366,21 @@ export default function UsersPage() {
                 </div>
 
                 {/* Filters & Actions */}
-                <div className="filters-bar" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px' }}>
-                    <div style={{ display: 'flex', gap: '12px', flex: 1 }}>
-                        <form onSubmit={handleSearchSubmit} style={{ display: 'flex', gap: '8px', maxWidth: '360px', width: '100%' }}>
-                            <div className="filter-group" style={{ position: 'relative', flex: 1 }}>
-                                <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                                <input
-                                    className="filter-input"
-                                    type="text"
-                                    placeholder="Search by name, email, username..."
-                                    value={searchInput}
-                                    onChange={e => setSearchInput(e.target.value)}
-                                    style={{ width: '100%', paddingLeft: '36px' }}
-                                />
-                            </div>
-                            <button type="submit" className="btn btn-ghost" style={{ padding: '8px 14px' }}>Search</button>
-                        </form>
+                <div className="filters-bar">
+                    <div className="filter-group">
+                        <Search size={15} style={{ color: 'var(--text-muted)' }} />
+                        <input
+                            className="filter-input"
+                            type="text"
+                            placeholder="Search by name, email, username..."
+                            value={searchInput}
+                            onChange={e => setSearchInput(e.target.value)}
+                            onKeyDown={(e) => { if (e.key === 'Enter') handleSearchSubmit(e); }}
+                        />
                     </div>
-                    <div>
-                        <button className="btn btn-primary" onClick={openCreateModal} style={{ display: 'flex', alignItems: 'center', gap: '6px', height: '100%' }}>
-                            <Plus size={16} /> New User
+                    <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
+                        <button className="btn btn-primary" onClick={openCreateModal} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <Plus size={14} /> New User
                         </button>
                     </div>
                 </div>

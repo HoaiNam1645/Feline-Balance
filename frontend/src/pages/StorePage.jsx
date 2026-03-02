@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Store as StoreIcon, Plus, Pencil, Trash2, X, Search, Eye, DollarSign, CreditCard, Calendar, Upload, FileSpreadsheet, CheckCircle, AlertTriangle } from 'lucide-react';
+import { Store as StoreIcon, Plus, Pencil, Trash2, X, Search, Eye, DollarSign, CreditCard, Calendar, Upload, FileSpreadsheet, CheckCircle, AlertTriangle, Filter } from 'lucide-react';
 import Topbar from '../components/Topbar';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
@@ -534,34 +534,37 @@ export default function StorePage() {
                 </div>
 
                 {/* Filters & Actions */}
-                <div className="filters-bar" style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '16px', flexWrap: 'wrap', gap: '12px' }}>
-                    <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center', flex: 1 }}>
-                        <form onSubmit={handleSearchSubmit} style={{ display: 'flex', gap: '8px' }}>
-                            <div style={{ position: 'relative' }}>
-                                <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                                <input
-                                    className="filter-input" type="text" placeholder="Search name, account..."
-                                    value={searchInput} onChange={e => setSearchInput(e.target.value)}
-                                    style={{ width: '220px', paddingLeft: '36px' }}
-                                />
-                            </div>
-                            <button type="submit" className="btn btn-ghost" style={{ padding: '8px 14px' }}>Search</button>
-                        </form>
-                        <select className="filter-input" value={filterTeam} onChange={e => { setFilterTeam(e.target.value); setPage(1); }} style={{ width: '180px' }}>
+                <div className="filters-bar">
+                    <div className="filter-group">
+                        <Search size={15} style={{ color: 'var(--text-muted)' }} />
+                        <input
+                            className="filter-input" type="text" placeholder="Search name, account..."
+                            value={searchInput} onChange={e => { setSearchInput(e.target.value); }}
+                            onKeyDown={(e) => { if (e.key === 'Enter') handleSearchSubmit(e); }}
+                        />
+                    </div>
+
+                    <div className="filter-group">
+                        <Filter size={14} style={{ color: 'var(--text-muted)' }} />
+                        <select className="filter-select" value={filterTeam} onChange={e => { setFilterTeam(e.target.value); setPage(1); }}>
                             <option value="">All Teams</option>
                             {teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                         </select>
-                        <select className="filter-input" value={filterUser} onChange={e => { setFilterUser(e.target.value); setPage(1); }} style={{ width: '180px' }}>
+                    </div>
+
+                    <div className="filter-group">
+                        <select className="filter-select" value={filterUser} onChange={e => { setFilterUser(e.target.value); setPage(1); }}>
                             <option value="">All Users</option>
                             {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
                         </select>
                     </div>
-                    <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                        <button className="btn btn-ghost" onClick={() => { setImportFile(null); setImportResult(null); setImportModalOpen(true); }} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px', height: '100%' }}>
-                            <Upload size={16} /> Import CSV
+
+                    <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
+                        <button className="btn btn-ghost" onClick={() => { setImportFile(null); setImportResult(null); setImportModalOpen(true); }} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <Upload size={14} /> Import CSV
                         </button>
-                        <button className="btn btn-primary" onClick={openCreateModal} style={{ display: 'flex', alignItems: 'center', gap: '6px', height: '100%' }}>
-                            <Plus size={16} /> New Store
+                        <button className="btn btn-primary" onClick={openCreateModal} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <Plus size={14} /> New Store
                         </button>
                     </div>
                 </div>

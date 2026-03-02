@@ -286,38 +286,42 @@ export default function DesignStatisticsPage() {
                 </div>
 
                 {/* Filters */}
-                <div style={{ marginBottom: '16px', display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
-                    {/* User search */}
-                    <div style={{ position: 'relative', flex: '0 1 240px' }}>
-                        <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+                <div className="filters-bar">
+                    <div className="filter-group">
+                        <Search size={15} style={{ color: 'var(--text-muted)' }} />
                         <input
                             className="filter-input"
                             placeholder="Search by user..."
                             value={userFilter}
                             onChange={e => handleUserSearch(e.target.value)}
-                            style={{ width: '100%', paddingLeft: '36px' }}
                         />
                     </div>
 
-                    {/* Team filter */}
-                    <select className="filter-select" value={teamFilter} onChange={e => setTeamFilter(e.target.value)} style={{ minWidth: '160px' }}>
-                        <option value="">All Teams</option>
-                        {teamOptions.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-                    </select>
+                    <div className="filter-group">
+                        <Filter size={14} style={{ color: 'var(--text-muted)' }} />
+                        <select className="filter-select" value={teamFilter} onChange={e => setTeamFilter(e.target.value)}>
+                            <option value="">All Teams</option>
+                            {teamOptions.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                        </select>
+                    </div>
 
-                    {/* Year filter */}
-                    <select className="filter-select" value={year} onChange={e => setYear(Number(e.target.value))} style={{ minWidth: '100px' }}>
-                        {yearOptions.map(y => <option key={y} value={y}>{y}</option>)}
-                    </select>
+                    <div className="filter-group">
+                        <select className="filter-select year-select" value={year} onChange={e => setYear(Number(e.target.value))}>
+                            {yearOptions.map(y => <option key={y} value={y}>{y}</option>)}
+                        </select>
+                    </div>
 
-                    {/* Month filter */}
-                    <select className="filter-select" value={month} onChange={e => setMonth(Number(e.target.value))} style={{ minWidth: '130px' }}>
-                        {MONTHS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
-                    </select>
+                    <div className="filter-group">
+                        <select className="filter-select" value={month} onChange={e => setMonth(Number(e.target.value))}>
+                            {MONTHS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
+                        </select>
+                    </div>
 
-                    <span style={{ fontSize: '13px', color: 'var(--text-muted)', marginLeft: 'auto' }}>
-                        Showing {data.length} / {pagination.total} designers
-                    </span>
+                    <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px', alignItems: 'center' }}>
+                        <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>
+                            Showing {data.length} / {pagination.total} designers
+                        </span>
+                    </div>
                 </div>
 
                 {/* Table */}

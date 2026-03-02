@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { Search, Plus, Trash2, Pencil, X, Image as ImageIcon, DollarSign, Hash, Upload, Clock, CheckCircle2 } from 'lucide-react';
+import { Search, Plus, Trash2, Pencil, X, Image as ImageIcon, DollarSign, Hash, Upload, Clock, CheckCircle2, Filter } from 'lucide-react';
 import Topbar from '../components/Topbar';
 import DataTable from '../components/DataTable';
 
@@ -510,36 +510,37 @@ export default function MediaPage() {
                     </div>
 
                     <div className="filter-group">
-                        <select className="filter-select" value={yearFilter} onChange={(e) => { setYearFilter(e.target.value); setPage(1); }} style={{ width: '80px', minWidth: '80px' }}>
+                        <Filter size={14} style={{ color: 'var(--text-muted)' }} />
+                        <select className="filter-select year-select" value={yearFilter} onChange={(e) => { setYearFilter(e.target.value); setPage(1); }}>
                             <option value="">Year</option>
                             {[2024, 2025, 2026].map(y => <option key={y} value={y}>{y}</option>)}
                         </select>
                     </div>
 
                     <div className="filter-group">
-                        <select className="filter-select" value={teamFilter} onChange={(e) => { setTeamFilter(e.target.value); setPage(1); }} style={{ width: '120px', minWidth: '120px' }}>
+                        <select className="filter-select" value={teamFilter} onChange={(e) => { setTeamFilter(e.target.value); setPage(1); }}>
                             <option value="">All Teams</option>
                             {teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                         </select>
                     </div>
 
                     <div className="filter-group">
-                        <select className="filter-select" value={bankFilter} onChange={(e) => { setBankFilter(e.target.value); setPage(1); }} style={{ width: '130px', minWidth: '130px' }}>
+                        <select className="filter-select" value={bankFilter} onChange={(e) => { setBankFilter(e.target.value); setPage(1); }}>
                             <option value="">All Banks</option>
                             {BANKS.map(b => <option key={b.value} value={b.value}>{b.label}</option>)}
                         </select>
                     </div>
 
                     <div className="filter-group">
-                        <select className="filter-select" value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }} style={{ width: '110px', minWidth: '110px' }}>
+                        <select className="filter-select" value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setPage(1); }}>
                             <option value="">All Status</option>
                             {STATUSES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
                         </select>
                     </div>
 
-                    <div style={{ marginLeft: 'auto' }}>
-                        <button className="btn btn-primary" onClick={openCreateModal} style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '10px 18px' }}>
-                            <Plus size={16} /> New Record
+                    <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
+                        <button className="btn btn-primary" onClick={openCreateModal} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <Plus size={14} /> New Record
                         </button>
                     </div>
                 </div>

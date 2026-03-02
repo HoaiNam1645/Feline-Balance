@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
-import { Search, Download, Filter, Database, X, FileText, Upload, CheckCircle, AlertTriangle, Key } from 'lucide-react';
+import { Search, Download, Filter, Database, X, FileText, Upload, CheckCircle, AlertTriangle, Key, Shield } from 'lucide-react';
 import Topbar from '../components/Topbar';
 import StatsCards from '../components/StatsCards';
 
@@ -60,10 +60,20 @@ export default function ProfilesPage() {
 
     // Log modal states
     const [logModalProfileId, setLogModalProfileId] = useState(null);
+    const [logModalTab, setLogModalTab] = useState('fetch'); // 'fetch' | '2fa'
     const [logs, setLogs] = useState([]);
     const [loadingLogs, setLoadingLogs] = useState(false);
     const [logsPage, setLogsPage] = useState(1);
     const [logsTotalPages, setLogsTotalPages] = useState(1);
+
+    // 2FA logs states
+    const [twoFaLogs, setTwoFaLogs] = useState([]);
+    const [loadingTwoFaLogs, setLoadingTwoFaLogs] = useState(false);
+    const [twoFaLogsPage, setTwoFaLogsPage] = useState(1);
+    const [twoFaLogsTotalPages, setTwoFaLogsTotalPages] = useState(1);
+    const [twoFaSort, setTwoFaSort] = useState('desc');
+    const [twoFaRole, setTwoFaRole] = useState('');
+    const [twoFaStatus, setTwoFaStatus] = useState('');
 
     // Import CSV states
     const [importModalOpen, setImportModalOpen] = useState(false);
@@ -80,6 +90,7 @@ export default function ProfilesPage() {
     // Fetch logs helper
     const openLogsModal = async (profileId, pageNum = 1) => {
         setLogModalProfileId(profileId);
+        setLogModalTab('fetch');
         setLoadingLogs(true);
         setLogsPage(pageNum);
         try {
@@ -98,11 +109,54 @@ export default function ProfilesPage() {
         }
     };
 
-    // Fetch teams from DB
+    // Fetch 2FA logs helper
+    const fetchTwoFaLogs = async (pageNum = 1, filters = {}) => {
+        setLoadingTwoFaLogs(true);
+        setTwoFaLogsPage(pageNum);
+
+        const sortParam = filters.sort !== undefined ? filters.sort : twoFaSort;
+        const roleParam = filters.role !== undefined ? filters.role : twoFaRole;
+        const statusParam = filters.status !== undefined ? filters.status : twoFaStatus;
+
+        try {
+            const token = localStorage.getItem('token');
+            const queryParams = new URLSearchParams({
+                page: pageNum,
+                per_page: 20,
+                sort: sortParam,
+                ...(roleParam && { user_role: roleParam }),
+                ...(statusParam && { status: statusParam }),
+            }).toString();
+
+            const res = await fetch(`${API_BASE}/api/2fa-logs?${queryParams}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const json = await res.json();
+            if (json.success) {
+                setTwoFaLogs(json.data);
+                setTwoFaLogsTotalPages(json.pagination.last_page);
+            }
+        } catch (err) {
+            addToast('Error fetching 2FA logs', 'error');
+        } finally {
+            setLoadingTwoFaLogs(false);
+        }
+    };
+
+    // Fetch teams and roles from DB
+    const [roles, setRoles] = useState([]);
     useEffect(() => {
-        fetch(`${API_BASE}/api/teams`)
+        const token = localStorage.getItem('token');
+        const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+
+        fetch(`${API_BASE}/api/teams`, { headers })
             .then(res => res.json())
             .then(json => { if (json.success) setTeams(json.data); })
+            .catch(() => { });
+
+        fetch(`${API_BASE}/api/roles`, { headers })
+            .then(res => res.json())
+            .then(json => { if (json.success) setRoles(json.data); })
             .catch(() => { });
     }, []);
 
@@ -835,76 +889,186 @@ export default function ProfilesPage() {
                 ))}
             </div>
 
-            {/* Fetch Logs Modal */}
+            {/* Logs Modal (with tabs: Fetch Logs + 2FA Logs) */}
             {logModalProfileId && (
                 <div className="modal-overlay" onClick={() => setLogModalProfileId(null)}>
-                    <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '800px', width: '90%' }}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '850px', width: '90%' }}>
                         <div className="modal-header">
-                            <h2>Fetch Logs</h2>
+                            <h2>Logs</h2>
                             <button className="btn btn-ghost" onClick={() => setLogModalProfileId(null)}><X size={18} /></button>
                         </div>
-                        <div className="modal-body" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
-                            {loadingLogs ? (
-                                <div style={{ textAlign: 'center', padding: '20px' }}>Loading logs...</div>
-                            ) : logs.length === 0 ? (
-                                <div style={{ textAlign: 'center', padding: '20px', color: 'var(--text-muted)' }}>No logs found for this profile.</div>
-                            ) : (
-                                <div>
-                                    <div className="table-scroll" style={{ maxHeight: 'calc(85vh - 180px)', margin: '-20px -24px', padding: '0' }}>
-                                        <table className="data-table" style={{ width: '100%' }}>
-                                            <thead>
-                                                <tr>
-                                                    <th className="sticky-col" style={{ left: 0, minWidth: '160px', zIndex: 10 }}>Time</th>
-                                                    <th style={{ minWidth: '100px' }}>Status</th>
-                                                    <th style={{ minWidth: '100px' }}>Duration</th>
-                                                    <th style={{ minWidth: '300px' }}>Error Message</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {logs.map(log => (
-                                                    <tr key={log.id}>
-                                                        <td className="sticky-col" style={{ left: 0, background: 'var(--bg-table-row)' }}>
-                                                            {new Date(log.fetched_at).toLocaleString()}
-                                                        </td>
-                                                        <td>
-                                                            <span className={`status-badge ${log.status === 'success' ? 'active' : 'inactive'}`}>
-                                                                {log.status}
-                                                            </span>
-                                                        </td>
-                                                        <td>{log.duration_ms ? `${log.duration_ms} ms` : '-'}</td>
-                                                        <td style={{ color: log.status === 'success' ? 'var(--text-muted)' : 'var(--danger)', wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}>
-                                                            {log.error_message || '-'}
-                                                        </td>
-                                                    </tr>
-                                                ))}
-                                            </tbody>
-                                        </table>
-                                    </div>
 
-                                    {logsTotalPages > 1 && (
-                                        <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '16px' }}>
-                                            <button
-                                                className="btn btn-ghost"
-                                                disabled={logsPage <= 1}
-                                                onClick={() => openLogsModal(logModalProfileId, logsPage - 1)}
-                                                style={{ padding: '4px 12px' }}
-                                            >
-                                                Prev
-                                            </button>
-                                            <span style={{ padding: '4px 12px', fontSize: '13px', background: 'var(--bg-card)', borderRadius: '4px', border: '1px solid var(--border-color)', display: 'inline-flex', alignItems: 'center' }}>
-                                                {logsPage} / {logsTotalPages}
-                                            </span>
-                                            <button
-                                                className="btn btn-ghost"
-                                                disabled={logsPage >= logsTotalPages}
-                                                onClick={() => openLogsModal(logModalProfileId, logsPage + 1)}
-                                                style={{ padding: '4px 12px' }}
-                                            >
-                                                Next
-                                            </button>
+                        {/* Tab bar */}
+                        <div style={{ display: 'flex', gap: 2, padding: '0 20px 0', borderBottom: '1px solid var(--border-color)' }}>
+                            <button
+                                onClick={() => { setLogModalTab('fetch'); if (logs.length === 0) openLogsModal(logModalProfileId, 1); }}
+                                style={{
+                                    padding: '10px 16px', fontSize: 13, fontWeight: logModalTab === 'fetch' ? 700 : 500,
+                                    color: logModalTab === 'fetch' ? 'var(--primary)' : 'var(--text-secondary)',
+                                    background: 'none', border: 'none', cursor: 'pointer',
+                                    borderBottom: logModalTab === 'fetch' ? '2px solid var(--primary)' : '2px solid transparent',
+                                    display: 'flex', alignItems: 'center', gap: 6, marginBottom: -1,
+                                }}
+                            >
+                                <FileText size={14} /> Fetch Logs
+                            </button>
+                            <button
+                                onClick={() => { setLogModalTab('2fa'); if (twoFaLogs.length === 0) fetchTwoFaLogs(1); }}
+                                style={{
+                                    padding: '10px 16px', fontSize: 13, fontWeight: logModalTab === '2fa' ? 700 : 500,
+                                    color: logModalTab === '2fa' ? 'var(--primary)' : 'var(--text-secondary)',
+                                    background: 'none', border: 'none', cursor: 'pointer',
+                                    borderBottom: logModalTab === '2fa' ? '2px solid var(--primary)' : '2px solid transparent',
+                                    display: 'flex', alignItems: 'center', gap: 6, marginBottom: -1,
+                                }}
+                            >
+                                <Shield size={14} /> 2FA Logs
+                            </button>
+                        </div>
+
+                        <div className="modal-body" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+                            {/* ── Fetch Logs Tab ── */}
+                            {logModalTab === 'fetch' && (
+                                <>
+                                    {loadingLogs ? (
+                                        <div style={{ textAlign: 'center', padding: '20px' }}>Loading logs...</div>
+                                    ) : logs.length === 0 ? (
+                                        <div style={{ textAlign: 'center', padding: '20px', color: 'var(--text-muted)' }}>No fetch logs found for this profile.</div>
+                                    ) : (
+                                        <div>
+                                            <div className="table-scroll" style={{ maxHeight: 'calc(85vh - 240px)', margin: '-20px -24px', padding: '0' }}>
+                                                <table className="data-table" style={{ width: '100%' }}>
+                                                    <thead>
+                                                        <tr>
+                                                            <th className="sticky-col" style={{ left: 0, minWidth: '160px', zIndex: 10 }}>Time</th>
+                                                            <th style={{ minWidth: '100px' }}>Status</th>
+                                                            <th style={{ minWidth: '100px' }}>Duration</th>
+                                                            <th style={{ minWidth: '300px' }}>Error Message</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {logs.map(log => (
+                                                            <tr key={log.id}>
+                                                                <td className="sticky-col" style={{ left: 0, background: 'var(--bg-table-row)' }}>
+                                                                    {new Date(log.fetched_at).toLocaleString()}
+                                                                </td>
+                                                                <td>
+                                                                    <span className={`status-badge ${log.status === 'success' ? 'active' : 'inactive'}`}>
+                                                                        {log.status}
+                                                                    </span>
+                                                                </td>
+                                                                <td>{log.duration_ms ? `${log.duration_ms} ms` : '-'}</td>
+                                                                <td style={{ color: log.status === 'success' ? 'var(--text-muted)' : 'var(--danger)', wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}>
+                                                                    {log.error_message || '-'}
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            {logsTotalPages > 1 && (
+                                                <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '16px' }}>
+                                                    <button className="btn btn-ghost" disabled={logsPage <= 1} onClick={() => openLogsModal(logModalProfileId, logsPage - 1)} style={{ padding: '4px 12px' }}>Prev</button>
+                                                    <span style={{ padding: '4px 12px', fontSize: '13px', background: 'var(--bg-card)', borderRadius: '4px', border: '1px solid var(--border-color)', display: 'inline-flex', alignItems: 'center' }}>{logsPage} / {logsTotalPages}</span>
+                                                    <button className="btn btn-ghost" disabled={logsPage >= logsTotalPages} onClick={() => openLogsModal(logModalProfileId, logsPage + 1)} style={{ padding: '4px 12px' }}>Next</button>
+                                                </div>
+                                            )}
                                         </div>
                                     )}
-                                </div>
+                                </>
+                            )}
+
+                            {/* ── 2FA Logs Tab ── */}
+                            {logModalTab === '2fa' && (
+                                <>
+                                    {/* 2FA Filters */}
+                                    <div style={{ margin: '-20px -24px 0 -24px', padding: '16px 24px', borderBottom: '1px solid var(--border-color)', display: 'flex', gap: '12px', flexWrap: 'wrap', alignItems: 'center', background: 'var(--bg-secondary)' }}>
+                                        <select
+                                            className="filter-select"
+                                            value={twoFaSort}
+                                            onChange={e => { setTwoFaSort(e.target.value); fetchTwoFaLogs(1, { sort: e.target.value }); }}
+                                            style={{ minWidth: 140, padding: '8px 12px', fontSize: 13 }}
+                                        >
+                                            <option value="desc">Latest First</option>
+                                            <option value="asc">Oldest First</option>
+                                        </select>
+
+                                        <select
+                                            className="filter-select"
+                                            value={twoFaRole}
+                                            onChange={e => { setTwoFaRole(e.target.value); fetchTwoFaLogs(1, { role: e.target.value }); }}
+                                            style={{ minWidth: 140, padding: '8px 12px', fontSize: 13 }}
+                                        >
+                                            <option value="">All Roles</option>
+                                            {roles.map(r => (
+                                                <option key={r.id} value={r.name}>{r.display_name}</option>
+                                            ))}
+                                        </select>
+
+                                        <select
+                                            className="filter-select"
+                                            value={twoFaStatus}
+                                            onChange={e => { setTwoFaStatus(e.target.value); fetchTwoFaLogs(1, { status: e.target.value }); }}
+                                            style={{ minWidth: 140, padding: '8px 12px', fontSize: 13 }}
+                                        >
+                                            <option value="">All Statuses</option>
+                                            <option value="success">Success</option>
+                                            <option value="failed">Failed</option>
+                                        </select>
+                                    </div>
+
+                                    {loadingTwoFaLogs ? (
+                                        <div style={{ textAlign: 'center', padding: '20px' }}>Loading 2FA logs...</div>
+                                    ) : twoFaLogs.length === 0 ? (
+                                        <div style={{ textAlign: 'center', padding: '20px', color: 'var(--text-muted)' }}>No 2FA usage logs found.</div>
+                                    ) : (
+                                        <div>
+                                            <div className="table-scroll" style={{ maxHeight: 'calc(85vh - 300px)', margin: '0 -24px -20px -24px', padding: '0' }}>
+                                                <table className="data-table" style={{ width: '100%' }}>
+                                                    <thead>
+                                                        <tr>
+                                                            <th style={{ minWidth: '160px' }}>Time</th>
+                                                            <th style={{ minWidth: '120px' }}>User</th>
+                                                            <th style={{ minWidth: '100px' }}>Role</th>
+                                                            <th style={{ minWidth: '140px' }}>Profile</th>
+                                                            <th style={{ minWidth: '80px' }}>Status</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        {twoFaLogs.map(log => (
+                                                            <tr key={log.id}>
+                                                                <td>{new Date(log.created_at).toLocaleString()}</td>
+                                                                <td style={{ fontWeight: 600 }}>{log.user_name}</td>
+                                                                <td>
+                                                                    <span style={{
+                                                                        padding: '2px 8px', borderRadius: 4, fontSize: 11, fontWeight: 600,
+                                                                        background: log.user_role === 'super_admin' ? 'rgba(239,68,68,0.12)' : 'rgba(99,102,241,0.12)',
+                                                                        color: log.user_role === 'super_admin' ? '#ef4444' : '#818cf8',
+                                                                    }}>
+                                                                        {log.user_role}
+                                                                    </span>
+                                                                </td>
+                                                                <td>{log.profile_name || '-'}</td>
+                                                                <td>
+                                                                    <span className={`status-badge ${log.success ? 'active' : 'inactive'}`}>
+                                                                        {log.success ? 'Success' : 'Failed'}
+                                                                    </span>
+                                                                </td>
+                                                            </tr>
+                                                        ))}
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                            {twoFaLogsTotalPages > 1 && (
+                                                <div style={{ display: 'flex', justifyContent: 'center', gap: '8px', marginTop: '16px' }}>
+                                                    <button className="btn btn-ghost" disabled={twoFaLogsPage <= 1} onClick={() => fetchTwoFaLogs(twoFaLogsPage - 1)} style={{ padding: '4px 12px' }}>Prev</button>
+                                                    <span style={{ padding: '4px 12px', fontSize: '13px', background: 'var(--bg-card)', borderRadius: '4px', border: '1px solid var(--border-color)', display: 'inline-flex', alignItems: 'center' }}>{twoFaLogsPage} / {twoFaLogsTotalPages}</span>
+                                                    <button className="btn btn-ghost" disabled={twoFaLogsPage >= twoFaLogsTotalPages} onClick={() => fetchTwoFaLogs(twoFaLogsPage + 1)} style={{ padding: '4px 12px' }}>Next</button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </>
                             )}
                         </div>
                     </div>

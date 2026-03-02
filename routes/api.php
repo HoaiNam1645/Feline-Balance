@@ -47,6 +47,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::put('/profiles/{id}', [ProfileController::class, 'update']);
     Route::get('/profiles/{id}/logs', [ProfileController::class, 'logs']);
     Route::get('/profiles/{id}/2fa-code', [ProfileController::class, 'get2faCode']);
+    Route::get('/2fa-logs', [ProfileController::class, 'twoFaLogs']);
     Route::post('/profiles/import-seller-csv', [ProfileController::class, 'importSellerCsv']);
 
     // Transactions
@@ -99,6 +100,9 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::delete('/stores/{id}', [StoreController::class, 'destroy']);
     Route::get('/stores/{id}/payment-history', [StoreController::class, 'paymentHistory']);
     Route::post('/stores/import-csv', [StoreController::class, 'importCsv']);
+
+    // Roles (Read-only for all authenticated users to populate dropdowns)
+    Route::get('/roles', [RoleController::class, 'index']);
 });
 
 /*
@@ -115,7 +119,6 @@ Route::middleware(['jwt.auth', 'role.admin'])->group(function () {
     Route::delete('/users/{id}', [UserController::class, 'destroy']);
 
     // Roles
-    Route::get('/roles', [RoleController::class, 'index']);
     Route::post('/roles', [RoleController::class, 'store']);
     Route::put('/roles/{id}', [RoleController::class, 'update']);
     Route::delete('/roles/{id}', [RoleController::class, 'destroy']);

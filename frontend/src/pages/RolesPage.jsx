@@ -264,21 +264,19 @@ export default function RolesPage() {
         <>
             <Topbar section="Management" title="Role Management" onRefresh={fetchRoles} loading={loading} />
             <div className="page-content">
-                <div className="filters-bar" style={{ display: 'flex', justifyContent: 'space-between' }}>
-                    <div style={{ display: 'flex', gap: '12px', flex: 1 }}>
-                        <div className="filter-group">
-                            <Search size={15} style={{ color: 'var(--text-muted)' }} />
-                            <input
-                                className="filter-input"
-                                placeholder="Search by name..."
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                            />
-                        </div>
+                <div className="filters-bar">
+                    <div className="filter-group">
+                        <Search size={15} style={{ color: 'var(--text-muted)' }} />
+                        <input
+                            className="filter-input"
+                            placeholder="Search by name..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                        />
                     </div>
-                    <div>
-                        <button className="btn btn-primary" onClick={openCreateModal} style={{ display: 'flex', alignItems: 'center', gap: '6px', height: '100%' }}>
-                            <Plus size={16} /> Add New Role
+                    <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
+                        <button className="btn btn-primary" onClick={openCreateModal} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <Plus size={14} /> New Role
                         </button>
                     </div>
                 </div>

@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import {
     AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid,
-    Tooltip, ResponsiveContainer, Legend
+    Tooltip, ResponsiveContainer, Legend, ComposedChart, Line
 } from 'recharts';
 import Topbar from '../components/Topbar';
 
@@ -52,17 +52,46 @@ const fmtNumberShort = (v) => {
     return n.toFixed(0);
 };
 
-/* Prepare monthly data — fill all 12 months */
-function fillMonthly(data, keys) {
-    const map = {};
-    (data || []).forEach(d => { map[Number(d.month)] = d; });
-    return Array.from({ length: 12 }, (_, i) => {
-        const m = i + 1;
-        const existing = map[m] || {};
-        const row = { month: m, name: MONTHS_SHORT[i] };
-        keys.forEach(k => { row[k] = Number(existing[k] || 0); });
-        return row;
-    });
+/* Prepare chart data — fill yearly, monthly, or daily */
+function fillChartData(data, keys, year, month) {
+    if (!data || !data.length) return [];
+
+    // Check data shape to determine grouping
+    const isDaily = !!month && data.some(d => d.hasOwnProperty('day'));
+    const isYearly = !year && data.some(d => d.hasOwnProperty('year'));
+
+    if (isDaily) {
+        const m = Number(month);
+        const y = Number(year) || new Date().getFullYear();
+        const daysInMonth = new Date(y, m, 0).getDate();
+        const map = {};
+        data.forEach(d => { map[Number(d.day)] = d; });
+
+        return Array.from({ length: daysInMonth }, (_, i) => {
+            const d = i + 1;
+            const existing = map[d] || {};
+            const row = { name: `${d}/${m}` };
+            keys.forEach(k => { row[k] = Number(existing[k] || 0); });
+            return row;
+        });
+    } else if (isYearly) {
+        // All-time: just map each year as-is, no gap filling
+        return data.map(d => {
+            const row = { name: String(d.year) };
+            keys.forEach(k => { row[k] = Number(d[k] || 0); });
+            return row;
+        });
+    } else {
+        const map = {};
+        data.forEach(d => { map[Number(d.month)] = d; });
+        return Array.from({ length: 12 }, (_, i) => {
+            const m = i + 1;
+            const existing = map[m] || {};
+            const row = { name: MONTHS_SHORT[i] };
+            keys.forEach(k => { row[k] = Number(existing[k] || 0); });
+            return row;
+        });
+    }
 }
 
 /* ───────────── Custom Tooltip ───────────── */
@@ -317,12 +346,12 @@ export default function DashboardPage() {
         );
         if (!data) return <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)' }}>No data available</div>;
         switch (activeTab) {
-            case 'topup': return <TopupTab data={data} />;
-            case 'stores': return <StoresTab data={data} />;
-            case 'media': return <MediaTab data={data} />;
-            case 'design': return <DesignTab data={data} />;
-            case 'fulfillment': return <FulfillmentTab data={data} />;
-            default: return <OverviewTab data={data} />;
+            case 'topup': return <TopupTab data={data} year={year} month={month} />;
+            case 'stores': return <StoresTab teams={teams} />;
+            case 'media': return <MediaTab data={data} year={year} month={month} />;
+            case 'design': return <DesignTab data={data} year={year} month={month} />;
+            case 'fulfillment': return <FulfillmentTab data={data} year={year} month={month} />;
+            default: return <OverviewTab data={data} year={year} month={month} />;
         }
     };
 
@@ -354,26 +383,28 @@ export default function DashboardPage() {
                     })}
                 </div>
 
-                {/* Filters */}
-                <div className="filters-bar" style={{ marginBottom: 20 }}>
-                    <div className="filter-group">
-                        <select className="filter-select year-select" value={year} onChange={e => setYear(Number(e.target.value))} style={{ width: 90 }}>
-                            {[2024, 2025, 2026].map(y => <option key={y} value={y}>{y}</option>)}
-                        </select>
+                {/* Filters (Hidden for stores tab as it manages its own filters) */}
+                {activeTab !== 'stores' && (
+                    <div className="filters-bar" style={{ marginBottom: 20 }}>
+                        <div className="filter-group">
+                            <select className="filter-select year-select" value={year} onChange={e => setYear(Number(e.target.value))} style={{ width: 90 }}>
+                                {[2024, 2025, 2026].map(y => <option key={y} value={y}>{y}</option>)}
+                            </select>
+                        </div>
+                        <div className="filter-group">
+                            <select className="filter-select" value={month} onChange={e => setMonth(e.target.value)} style={{ width: 120 }}>
+                                <option value="">All Months</option>
+                                {MONTHS_SHORT.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
+                            </select>
+                        </div>
+                        <div className="filter-group">
+                            <select className="filter-select" value={teamId} onChange={e => setTeamId(e.target.value)} style={{ width: 140 }}>
+                                <option value="">All Teams</option>
+                                {teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                            </select>
+                        </div>
                     </div>
-                    <div className="filter-group">
-                        <select className="filter-select" value={month} onChange={e => setMonth(e.target.value)} style={{ width: 120 }}>
-                            <option value="">All Months</option>
-                            {MONTHS_SHORT.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
-                        </select>
-                    </div>
-                    <div className="filter-group">
-                        <select className="filter-select" value={teamId} onChange={e => setTeamId(e.target.value)} style={{ width: 140 }}>
-                            <option value="">All Teams</option>
-                            {teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
-                        </select>
-                    </div>
-                </div>
+                )}
 
                 {renderContent()}
             </div>
@@ -384,22 +415,24 @@ export default function DashboardPage() {
 /* ═══════════════════════════════════════════
    ██  TAB: OVERVIEW
    ═══════════════════════════════════════════ */
-function OverviewTab({ data }) {
+function OverviewTab({ data, year, month }) {
     const { summary, monthly_trend, team_comparison } = data;
-    const chartData = useMemo(() => fillMonthly(monthly_trend, ['income', 'expense']), [monthly_trend]);
+    const chartData = useMemo(() => fillChartData(monthly_trend, ['income', 'expense'], year, month), [monthly_trend, year, month]);
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
-                <StatCard label="Total Income" value={fmtMoney(summary.total_income)} icon={ArrowDownCircle} color={COLORS.income} sub="From all topup" />
-                <StatCard label="Total Expense" value={fmtMoney(summary.total_expense)} icon={ArrowUpCircle} color={COLORS.expense} sub="From all topup" />
-                <StatCard label="Net Profit" value={fmtMoney(summary.net_profit)} icon={TrendingUp} color={COLORS.primary} sub="Income − Expense" />
-                <StatCard label="Transactions" value={fmtNumber(summary.topup_count)} icon={Hash} color={COLORS.amber} sub="Total topup" />
-                <StatCard label="Stores" value={fmtNumber(summary.total_stores)} icon={Store} color={COLORS.cyan} sub="Payment stores" />
-                <StatCard label="Media Spend" value={fmtMoney(summary.media_total)} icon={ImageIcon} color={COLORS.pink} sub={`${summary.media_count} transactions`} />
-                <StatCard label="Designs" value={fmtNumber(summary.total_designs)} icon={Palette} color={COLORS.purple} sub="Total designs" />
-                <StatCard label="Fulfillment" value={fmtNumber(summary.total_orders)} icon={Package} color={COLORS.teal} sub={fmtMoney(summary.total_fulfill_price)} />
-            </div>
+            {summary && (
+                <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
+                    <StatCard label="Total Income" value={fmtMoney(summary.total_income)} icon={ArrowDownCircle} color={COLORS.income} sub="From all topup" />
+                    <StatCard label="Total Expense" value={fmtMoney(summary.total_expense)} icon={ArrowUpCircle} color={COLORS.expense} sub="From all topup" />
+                    <StatCard label="Net Profit" value={fmtMoney(summary.net_profit)} icon={TrendingUp} color={COLORS.primary} sub="Income − Expense" />
+                    <StatCard label="Transactions" value={fmtNumber(summary.topup_count)} icon={Hash} color={COLORS.amber} sub="Total topup" />
+                    <StatCard label="Stores" value={fmtNumber(summary.total_stores)} icon={Store} color={COLORS.cyan} sub="Payment stores" />
+                    <StatCard label="Media Spend" value={fmtMoney(summary.media_total)} icon={ImageIcon} color={COLORS.pink} sub={`${summary.media_count} transactions`} />
+                    <StatCard label="Designs" value={fmtNumber(summary.total_designs)} icon={Palette} color={COLORS.purple} sub="Total designs" />
+                    <StatCard label="Fulfillment" value={fmtNumber(summary.total_orders)} icon={Package} color={COLORS.teal} sub={fmtMoney(summary.total_fulfill_price)} />
+                </div>
+            )}
 
             <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 20 }}>
                 <ChartCard title="Revenue Overview" subtitle="Monthly income vs expense trend"
@@ -427,18 +460,20 @@ function OverviewTab({ data }) {
 /* ═══════════════════════════════════════════
    ██  TAB: TOPUP
    ═══════════════════════════════════════════ */
-function TopupTab({ data }) {
-    const { summary, monthly, by_method, by_team } = data;
-    const chartData = useMemo(() => fillMonthly(monthly, ['income', 'expense']), [monthly]);
+function TopupTab({ data, year, month }) {
+    const { summary, monthly, by_method, by_team, top_vendors } = data;
+    const chartData = useMemo(() => fillChartData(monthly, ['income', 'expense'], year, month), [monthly, year, month]);
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' }}>
-                <StatCard label="Income" value={fmtMoney(summary.total_income)} icon={ArrowDownCircle} color={COLORS.income} sub="Total income" />
-                <StatCard label="Expense" value={fmtMoney(summary.total_expense)} icon={ArrowUpCircle} color={COLORS.expense} sub="Total expense" />
-                <StatCard label="Net" value={fmtMoney(summary.net)} icon={DollarSign} color={COLORS.primary} sub="Income − Expense" />
-                <StatCard label="Transactions" value={fmtNumber(summary.count)} icon={Hash} color={COLORS.amber} sub={`${summary.completed} paid · ${summary.pending} pending`} />
-            </div>
+            {summary && (
+                <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' }}>
+                    <StatCard label="Income" value={fmtMoney(summary.total_income)} icon={ArrowDownCircle} color={COLORS.income} sub="Total income" />
+                    <StatCard label="Expense" value={fmtMoney(summary.total_expense)} icon={ArrowUpCircle} color={COLORS.expense} sub="Total expense" />
+                    <StatCard label="Net" value={fmtMoney(summary.net)} icon={DollarSign} color={COLORS.primary} sub="Income − Expense" />
+                    <StatCard label="Transactions" value={fmtNumber(summary.count)} icon={Hash} color={COLORS.amber} sub={`${summary.completed} paid · ${summary.pending} pending`} />
+                </div>
+            )}
 
             <ChartCard title="Monthly Trend" subtitle="Income vs Expense"
                 legend={[{ label: 'Income', color: COLORS.income }, { label: 'Expense', color: COLORS.expense }]}>
@@ -454,12 +489,21 @@ function TopupTab({ data }) {
                 />
             </ChartCard>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 20 }}>
                 <ChartCard title="By Payment Method" subtitle="Income distribution">
                     <HorizontalBar items={by_method} valueKey="income" labelKey="payment_method" color={COLORS.purple} formatValue={fmtMoney} />
                 </ChartCard>
                 <ChartCard title="Team Breakdown" subtitle="Income comparison">
                     <HorizontalBar items={by_team} valueKey="income" color={COLORS.cyan} formatValue={fmtMoney} />
+                </ChartCard>
+                <ChartCard title="Top Vendors" subtitle="By total transaction amount">
+                    <MiniRankingTable
+                        items={top_vendors}
+                        columns={[
+                            { key: 'vendor_name', label: 'Vendor', bold: true },
+                            { key: 'total_amount', label: 'Amount', align: 'right', bold: true, color: COLORS.primary, render: r => fmtMoney(r.total_amount) },
+                        ]}
+                    />
                 </ChartCard>
             </div>
         </div>
@@ -469,36 +513,185 @@ function TopupTab({ data }) {
 /* ═══════════════════════════════════════════
    ██  TAB: STORES
    ═══════════════════════════════════════════ */
-function StoresTab({ data }) {
-    const { summary, monthly, top_stores } = data;
-    const chartData = useMemo(() => fillMonthly(monthly, ['total_net', 'total_fee']), [monthly]);
+function StoresTab({ teams }) {
+    // ── Payment History local filter (default: all-time) ──
+    const [phYear, setPhYear] = useState('');
+    const [phMonth, setPhMonth] = useState('');
+
+    // ── Stores section local filter (default: current year) ──
+    const [storeYear, setStoreYear] = useState(new Date().getFullYear());
+    const [storeMonth, setStoreMonth] = useState('');
+    const [storeTeamId, setStoreTeamId] = useState('');
+
+    const [localData, setLocalData] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    const fetchData = useCallback(async () => {
+        setLoading(true);
+        try {
+            const token = localStorage.getItem('token');
+            const params = new URLSearchParams({ tab: 'stores', year: storeYear });
+            if (storeMonth) params.append('month', storeMonth);
+            if (storeTeamId) params.append('team_id', storeTeamId);
+            if (phYear) params.append('ph_year', phYear);
+            if (phMonth) params.append('ph_month', phMonth);
+            const res = await fetch(`${API_BASE}/api/dashboard?${params}`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            const json = await res.json();
+            if (json.success) {
+                setLocalData(json.data);
+            }
+        } catch (err) { console.error('Stores tab fetch error:', err); }
+        finally { setLoading(false); }
+    }, [storeYear, storeMonth, storeTeamId, phYear, phMonth]);
+
+    useEffect(() => { fetchData(); }, [fetchData]);
+
+    const chartData = useMemo(() => {
+        if (!localData) return [];
+        return fillChartData(localData.monthly, ['total_net', 'total_amount'], phYear, phMonth);
+    }, [localData, phYear, phMonth]);
+
+    if (!localData) {
+        return (
+            <div style={{ padding: 40, textAlign: 'center', color: 'var(--text-muted)' }}>
+                {loading ? 'Loading stores data...' : 'No data available'}
+            </div>
+        );
+    }
+
+    const { payment_years } = localData;
+
+    const sectionStyle = {
+        background: 'var(--card-bg)', borderRadius: 14, padding: 20,
+        border: '1px solid rgba(99,102,241,0.08)',
+        display: 'flex', flexDirection: 'column', gap: 16,
+    };
+    const filterBarStyle = {
+        display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px',
+        background: 'rgba(99,102,241,0.06)', borderRadius: 10, flexWrap: 'wrap',
+    };
+    const selectStyle = {
+        background: 'var(--card-bg)', color: 'var(--text-primary)', border: '1px solid rgba(99,102,241,0.15)',
+        borderRadius: 8, padding: '6px 12px', fontSize: 13, cursor: 'pointer', outline: 'none',
+    };
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' }}>
-                <StatCard label="Total Stores" value={fmtNumber(summary.total_stores)} icon={Store} color={COLORS.primary} sub={`${summary.active_stores} active`} />
-                <StatCard label="Net Payments" value={fmtMoney(summary.total_net)} icon={DollarSign} color={COLORS.income} sub="Total net" />
-                <StatCard label="Fees Paid" value={fmtMoney(summary.total_fee)} icon={CreditCard} color={COLORS.amber} sub="Processing fees" />
-                <StatCard label="Transactions" value={fmtNumber(summary.tx_count)} icon={Hash} color={COLORS.cyan} sub="Payment records" />
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+
+            {/* ══════════════════════════════════════════
+                ██ SECTION 1: PAYMENT HISTORY (own filter)
+                ══════════════════════════════════════════ */}
+            <div style={sectionStyle}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+                    <div>
+                        <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>Payment History</h3>
+                        <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--text-muted)' }}>
+                            {phYear ? `Year ${phYear}${phMonth ? ` · Month ${phMonth}` : ''}` : 'All time'}
+                        </p>
+                    </div>
+                    <div style={filterBarStyle}>
+                        <Filter size={14} style={{ color: 'var(--text-muted)' }} />
+                        <select value={phYear} onChange={e => { setPhYear(e.target.value); setPhMonth(''); }} style={selectStyle}>
+                            <option value="">All Years</option>
+                            {(payment_years || []).map(y => <option key={y} value={y}>{y}</option>)}
+                        </select>
+                        {phYear && (
+                            <select value={phMonth} onChange={e => setPhMonth(e.target.value)} style={selectStyle}>
+                                <option value="">All Months</option>
+                                {MONTHS_SHORT.map((m, i) => <option key={i + 1} value={i + 1}>{m}</option>)}
+                            </select>
+                        )}
+                        {loading && <div className="spinner" style={{ width: 16, height: 16 }} />}
+                    </div>
+                </div>
+
+                {localData.ph_summary && (
+                    <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' }}>
+                        <StatCard label="Total Amount" value={fmtMoney(localData.ph_summary.total_amount)} icon={TrendingUp} color={COLORS.amber} sub="Before fees" />
+                        <StatCard label="Net Payments" value={fmtMoney(localData.ph_summary.total_net)} icon={DollarSign} color={COLORS.income} sub="Actual received" />
+                        <StatCard label="Transactions" value={fmtNumber(localData.ph_summary.tx_count)} icon={Hash} color={COLORS.cyan} sub="Payment records" />
+                    </div>
+                )}
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+                    <ChartCard title="Monthly Payments" subtitle="Net amount vs Total amount"
+                        legend={[{ label: 'Net', color: COLORS.income }, { label: 'Amount', color: COLORS.amber }]}>
+                        <SmoothAreaChart
+                            data={chartData}
+                            areas={[
+                                { dataKey: 'total_net', name: 'Net', color: COLORS.income },
+                                { dataKey: 'total_amount', name: 'Amount', color: COLORS.amber },
+                            ]}
+                            formatter={fmtMoney}
+                            yFormatter={fmtMoneyShort}
+                            height={260}
+                        />
+                    </ChartCard>
+                    <ChartCard title="By Payment Source" subtitle="Where the money came from">
+                        <HorizontalBar items={localData.by_source} valueKey="total_net" labelKey="source" color={COLORS.purple} formatValue={fmtMoney} />
+                    </ChartCard>
+                </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-                <ChartCard title="Monthly Payments" subtitle="Net amount & fees"
-                    legend={[{ label: 'Net', color: COLORS.income }, { label: 'Fee', color: COLORS.amber }]}>
-                    <SmoothAreaChart
-                        data={chartData}
-                        areas={[
-                            { dataKey: 'total_net', name: 'Net', color: COLORS.income },
-                            { dataKey: 'total_fee', name: 'Fee', color: COLORS.amber },
-                        ]}
-                        formatter={fmtMoney}
-                        yFormatter={fmtMoneyShort}
-                    />
+            {/* ══════════════════════════════════════════
+                ██ SECTION 2: STORES (dashboard filter)
+                ══════════════════════════════════════════ */}
+            <div style={sectionStyle}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+                    <div>
+                        <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>Stores</h3>
+                        <p style={{ margin: '4px 0 0', fontSize: 12, color: 'var(--text-muted)' }}>
+                            Selected period: {storeYear}{storeMonth ? ` · Month ${storeMonth}` : ' · All months'}
+                        </p>
+                    </div>
+                    {/* Stores Filter Bar (Pulled from global dashboard header) */}
+                    <div className="filters-bar" style={{ gap: 10, background: 'rgba(99,102,241,0.06)', borderRadius: 10, padding: '10px 16px', display: 'flex' }}>
+                        <select className="filter-select year-select" value={storeYear} onChange={e => setStoreYear(Number(e.target.value))} style={{ ...selectStyle, width: 90 }}>
+                            {[2024, 2025, 2026].map(y => <option key={y} value={y}>{y}</option>)}
+                        </select>
+                        <select className="filter-select" value={storeMonth} onChange={e => setStoreMonth(e.target.value)} style={{ ...selectStyle, width: 120 }}>
+                            <option value="">All Months</option>
+                            {MONTHS_SHORT.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
+                        </select>
+                        <select className="filter-select" value={storeTeamId} onChange={e => setStoreTeamId(e.target.value)} style={{ ...selectStyle, width: 140 }}>
+                            <option value="">All Teams</option>
+                            {teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                        </select>
+                        {loading && <div className="spinner" style={{ width: 16, height: 16 }} />}
+                    </div>
+                </div>
+
+                {localData.stores_summary && (
+                    <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' }}>
+                        <StatCard label="Total Stores" value={fmtNumber(localData.stores_summary.total_stores)} icon={Store} color={COLORS.primary} sub={`${localData.stores_summary.active_stores} active`} />
+                        <StatCard label="Transactions" value={fmtNumber(localData.stores_summary.tx_count)} icon={Hash} color={COLORS.cyan} sub="In selected period" />
+                    </div>
+                )}
+
+                <ChartCard title="Store Performance" subtitle="Total payments and amount per store"
+                    legend={[{ label: 'Total Amount', color: COLORS.income }, { label: 'Transactions', color: COLORS.primary }]}>
+                    <ResponsiveContainer width="100%" height={300}>
+                        <BarChart data={localData.top_stores} margin={{ top: 5, right: 20, left: 10, bottom: 0 }} barGap={8}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="rgba(99,102,241,0.06)" vertical={false} />
+                            <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11 }} />
+                            <YAxis yAxisId="left" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11 }} tickFormatter={fmtMoneyShort} />
+                            <YAxis yAxisId="right" orientation="right" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 11 }} />
+                            <Tooltip
+                                contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 30px rgba(0,0,0,0.1)', fontWeight: 500, fontSize: '13px' }}
+                                cursor={{ fill: 'rgba(99,102,241,0.05)' }}
+                                formatter={(value, name) => [name === 'total_amount' ? fmtMoney(value) : fmtNumber(value), name === 'total_amount' ? 'Amount' : 'Transactions']}
+                            />
+                            <Bar yAxisId="left" dataKey="total_amount" name="total_amount" fill={COLORS.income} radius={[4, 4, 0, 0]} barSize={32} />
+                            <Bar yAxisId="right" dataKey="total_payments" name="total_payments" fill={COLORS.primary} radius={[4, 4, 0, 0]} barSize={32} />
+                        </BarChart>
+                    </ResponsiveContainer>
                 </ChartCard>
 
                 <ChartCard title="Top Stores" subtitle="By total payment amount">
                     <MiniRankingTable
-                        items={top_stores}
+                        items={localData.top_stores}
                         columns={[
                             { key: 'name', label: 'Store', bold: true },
                             { key: 'total_amount', label: 'Amount', align: 'right', bold: true, color: COLORS.income, render: r => fmtMoney(r.total_amount) },
@@ -514,17 +707,19 @@ function StoresTab({ data }) {
 /* ═══════════════════════════════════════════
    ██  TAB: MEDIA
    ═══════════════════════════════════════════ */
-function MediaTab({ data }) {
+function MediaTab({ data, year, month }) {
     const { summary, monthly, by_bank, by_team } = data;
-    const chartData = useMemo(() => fillMonthly(monthly, ['total']), [monthly]);
+    const chartData = useMemo(() => fillChartData(monthly, ['total'], year, month), [monthly, year, month]);
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
-                <StatCard label="Total Spend" value={fmtMoney(summary.total_amount)} icon={ImageIcon} color={COLORS.pink} sub="Media transactions" />
-                <StatCard label="Transactions" value={fmtNumber(summary.count)} icon={Hash} color={COLORS.primary} sub="Total records" />
-                <StatCard label="Completed" value={fmtMoney(summary.completed_amount)} icon={Activity} color={COLORS.income} sub="Completed amount" />
-            </div>
+            {summary && (
+                <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))' }}>
+                    <StatCard label="Total Spend" value={fmtMoney(summary.total_amount)} icon={ImageIcon} color={COLORS.pink} sub="Media transactions" />
+                    <StatCard label="Transactions" value={fmtNumber(summary.count)} icon={Hash} color={COLORS.primary} sub="Total records" />
+                    <StatCard label="Completed" value={fmtMoney(summary.completed_amount)} icon={Activity} color={COLORS.income} sub="Completed amount" />
+                </div>
+            )}
 
             <ChartCard title="Monthly Media Spend" subtitle="Spending trend over months">
                 <SmoothAreaChart
@@ -551,18 +746,20 @@ function MediaTab({ data }) {
 /* ═══════════════════════════════════════════
    ██  TAB: DESIGN STATISTICS
    ═══════════════════════════════════════════ */
-function DesignTab({ data }) {
+function DesignTab({ data, year, month }) {
     const { summary, monthly, by_team, top_designers } = data;
-    const chartData = useMemo(() => fillMonthly(monthly, ['total_designs', 'total_print', 'total_embroidery', 'total_sticker']), [monthly]);
+    const chartData = useMemo(() => fillChartData(monthly, ['total_designs', 'total_print', 'total_embroidery', 'total_sticker'], year, month), [monthly, year, month]);
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' }}>
-                <StatCard label="Total Designs" value={fmtNumber(summary.total_designs)} icon={Palette} color={COLORS.purple} sub="All types" />
-                <StatCard label="Print" value={fmtNumber(summary.total_print)} icon={Palette} color={COLORS.blue} sub="Print designs" />
-                <StatCard label="Embroidery" value={fmtNumber(summary.total_embroidery)} icon={Palette} color={COLORS.amber} sub="Embroidery designs" />
-                <StatCard label="Sticker" value={fmtNumber(summary.total_sticker)} icon={Palette} color={COLORS.income} sub="Sticker designs" />
-            </div>
+            {summary && (
+                <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))' }}>
+                    <StatCard label="Total Designs" value={fmtNumber(summary.total_designs)} icon={Palette} color={COLORS.purple} sub="All types" />
+                    <StatCard label="Print" value={fmtNumber(summary.total_print)} icon={Palette} color={COLORS.blue} sub="Print designs" />
+                    <StatCard label="Embroidery" value={fmtNumber(summary.total_embroidery)} icon={Palette} color={COLORS.amber} sub="Embroidery designs" />
+                    <StatCard label="Sticker" value={fmtNumber(summary.total_sticker)} icon={Palette} color={COLORS.income} sub="Sticker designs" />
+                </div>
+            )}
 
             <ChartCard title="Design Output" subtitle="Monthly breakdown by type"
                 legend={[
@@ -603,16 +800,18 @@ function DesignTab({ data }) {
 /* ═══════════════════════════════════════════
    ██  TAB: FULFILLMENT STATISTICS
    ═══════════════════════════════════════════ */
-function FulfillmentTab({ data }) {
+function FulfillmentTab({ data, year, month }) {
     const { summary, monthly, by_team, top_fulfillers } = data;
-    const chartData = useMemo(() => fillMonthly(monthly, ['total_orders', 'total_price']), [monthly]);
+    const chartData = useMemo(() => fillChartData(monthly, ['total_orders', 'total_price'], year, month), [monthly, year, month]);
 
     return (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
-                <StatCard label="Total Orders" value={fmtNumber(summary.total_orders)} icon={Package} color={COLORS.teal} sub="Fulfilled orders" />
-                <StatCard label="Total Revenue" value={fmtMoney(summary.total_price)} icon={DollarSign} color={COLORS.primary} sub="Fulfillment price" />
-            </div>
+            {summary && (
+                <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))' }}>
+                    <StatCard label="Total Orders" value={fmtNumber(summary.total_orders)} icon={Package} color={COLORS.teal} sub="Fulfilled orders" />
+                    <StatCard label="Total Revenue" value={fmtMoney(summary.total_price)} icon={DollarSign} color={COLORS.primary} sub="Fulfillment price" />
+                </div>
+            )}
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
                 <ChartCard title="Monthly Orders" subtitle="Order volume trend">

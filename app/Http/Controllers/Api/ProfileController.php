@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Profile;
 use App\Models\FetchLog;
+use App\Models\TwoFaLog;
 use Illuminate\Http\Request;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 
@@ -114,6 +115,9 @@ class ProfileController extends Controller
     {
         try {
             $profile = Profile::findOrFail($id);
+            $user = auth()->user();
+            $userRole = $user?->role?->name ?? 'unknown';
+
             if (empty($profile->fa_code)) {
                 return response()->json([
                     'success' => false,
@@ -138,6 +142,17 @@ class ProfileController extends Controller
             if ($response->successful()) {
                 $data = $response->json();
                 if (isset($data['token'])) {
+                    // Log successful 2FA usage
+                    TwoFaLog::create([
+                        'user_id'      => $user?->id,
+                        'user_name'    => $user?->name ?? 'Unknown',
+                        'user_role'    => $userRole,
+                        'profile_id'   => $profile->id,
+                        'profile_name' => $profile->profile_name ?? null,
+                        'action'       => 'get_2fa_code',
+                        'success'      => true,
+                    ]);
+
                     return response()->json([
                         'code'    => HttpCode::SUCCESS,
                         'success' => true,
@@ -147,6 +162,17 @@ class ProfileController extends Controller
                     ], HttpCode::SUCCESS);
                 }
             }
+
+            // Log failed 2FA attempt
+            TwoFaLog::create([
+                'user_id'      => $user?->id,
+                'user_name'    => $user?->name ?? 'Unknown',
+                'user_role'    => $userRole,
+                'profile_id'   => $profile->id,
+                'profile_name' => $profile->profile_name ?? null,
+                'action'       => 'get_2fa_code',
+                'success'      => false,
+            ]);
 
             return response()->json([
                 'code'    => HttpCode::INTERNAL_SERVER_ERROR,
@@ -159,6 +185,63 @@ class ProfileController extends Controller
                 'success' => false,
                 'message' => 'An error occurred: ' . $e->getMessage(),
             ], HttpCode::INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Get 2FA usage logs with pagination and filters.
+     */
+    public function twoFaLogs(Request $request): JsonResponse
+    {
+        try {
+            $query = TwoFaLog::query();
+
+            // Sorting
+            $sortDir = $request->query('sort', 'desc');
+            $query->orderBy('created_at', $sortDir);
+
+            if ($request->filled('search')) {
+                $search = $request->query('search');
+                $query->where(function ($q) use ($search) {
+                    $q->where('user_name', 'like', "%{$search}%")
+                        ->orWhere('profile_name', 'like', "%{$search}%");
+                });
+            }
+
+            if ($request->filled('user_role')) {
+                $query->where('user_role', $request->query('user_role'));
+            }
+
+            if ($request->filled('status')) {
+                $status = $request->query('status') === 'success' ? 1 : 0;
+                $query->where('success', $status);
+            }
+
+            if ($request->filled('date_from')) {
+                $query->whereDate('created_at', '>=', $request->query('date_from'));
+            }
+            if ($request->filled('date_to')) {
+                $query->whereDate('created_at', '<=', $request->query('date_to'));
+            }
+
+            $perPage = $request->query('per_page', 20);
+            $paginator = $query->paginate($perPage);
+
+            return response()->json([
+                'success' => true,
+                'data' => $paginator->items(),
+                'pagination' => [
+                    'current_page' => $paginator->currentPage(),
+                    'last_page'    => $paginator->lastPage(),
+                    'per_page'     => $paginator->perPage(),
+                    'total'        => $paginator->total(),
+                ],
+            ]);
+        } catch (Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error fetching 2FA logs: ' . $e->getMessage(),
+            ], 500);
         }
     }
 

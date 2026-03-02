@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { Search, BarChart3, Package, DollarSign, Store, X, ChevronLeft, ChevronRight, Users } from 'lucide-react';
+import { Search, BarChart3, Package, DollarSign, Store, X, ChevronLeft, ChevronRight, Users, Filter } from 'lucide-react';
 import Topbar from '../components/Topbar';
 import DataTable from '../components/DataTable';
 
@@ -327,41 +327,44 @@ export default function FulfillmentStatisticsPage() {
                     <StatCard icon={DollarSign} label="Total Fulfill Price" value={summary.total_fulfill_price || 0} color="orange" sub="Fulfillment cost" isMoney={true} />
                 </div>
 
-                {/* Filters and Tabs Row */}
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '16px', alignItems: 'flex-start', marginBottom: '24px' }}>
+                {/* Filters Row */}
+                <div className="filters-bar">
+                    <div className="filter-group">
+                        <Search size={15} style={{ color: 'var(--text-muted)' }} />
+                        <input
+                            className="filter-input"
+                            placeholder="Select User..."
+                            value={userFilter}
+                            onChange={e => handleUserSearch(e.target.value)}
+                        />
+                    </div>
 
-                    {/* Filters Group */}
-                    <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap', flex: 1 }}>
-                        <div style={{ position: 'relative', minWidth: '220px' }}>
-                            <Search size={16} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
-                            <input
-                                className="filter-input"
-                                placeholder="Select User..."
-                                value={userFilter}
-                                onChange={e => handleUserSearch(e.target.value)}
-                                style={{ width: '100%', paddingLeft: '36px' }}
-                            />
-                        </div>
-
-                        <select className="filter-select" value={teamFilter} onChange={e => setTeamFilter(e.target.value)} style={{ minWidth: '160px' }}>
+                    <div className="filter-group">
+                        <Filter size={14} style={{ color: 'var(--text-muted)' }} />
+                        <select className="filter-select" value={teamFilter} onChange={e => setTeamFilter(e.target.value)}>
                             <option value="">Select Team</option>
                             {teamOptions.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                         </select>
+                    </div>
 
-                        <select className="filter-select" value={fulfillUnitFilter} onChange={e => setFulfillUnitFilter(e.target.value)} style={{ minWidth: '160px' }}>
+                    <div className="filter-group">
+                        <select className="filter-select" value={fulfillUnitFilter} onChange={e => setFulfillUnitFilter(e.target.value)}>
                             <option value="">Fulfillment Unit</option>
                             {fulfillUnitOptions.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
                         </select>
+                    </div>
 
-                        <select className="filter-select" value={year} onChange={e => setYear(Number(e.target.value))} style={{ minWidth: '100px' }}>
+                    <div className="filter-group">
+                        <select className="filter-select year-select" value={year} onChange={e => setYear(Number(e.target.value))}>
                             {yearOptions.map(y => <option key={y} value={y}>{y}</option>)}
-                        </select>
-
-                        <select className="filter-select" value={month} onChange={e => setMonth(Number(e.target.value))} style={{ minWidth: '130px' }}>
-                            {MONTHS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
                         </select>
                     </div>
 
+                    <div className="filter-group">
+                        <select className="filter-select" value={month} onChange={e => setMonth(Number(e.target.value))}>
+                            {MONTHS.map(m => <option key={m.value} value={m.value}>{m.label}</option>)}
+                        </select>
+                    </div>
                 </div>
 
                 {/* Tabs Row (Export + User/Store) */}

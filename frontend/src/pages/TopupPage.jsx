@@ -532,6 +532,7 @@ export default function TopupPage() {
                     <div className="filter-group">
                         <Search size={15} style={{ color: 'var(--text-muted)' }} />
                         <input
+                            id="search-input"
                             className="filter-input"
                             placeholder="Search transaction ID..."
                             value={search}
@@ -541,42 +542,43 @@ export default function TopupPage() {
                     </div>
 
                     <div className="filter-group">
-                        <select className="filter-select year-select" value={yearFilter} onChange={(e) => setYearFilter(e.target.value)} style={{ width: '80px', minWidth: '80px' }}>
+                        <Filter size={14} style={{ color: 'var(--text-muted)' }} />
+                        <select className="filter-select year-select" value={yearFilter} onChange={(e) => setYearFilter(e.target.value)}>
                             <option value="">Year</option>
                             {[2024, 2025, 2026].map(y => <option key={y} value={y}>{y}</option>)}
                         </select>
                     </div>
 
                     <div className="filter-group">
-                        <select className="filter-select" value={teamFilter} onChange={(e) => setTeamFilter(e.target.value)} style={{ width: '120px', minWidth: '120px' }}>
+                        <select className="filter-select" value={teamFilter} onChange={(e) => setTeamFilter(e.target.value)}>
                             <option value="">All Teams</option>
                             {teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                         </select>
                     </div>
 
                     <div className="filter-group">
-                        <select className="filter-select" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)} style={{ width: '100px', minWidth: '100px' }}>
+                        <select className="filter-select" value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
                             <option value="">All Types</option>
                             {TYPES.map(t => <option key={t.value} value={t.value}>{t.label}</option>)}
                         </select>
                     </div>
 
                     <div className="filter-group">
-                        <select className="filter-select" value={paymentMethodFilter} onChange={(e) => setPaymentMethodFilter(e.target.value)} style={{ width: '110px', minWidth: '110px' }}>
+                        <select className="filter-select" value={paymentMethodFilter} onChange={(e) => setPaymentMethodFilter(e.target.value)}>
                             <option value="">All Banks</option>
                             {PAYMENT_METHODS.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
                         </select>
                     </div>
 
                     <div className="filter-group">
-                        <select className="filter-select" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} style={{ width: '110px', minWidth: '110px' }}>
+                        <select className="filter-select" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
                             <option value="">All Status</option>
                             {STATUSES.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
                         </select>
                     </div>
 
-                    <div style={{ marginLeft: 'auto' }}>
-                        <button className="btn btn-primary" onClick={openCreateModal}>
+                    <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
+                        <button className="btn btn-primary" onClick={openCreateModal} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                             <Plus size={14} /> New Transaction
                         </button>
                     </div>

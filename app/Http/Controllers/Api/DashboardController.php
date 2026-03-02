@@ -25,7 +25,7 @@ class DashboardController extends Controller
 
             $data = match ($tab) {
                 'topup' => $this->getTopupData($year, $month, $teamId),
-                'stores' => $this->getStoresData($year, $month, $teamId),
+                'stores' => $this->getStoresData($year, $month, $teamId, $request),
                 'media' => $this->getMediaData($year, $month, $teamId),
                 'design' => $this->getDesignData($year, $month, $teamId),
                 'fulfillment' => $this->getFulfillmentData($year, $month, $teamId),
@@ -95,12 +95,22 @@ class DashboardController extends Controller
             ->whereNull('transactions.deleted_at')
             ->whereYear('transactions.created_at', $year)
             ->when($teamId, fn($q) => $q->where('transactions.team_id', $teamId))
-            ->selectRaw("MONTH(transactions.created_at) as month,
-                SUM(CASE WHEN transactions.type='income' THEN transactions.amount ELSE 0 END) as income,
-                SUM(CASE WHEN transactions.type='expense' THEN transactions.amount ELSE 0 END) as expense,
-                COUNT(*) as count")
-            ->groupByRaw('MONTH(transactions.created_at)')
-            ->orderByRaw('MONTH(transactions.created_at)')
+            ->when($month, function ($q) use ($month) {
+                return $q->whereMonth('transactions.created_at', $month)
+                    ->selectRaw("DAY(transactions.created_at) as day,
+                             SUM(CASE WHEN transactions.type='income' THEN transactions.amount ELSE 0 END) as income,
+                             SUM(CASE WHEN transactions.type='expense' THEN transactions.amount ELSE 0 END) as expense,
+                             COUNT(*) as count")
+                    ->groupByRaw('DAY(transactions.created_at)')
+                    ->orderByRaw('DAY(transactions.created_at)');
+            }, function ($q) {
+                return $q->selectRaw("MONTH(transactions.created_at) as month,
+                             SUM(CASE WHEN transactions.type='income' THEN transactions.amount ELSE 0 END) as income,
+                             SUM(CASE WHEN transactions.type='expense' THEN transactions.amount ELSE 0 END) as expense,
+                             COUNT(*) as count")
+                    ->groupByRaw('MONTH(transactions.created_at)')
+                    ->orderByRaw('MONTH(transactions.created_at)');
+            })
             ->get();
 
         // Team comparison
@@ -154,12 +164,22 @@ class DashboardController extends Controller
             ->whereNull('transactions.deleted_at')
             ->whereYear('transactions.created_at', $year)
             ->when($teamId, fn($q) => $q->where('transactions.team_id', $teamId))
-            ->selectRaw("MONTH(transactions.created_at) as month,
-                SUM(CASE WHEN transactions.type='income' THEN transactions.amount ELSE 0 END) as income,
-                SUM(CASE WHEN transactions.type='expense' THEN transactions.amount ELSE 0 END) as expense,
-                COUNT(*) as count")
-            ->groupByRaw('MONTH(transactions.created_at)')
-            ->orderByRaw('MONTH(transactions.created_at)')
+            ->when($month, function ($q) use ($month) {
+                return $q->whereMonth('transactions.created_at', $month)
+                    ->selectRaw("DAY(transactions.created_at) as day,
+                             SUM(CASE WHEN transactions.type='income' THEN transactions.amount ELSE 0 END) as income,
+                             SUM(CASE WHEN transactions.type='expense' THEN transactions.amount ELSE 0 END) as expense,
+                             COUNT(*) as count")
+                    ->groupByRaw('DAY(transactions.created_at)')
+                    ->orderByRaw('DAY(transactions.created_at)');
+            }, function ($q) {
+                return $q->selectRaw("MONTH(transactions.created_at) as month,
+                             SUM(CASE WHEN transactions.type='income' THEN transactions.amount ELSE 0 END) as income,
+                             SUM(CASE WHEN transactions.type='expense' THEN transactions.amount ELSE 0 END) as expense,
+                             COUNT(*) as count")
+                    ->groupByRaw('MONTH(transactions.created_at)')
+                    ->orderByRaw('MONTH(transactions.created_at)');
+            })
             ->get();
 
         // By payment method
@@ -189,6 +209,21 @@ class DashboardController extends Controller
             ->orderByDesc('income')
             ->get();
 
+        // Top vendors by total transaction amount
+        $topVendors = DB::table('transactions')
+            ->whereNull('transactions.deleted_at')
+            ->whereYear('transactions.created_at', $year)
+            ->when($month, fn($q) => $q->whereMonth('transactions.created_at', $month))
+            ->when($teamId, fn($q) => $q->where('transactions.team_id', $teamId))
+            ->join('vendors', 'transactions.vendor_id', '=', 'vendors.id')
+            ->selectRaw("vendors.name as vendor_name,
+                SUM(transactions.amount) as total_amount,
+                COUNT(*) as count")
+            ->groupBy('vendors.id', 'vendors.name')
+            ->orderByDesc('total_amount')
+            ->limit(10)
+            ->get();
+
         return [
             'summary' => [
                 'total_income' => round($totalIncome, 2),
@@ -201,51 +236,100 @@ class DashboardController extends Controller
             'monthly' => $monthly,
             'by_method' => $byMethod,
             'by_team' => $byTeam,
+            'top_vendors' => $topVendors,
         ];
     }
 
     /* ── Stores tab ── */
-    private function getStoresData($year, $month, $teamId)
+    private function getStoresData($year, $month, $teamId, $request)
     {
+        // --- Payment history filters (default: all-time) ---
+        $phYear = $request->query('ph_year');
+        $phMonth = $request->query('ph_month');
+
+        // ══════ PAYMENT HISTORY SECTION (ph_year/ph_month) ══════
+
+        $phQuery = DB::table('payment_histories');
+        if ($phYear) $phQuery->whereYear('transaction_date', $phYear);
+        if ($phMonth) $phQuery->whereMonth('transaction_date', $phMonth);
+
+        $phTotalNet = (clone $phQuery)->sum('net');
+        $phTotalAmount = (clone $phQuery)->sum('amount');
+        $phTxCount = (clone $phQuery)->count();
+
+        // Monthly/Yearly payments chart
+        $monthlyQuery = DB::table('payment_histories');
+        if ($phYear) $monthlyQuery->whereYear('transaction_date', $phYear);
+
+        if ($phMonth) {
+            $monthly = $monthlyQuery->whereMonth('transaction_date', $phMonth)
+                ->selectRaw("DAY(transaction_date) as day, SUM(net) as total_net, SUM(amount) as total_amount, COUNT(*) as count")
+                ->groupByRaw('DAY(transaction_date)')->orderByRaw('DAY(transaction_date)')->get();
+        } elseif ($phYear) {
+            $monthly = $monthlyQuery->selectRaw("MONTH(transaction_date) as month, SUM(net) as total_net, SUM(amount) as total_amount, COUNT(*) as count")
+                ->groupByRaw('MONTH(transaction_date)')->orderByRaw('MONTH(transaction_date)')->get();
+        } else {
+            $monthly = $monthlyQuery->selectRaw("YEAR(transaction_date) as year, SUM(net) as total_net, SUM(amount) as total_amount, COUNT(*) as count")
+                ->groupByRaw('YEAR(transaction_date)')->orderByRaw('YEAR(transaction_date)')->get();
+        }
+
+        // By source
+        $bySourceQuery = DB::table('payment_histories');
+        if ($phYear) $bySourceQuery->whereYear('transaction_date', $phYear);
+        if ($phMonth) $bySourceQuery->whereMonth('transaction_date', $phMonth);
+        $bySource = $bySourceQuery->whereNotNull('from_to')
+            ->selectRaw("from_to as source, SUM(net) as total_net, COUNT(*) as count")
+            ->groupBy('from_to')->orderByDesc('total_net')->limit(5)->get();
+
+        // ══════ STORES SECTION (dashboard year/month/team) ══════
+
         $totalStores = DB::table('stores')->whereNull('stores.deleted_at')->count();
         $activeStores = DB::table('stores')->whereNull('stores.deleted_at')->where('status', 'active')->count();
 
-        // Payment history summary
-        $phQuery = DB::table('payment_histories')
-            ->whereYear('transaction_date', $year);
-        if ($month) $phQuery->whereMonth('transaction_date', $month);
-
-        $totalNet = (clone $phQuery)->sum('net');
-        $totalFee = (clone $phQuery)->sum('fee');
-        $txCount = (clone $phQuery)->count();
-
-        // Monthly payments
-        $monthly = DB::table('payment_histories')
+        // Top stores filtered by dashboard year/month
+        $topStoresQuery = DB::table('payment_histories')
             ->whereYear('transaction_date', $year)
-            ->selectRaw("MONTH(transaction_date) as month,
-                SUM(net) as total_net,
-                SUM(fee) as total_fee,
-                COUNT(*) as count")
-            ->groupByRaw('MONTH(transaction_date)')
-            ->orderByRaw('MONTH(transaction_date)')
-            ->get();
-
-        // Top stores by total amount
-        $topStores = DB::table('stores')
-            ->whereNull('stores.deleted_at')
+            ->when($month, fn($q) => $q->whereMonth('transaction_date', $month))
+            ->join('stores', 'payment_histories.store_id', '=', 'stores.id')
+            ->whereNull('stores.deleted_at');
+        $topStores = $topStoresQuery
+            ->selectRaw("stores.id, stores.name, stores.account_no, stores.status,
+                SUM(payment_histories.amount) as total_amount,
+                COUNT(*) as total_payments")
+            ->groupBy('stores.id', 'stores.name', 'stores.account_no', 'stores.status')
             ->orderByDesc('total_amount')
             ->limit(10)
-            ->get(['id', 'name', 'account_no', 'total_amount', 'total_payments', 'status']);
+            ->get();
+
+        // Store transactions count in dashboard period
+        $storeTxCount = DB::table('payment_histories')
+            ->whereYear('transaction_date', $year)
+            ->when($month, fn($q) => $q->whereMonth('transaction_date', $month))
+            ->count();
+
+        // Available years for PH filter dropdown
+        $paymentYears = DB::table('payment_histories')
+            ->selectRaw('DISTINCT YEAR(transaction_date) as year')
+            ->orderByDesc('year')
+            ->pluck('year');
 
         return [
-            'summary' => [
-                'total_stores' => $totalStores,
-                'active_stores' => $activeStores,
-                'total_net' => round($totalNet, 2),
-                'total_fee' => round($totalFee, 2),
-                'tx_count' => $txCount,
+            // Payment History section data
+            'ph_summary' => [
+                'total_amount' => round($phTotalAmount, 2),
+                'total_net' => round($phTotalNet, 2),
+                'tx_count' => $phTxCount,
             ],
             'monthly' => $monthly,
+            'by_source' => $bySource,
+            'payment_years' => $paymentYears,
+            'ph_filters' => ['ph_year' => $phYear, 'ph_month' => $phMonth],
+            // Stores section data
+            'stores_summary' => [
+                'total_stores' => $totalStores,
+                'active_stores' => $activeStores,
+                'tx_count' => $storeTxCount,
+            ],
             'top_stores' => $topStores,
         ];
     }
@@ -267,9 +351,16 @@ class DashboardController extends Controller
             ->whereNull('media_transactions.deleted_at')
             ->whereYear('media_transactions.transaction_date', $year)
             ->when($teamId, fn($q) => $q->where('media_transactions.team_id', $teamId))
-            ->selectRaw("MONTH(media_transactions.transaction_date) as month, SUM(media_transactions.amount) as total, COUNT(*) as count")
-            ->groupByRaw('MONTH(media_transactions.transaction_date)')
-            ->orderByRaw('MONTH(media_transactions.transaction_date)')
+            ->when($month, function ($q) use ($month) {
+                return $q->whereMonth('media_transactions.transaction_date', $month)
+                    ->selectRaw("DAY(media_transactions.transaction_date) as day, SUM(media_transactions.amount) as total, COUNT(*) as count")
+                    ->groupByRaw('DAY(media_transactions.transaction_date)')
+                    ->orderByRaw('DAY(media_transactions.transaction_date)');
+            }, function ($q) {
+                return $q->selectRaw("MONTH(media_transactions.transaction_date) as month, SUM(media_transactions.amount) as total, COUNT(*) as count")
+                    ->groupByRaw('MONTH(media_transactions.transaction_date)')
+                    ->orderByRaw('MONTH(media_transactions.transaction_date)');
+            })
             ->get();
 
         // By bank
@@ -321,6 +412,7 @@ class DashboardController extends Controller
         // Monthly
         $monthly = DB::table('design_statistics')
             ->where('year', $year)
+            ->when($month, fn($q) => $q->where('month', $month))
             ->when($teamId, fn($q) => $q->where('team_id', $teamId))
             ->selectRaw("month, SUM(designs_count) as total_designs, SUM(print_count) as total_print, SUM(embroidery_count) as total_embroidery, SUM(sticker_count) as total_sticker")
             ->groupBy('month')
@@ -383,6 +475,7 @@ class DashboardController extends Controller
             ->where('year', $year)
             ->where('type', 'user')
             ->where('fulfill_unit_id', 0)
+            ->when($month, fn($q) => $q->where('month', $month))
             ->when($teamId, fn($q) => $q->where('team_id', $teamId))
             ->selectRaw("month, SUM(order_count) as total_orders, SUM(total_price) as total_price")
             ->groupBy('month')
