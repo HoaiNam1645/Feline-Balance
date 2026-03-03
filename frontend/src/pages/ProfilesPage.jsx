@@ -469,6 +469,13 @@ export default function ProfilesPage({ onMenuClick }) {
                         <button className="btn btn-ghost" id="export-btn">
                             <Download size={14} /> Export
                         </button>
+                        <button
+                            className="btn btn-ghost"
+                            onClick={() => window.open('https://github.com/HoaiNam1645/Manage-Accounting/releases/latest', '_blank')}
+                            style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                        >
+                            <Download size={14} /> Download App
+                        </button>
                     </div>
                 </div>
 
