@@ -12,6 +12,7 @@ class MediaTransaction extends Model
 
     protected $fillable = [
         'team_id',
+        'expense_type',
         'image',
         'transaction_code',
         'bank',

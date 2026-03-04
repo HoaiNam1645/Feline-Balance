@@ -23,6 +23,10 @@ class MediaTransactionService
             $query->where('bank', $filters['bank']);
         }
 
+        if (!empty($filters['expense_type'])) {
+            $query->where('expense_type', $filters['expense_type']);
+        }
+
         if (!empty($filters['status'])) {
             $query->where('status', $filters['status']);
         }
@@ -92,6 +96,7 @@ class MediaTransactionService
 
         $fillableData = collect($data)->only([
             'team_id',
+            'expense_type',
             'image',
             'transaction_code',
             'bank',

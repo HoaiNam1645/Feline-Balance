@@ -23,7 +23,7 @@ class MediaTransactionController extends Controller
     public function index(Request $request): JsonResponse
     {
         try {
-            $filters = $request->only(['team_id', 'bank', 'status', 'search', 'year', 'month', 'page', 'per_page']);
+            $filters = $request->only(['team_id', 'expense_type', 'bank', 'status', 'search', 'year', 'month', 'page', 'per_page']);
             $result = $this->service->getMediaTransactions($filters);
 
             return response()->json([

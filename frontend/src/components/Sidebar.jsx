@@ -33,7 +33,7 @@ const menuSections = [
             { icon: Wallet, label: 'Payment Profiles', path: '/profiles' },
             { icon: ArrowRightLeft, label: 'Topup', path: '/topup' },
             { icon: CreditCard, label: 'Stores', path: '/stores' },
-            { icon: ImageIcon, label: 'Media', path: '/media' },
+            { icon: ImageIcon, label: 'Cost', path: '/media' },
         ],
     },
     {

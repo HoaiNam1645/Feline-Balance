@@ -17,6 +17,17 @@ const STATUSES = [
     { value: 'complete', label: 'Complete' },
 ];
 
+const EXPENSE_TYPES = [
+    { value: 'account', label: 'Accounts' },
+    { value: 'blanks', label: 'Blanks' },
+    { value: 'pet', label: 'PET' },
+    { value: 'proxies', label: 'Proxies' },
+    { value: 'funds', label: 'Funds' },
+    { value: 'rent', label: 'Rent' },
+    { value: 'happy', label: 'Happy' },
+    { value: 'others', label: 'Others' }
+];
+
 function formatMoney(value) {
     if (value == null || Number(value) === 0) return '—';
     return Number(value).toLocaleString('vi-VN', { minimumFractionDigits: 0, maximumFractionDigits: 0 }) + '₫';
@@ -126,6 +137,13 @@ function MediaFormModal({ isOpen, onClose, onSubmit, formData, onChange, title, 
                             {teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                         </select>
                     </div>
+                    <div>
+                        <label className="modal-label">Expense Type *</label>
+                        <select className="filter-select" name="expense_type" value={formData.expense_type} onChange={onChange} style={{ width: '100%' }}>
+                            <option value="">— Select Type —</option>
+                            {EXPENSE_TYPES.map(e => <option key={e.value} value={e.value}>{e.label}</option>)}
+                        </select>
+                    </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                         <div>
                             <label className="modal-label">Bank *</label>
@@ -193,7 +211,7 @@ function StatsCards({ summary }) {
                     <span className="stat-card-label">Total Records</span>
                 </div>
                 <div className="stat-card-value">{summary.total_count ?? 0}</div>
-                <div className="stat-card-sub">Media transactions</div>
+                <div className="stat-card-sub">Cost Management transactions</div>
             </div>
             <div className="stat-card">
                 <div className="stat-card-header">
@@ -255,6 +273,9 @@ export default function MediaPage({ onMenuClick }) {
     const statusFilter = searchParams.get('status') || '';
     const setStatusFilter = (v) => updateParam('status', v);
 
+    const expenseTypeFilter = searchParams.get('expense_type') || '';
+    const setExpenseTypeFilter = (v) => updateParam('expense_type', v);
+
     const yearFilter = searchParams.has('year') ? Number(searchParams.get('year')) : ''; // Changed default to '' to match previous useState behavior
     const setYearFilter = (v) => updateParam('year', v);
 
@@ -263,9 +284,9 @@ export default function MediaPage({ onMenuClick }) {
     const [modalMode, setModalMode] = useState('create');
     const [editingId, setEditingId] = useState(null);
     const now = new Date();
-    const defaultDate = `${now.getFullYear()} -${String(now.getMonth() + 1).padStart(2, '0')} -${String(now.getDate()).padStart(2, '0')}T${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')} `;
+    const defaultDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}T${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
     const [formData, setFormData] = useState({
-        team_id: '', image: '', transaction_code: '', bank: 'Vietcombank',
+        team_id: '', expense_type: '', image: '', transaction_code: '', bank: 'Vietcombank',
         transaction_date: defaultDate, amount: '', status: 'pending',
     });
 
@@ -302,6 +323,7 @@ export default function MediaPage({ onMenuClick }) {
             const params = new URLSearchParams({ page, per_page: 15 });
             if (search.trim()) params.append('search', search.trim());
             if (teamFilter) params.append('team_id', teamFilter);
+            if (expenseTypeFilter) params.append('expense_type', expenseTypeFilter);
             if (bankFilter) params.append('bank', bankFilter);
             if (statusFilter) params.append('status', statusFilter);
             if (yearFilter) params.append('year', yearFilter);
@@ -318,7 +340,7 @@ export default function MediaPage({ onMenuClick }) {
         } finally {
             setLoading(false);
         }
-    }, [page, search, teamFilter, bankFilter, statusFilter, yearFilter]);
+    }, [page, search, teamFilter, expenseTypeFilter, bankFilter, statusFilter, yearFilter]);
 
     useEffect(() => { fetchData(); }, [fetchData]);
 
@@ -330,8 +352,8 @@ export default function MediaPage({ onMenuClick }) {
         setEditingId(null);
         const n = new Date();
         setFormData({
-            team_id: '', image: '', transaction_code: '', bank: 'Vietcombank',
-            transaction_date: `${n.getFullYear()} -${String(n.getMonth() + 1).padStart(2, '0')} -${String(n.getDate()).padStart(2, '0')}T${String(n.getHours()).padStart(2, '0')}:${String(n.getMinutes()).padStart(2, '0')} `,
+            team_id: '', expense_type: '', image: '', transaction_code: '', bank: 'Vietcombank',
+            transaction_date: `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}T${String(n.getHours()).padStart(2, '0')}:${String(n.getMinutes()).padStart(2, '0')}`,
             amount: '', status: 'pending',
         });
         setModalOpen(true);
@@ -342,6 +364,7 @@ export default function MediaPage({ onMenuClick }) {
         setEditingId(row.id);
         setFormData({
             team_id: row.team_id || '',
+            expense_type: row.expense_type || '',
             image: row.image || '',
             transaction_code: row.transaction_code || '',
             bank: row.bank || 'Vietcombank',
@@ -354,6 +377,7 @@ export default function MediaPage({ onMenuClick }) {
 
     const handleSubmit = async () => {
         if (!formData.team_id) { addToast('Please select a team', 'error'); return; }
+        if (!formData.expense_type) { addToast('Please select an expense type', 'error'); return; }
         if (!formData.bank) { addToast('Please select a bank', 'error'); return; }
 
         try {
@@ -429,6 +453,13 @@ export default function MediaPage({ onMenuClick }) {
             render: (row) => <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{row.team_name || '—'}</span>,
         },
         {
+            key: 'expense_type', label: 'Type', width: '10%',
+            render: (row) => {
+                const opt = EXPENSE_TYPES.find(e => e.value === row.expense_type);
+                return <span style={{ color: 'var(--text-secondary)' }}>{opt ? opt.label : (row.expense_type || '—')}</span>;
+            },
+        },
+        {
             key: 'image', label: 'Image', width: '7%', style: { textAlign: 'center' }, tdStyle: { textAlign: 'center' },
             render: (row) => row.image
                 ? <img src={row.image} alt="" style={{ width: '36px', height: '36px', borderRadius: '6px', objectFit: 'cover', cursor: 'pointer', border: '1px solid var(--border-color)' }} onClick={() => setPreviewImg(row.image)} />
@@ -492,7 +523,7 @@ export default function MediaPage({ onMenuClick }) {
         if (!summary || !data.length) return null;
         return (
             <tr>
-                <td style={{ fontWeight: 700, whiteSpace: 'nowrap', padding: '14px 16px' }} colSpan={6}>
+                <td style={{ fontWeight: 700, whiteSpace: 'nowrap', padding: '14px 16px' }} colSpan={7}>
                     TOTAL: {summary.total_count ?? 0} records
                 </td>
                 <td className="text-right" style={{ fontWeight: 700, padding: '14px 16px', color: 'var(--text-primary)' }}>
@@ -507,8 +538,8 @@ export default function MediaPage({ onMenuClick }) {
         <>
             <Topbar
                 section="Finance"
-                breadcrumb="Media"
-                title="Media Management"
+                breadcrumb="Cost Management"
+                title="Cost Management"
                 onRefresh={fetchData}
                 loading={loading}
                 onMenuClick={onMenuClick}
@@ -599,7 +630,7 @@ export default function MediaPage({ onMenuClick }) {
                     columns={columns}
                     data={data}
                     loading={loading}
-                    emptyMessage="No media transactions"
+                    emptyMessage="No Cost Management transactions"
                     emptyDescription="Click 'New Record' to add one."
                     pagination={pagination}
                     page={page}
@@ -616,7 +647,7 @@ export default function MediaPage({ onMenuClick }) {
                 onSubmit={handleSubmit}
                 formData={formData}
                 onChange={onChange}
-                title={modalMode === 'create' ? 'New Media Transaction' : 'Edit Media Transaction'}
+                title={modalMode === 'create' ? 'New Cost Record' : 'Edit Cost Record'}
                 submitLabel={modalMode === 'create' ? 'Create' : 'Update'}
                 teams={teams}
                 uploading={uploading}
