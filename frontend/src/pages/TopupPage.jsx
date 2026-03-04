@@ -25,8 +25,8 @@ const CURRENCIES = [
 const TYPES = [
     { value: 'income', label: 'Income' },
     { value: 'expense', label: 'Expense' },
-    { value: 'topup_factory', label: 'Top up xưởng' },
-    { value: 'company_expense', label: 'Chi phí công ty' },
+    { value: 'topup_factory', label: 'Factory Top up' },
+    { value: 'company_expense', label: 'Company Expense' },
 ];
 
 
