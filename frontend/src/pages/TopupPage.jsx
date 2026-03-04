@@ -55,8 +55,8 @@ function StatusBadge({ status }) {
 const TYPE_STYLES = {
     income: { bg: 'rgba(16, 185, 129, 0.12)', color: '#10b981', icon: '↓', label: 'Income' },
     expense: { bg: 'rgba(239, 68, 68, 0.12)', color: '#ef4444', icon: '↑', label: 'Expense' },
-    topup_factory: { bg: 'rgba(245, 158, 11, 0.12)', color: '#f59e0b', icon: '⚙', label: 'Top up xưởng' },
-    company_expense: { bg: 'rgba(99, 102, 241, 0.12)', color: '#6366f1', icon: '🏢', label: 'Chi phí công ty' },
+    topup_factory: { bg: 'rgba(245, 158, 11, 0.12)', color: '#f59e0b', icon: '', label: 'Factory Top up' },
+    company_expense: { bg: 'rgba(99, 102, 241, 0.12)', color: '#6366f1', icon: '', label: 'Company Expense' },
 };
 
 function TypeBadge({ type }) {
