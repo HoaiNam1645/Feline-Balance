@@ -42,6 +42,10 @@ class TransactionService
             $query->where('vendor_id', $filters['vendor_id']);
         }
 
+        if (!empty($filters['company_id'])) {
+            $query->where('company_id', $filters['company_id']);
+        }
+
         if (!empty($filters['year'])) {
             $query->whereYear('created_at', $filters['year']);
         }
@@ -50,22 +54,27 @@ class TransactionService
         $summaryQuery = clone $query;
         $totalIncome = (clone $summaryQuery)->where('type', 'income')->sum('amount');
         $totalExpense = (clone $summaryQuery)->where('type', 'expense')->sum('amount');
+        $totalVendor = (clone $summaryQuery)->whereNotNull('vendor_id')->sum('amount');
+        $totalCompany = (clone $summaryQuery)->whereNotNull('company_id')->sum('amount');
         $totalTransactions = $summaryQuery->count();
         $totalAmount = (clone $query)->sum('amount');
 
         $perPage = $filters['per_page'] ?? 15;
-        $paginator = $query->with(['team', 'vendor'])->latest()->paginate($perPage);
+        $paginator = $query->with(['team', 'vendor', 'company'])->latest()->paginate($perPage);
 
         // Page totals
         $pageItems = collect($paginator->items());
         $pageIncome = $pageItems->where('type', 'income')->sum('amount');
         $pageExpense = $pageItems->where('type', 'expense')->sum('amount');
+        $pageVendor = $pageItems->whereNotNull('vendor_id')->sum('amount');
+        $pageCompany = $pageItems->whereNotNull('company_id')->sum('amount');
 
         // Append team name and vendor name
         $items = collect($paginator->items())->map(function ($item) {
             $arr = $item->toArray();
             $arr['team_name'] = $item->team?->name ?? null;
             $arr['vendor_name'] = $item->vendor?->name ?? null;
+            $arr['company_name'] = $item->company?->name ?? null;
             return $arr;
         });
 
@@ -81,9 +90,13 @@ class TransactionService
                 'total_transactions' => $totalTransactions,
                 'total_income'       => round($totalIncome, 2),
                 'total_expense'      => round($totalExpense, 2),
+                'total_vendor'       => round($totalVendor, 2),
+                'total_company'      => round($totalCompany, 2),
                 'total_amount'       => round($totalAmount, 2),
                 'page_income'        => round($pageIncome, 2),
                 'page_expense'       => round($pageExpense, 2),
+                'page_vendor'        => round($pageVendor, 2),
+                'page_company'       => round($pageCompany, 2),
             ],
         ];
     }
@@ -106,6 +119,7 @@ class TransactionService
             'team_id',
             'payment_method',
             'vendor_id',
+            'company_id',
             'amount',
             'currency',
             'image',

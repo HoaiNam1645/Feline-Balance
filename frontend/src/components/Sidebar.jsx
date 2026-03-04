@@ -17,6 +17,7 @@ import {
     LogOut,
     UserCheck,
     DollarSign,
+    Building2,
 } from 'lucide-react';
 
 const menuSections = [
@@ -50,6 +51,7 @@ const menuSections = [
             { icon: Users, label: 'Payouts', path: '/team-finances', roles: ['super_admin', 'admin'] },
             { icon: Users, label: 'Teams Felineez', path: '/teams', roles: ['super_admin'] },
             { icon: LayoutDashboard, label: 'Vendors', path: '/vendors', roles: ['super_admin'] },
+            { icon: Building2, label: 'Companies', path: '/companies', roles: ['super_admin'] },
         ],
     },
     {

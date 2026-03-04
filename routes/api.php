@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\TransactionController;
 use App\Http\Controllers\Api\TeamController;
 use App\Http\Controllers\Api\VendorController;
+use App\Http\Controllers\Api\CompanyController;
 use App\Http\Controllers\Api\DesignStatisticsController;
 use App\Http\Controllers\Api\MediaTransactionController;
 use App\Http\Controllers\Api\UploadController;
@@ -75,6 +76,9 @@ Route::middleware(['jwt.auth'])->group(function () {
     // Employees
     Route::get('/employees', [EmployeeController::class, 'index']);
     Route::post('/employees', [EmployeeController::class, 'store']);
+    Route::post('/employees/import', [EmployeeController::class, 'import']);
+    Route::get('/employees/export', [EmployeeController::class, 'export']);
+    Route::get('/employees/template', [EmployeeController::class, 'template']);
     Route::post('/employees/upload-qr', [EmployeeUploadController::class, 'uploadQr']);
     Route::get('/employees/{id}', [EmployeeController::class, 'show']);
     Route::put('/employees/{id}', [EmployeeController::class, 'update']);
@@ -107,6 +111,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::get('/teams', [TeamController::class, 'index']);
     Route::get('/team-finances', [TeamFinanceController::class, 'index']);
     Route::get('/vendors', [VendorController::class, 'index']);
+    Route::get('/companies', [CompanyController::class, 'index']);
 });
 
 /*
@@ -144,4 +149,9 @@ Route::middleware(['jwt.auth', 'role.admin'])->group(function () {
     Route::post('/vendors', [VendorController::class, 'store']);
     Route::put('/vendors/{id}', [VendorController::class, 'update']);
     Route::delete('/vendors/{id}', [VendorController::class, 'destroy']);
+
+    // Companies
+    Route::post('/companies', [CompanyController::class, 'store']);
+    Route::put('/companies/{id}', [CompanyController::class, 'update']);
+    Route::delete('/companies/{id}', [CompanyController::class, 'destroy']);
 });

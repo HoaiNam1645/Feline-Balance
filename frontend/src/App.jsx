@@ -7,6 +7,7 @@ import ProfilesPage from './pages/ProfilesPage';
 import TopupPage from './pages/TopupPage';
 import TeamsPage from './pages/TeamsPage';
 import VendorsPage from './pages/VendorsPage';
+import CompaniesPage from './pages/CompaniesPage';
 import UsersPage from './pages/UsersPage';
 import RolesPage from './pages/RolesPage';
 import DesignStatisticsPage from './pages/DesignStatisticsPage';
@@ -129,6 +130,11 @@ export default function App() {
                 <Route path="/vendors" element={
                   <ProtectedRoute user={user} allowedRoles={['super_admin']}>
                     <VendorsPage onMenuClick={() => setSidebarOpen(true)} />
+                  </ProtectedRoute>
+                } />
+                <Route path="/companies" element={
+                  <ProtectedRoute user={user} allowedRoles={['super_admin']}>
+                    <CompaniesPage onMenuClick={() => setSidebarOpen(true)} />
                   </ProtectedRoute>
                 } />
                 <Route path="/users" element={

@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, Plus, Trash2, Pencil, X, Filter, Image as ImageIcon, ArrowDownCircle, ArrowUpCircle, DollarSign, Hash, Upload } from 'lucide-react';
+import { Search, Plus, Trash2, Pencil, X, Filter, Image as ImageIcon, ArrowDownCircle, ArrowUpCircle, DollarSign, Hash, Upload, Building2, ShoppingBag } from 'lucide-react';
 import Topbar from '../components/Topbar';
 import DataTable from '../components/DataTable';
 
@@ -25,6 +25,8 @@ const CURRENCIES = [
 const TYPES = [
     { value: 'income', label: 'Income' },
     { value: 'expense', label: 'Expense' },
+    { value: 'topup_factory', label: 'Top up xưởng' },
+    { value: 'company_expense', label: 'Chi phí công ty' },
 ];
 
 
@@ -50,17 +52,24 @@ function StatusBadge({ status }) {
     return <span className={`status-badge ${cls}`}>{status.charAt(0).toUpperCase() + status.slice(1)}</span>;
 }
 
+const TYPE_STYLES = {
+    income: { bg: 'rgba(16, 185, 129, 0.12)', color: '#10b981', icon: '↓', label: 'Income' },
+    expense: { bg: 'rgba(239, 68, 68, 0.12)', color: '#ef4444', icon: '↑', label: 'Expense' },
+    topup_factory: { bg: 'rgba(245, 158, 11, 0.12)', color: '#f59e0b', icon: '⚙', label: 'Top up xưởng' },
+    company_expense: { bg: 'rgba(99, 102, 241, 0.12)', color: '#6366f1', icon: '🏢', label: 'Chi phí công ty' },
+};
+
 function TypeBadge({ type }) {
     if (!type) return null;
-    const isIncome = type.toLowerCase() === 'income';
+    const style = TYPE_STYLES[type.toLowerCase()] || TYPE_STYLES.expense;
     return (
         <span style={{
             padding: '3px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 600,
-            background: isIncome ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.12)',
-            color: isIncome ? '#10b981' : '#ef4444',
+            background: style.bg,
+            color: style.color,
             display: 'inline-flex', alignItems: 'center', gap: '4px',
         }}>
-            {isIncome ? '↓ Income' : '↑ Expense'}
+            {style.icon} {style.label}
         </span>
     );
 }
@@ -119,7 +128,7 @@ function ConfirmModal({ isOpen, onClose, onConfirm, title, message }) {
 }
 
 /* ── Modal Form ── */
-function TransactionModal({ isOpen, onClose, onSubmit, formData, onChange, title, submitLabel, teams = [], vendors = [] }) {
+function TransactionModal({ isOpen, onClose, onSubmit, formData, onChange, title, submitLabel, teams = [], vendors = [], companies = [] }) {
     const [uploading, setUploading] = useState(false);
 
     if (!isOpen) return null;
@@ -202,6 +211,13 @@ function TransactionModal({ isOpen, onClose, onSubmit, formData, onChange, title
                         </div>
                     </div>
                     <div>
+                        <label className="modal-label">Company</label>
+                        <select className="filter-select" name="company_id" value={formData.company_id || ''} onChange={onChange} style={{ width: '100%' }}>
+                            <option value="">Select Company...</option>
+                            {companies.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                        </select>
+                    </div>
+                    <div>
                         <label className="modal-label">Transaction ID</label>
                         <input className="filter-input" name="transaction_id" placeholder="VD: tr042026..." value={formData.transaction_id} onChange={onChange} style={{ width: '100%' }} />
                     </div>
@@ -266,24 +282,34 @@ function ImagePreview({ src, onClose }) {
 
 /* ── Stats Cards for Topup ── */
 function TopupStatsCards({ summary }) {
+    const totalIncome = summary?.total_income ?? 0;
+    const totalExpense = summary?.total_expense ?? 0;
+    const totalVendor = summary?.total_vendor ?? 0;
+    const totalCompany = summary?.total_company ?? 0;
+    const net = totalIncome - totalExpense;
+
+    const netVendorCompany = totalVendor - totalCompany;
+
     const cards = [
-        { label: 'Total Transactions', value: summary?.total_transactions ?? 0, icon: Hash, color: 'purple', sub: 'All filtered transactions', isMoney: false },
-        { label: 'Total Income', value: summary?.total_income ?? 0, icon: ArrowDownCircle, color: 'green', sub: 'Total income', isMoney: true },
-        { label: 'Total Expense', value: summary?.total_expense ?? 0, icon: ArrowUpCircle, color: 'amber', sub: 'Total expense', isMoney: true },
-        { label: 'Net', value: (summary?.total_income ?? 0) - (summary?.total_expense ?? 0), icon: DollarSign, color: 'cyan', sub: 'Income - Expense', isMoney: true },
+        { label: 'Total Income', value: totalIncome, icon: ArrowDownCircle, color: 'green', sub: 'All filtered income' },
+        { label: 'Total Expense', value: totalExpense, icon: ArrowUpCircle, color: 'amber', sub: 'All filtered expense' },
+        { label: 'Net (Income - Expense)', value: net, icon: DollarSign, color: 'cyan', sub: 'Income - Expense' },
+        { label: 'Total Vendor', value: totalVendor, icon: ShoppingBag, color: 'purple', sub: 'Vendor transactions' },
+        { label: 'Total Company', value: totalCompany, icon: Building2, color: 'blue', sub: 'Company transactions' },
+        { label: 'Net (Vendor - Company)', value: netVendorCompany, icon: DollarSign, color: 'indigo', sub: 'Vendor - Company' },
     ];
 
     const fmt = (v) => Number(v).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '$';
 
     return (
-        <div className="stats-grid">
+        <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
             {cards.map((card) => (
                 <div className="stat-card" key={card.label}>
                     <div className="stat-card-header">
                         <div className={`stat-card-icon ${card.color}`}><card.icon size={20} /></div>
                         <span className="stat-card-label">{card.label}</span>
                     </div>
-                    <div className="stat-card-value">{card.isMoney ? fmt(card.value) : card.value}</div>
+                    <div className="stat-card-value">{card.isMoney === false ? card.value : fmt(card.value)}</div>
                     <div className="stat-card-sub">{card.sub}</div>
                 </div>
             ))}
@@ -299,6 +325,7 @@ export default function TopupPage({ onMenuClick }) {
     const [summary, setSummary] = useState({});
     const [teams, setTeams] = useState([]);
     const [vendors, setVendors] = useState([]);
+    const [companies, setCompanies] = useState([]);
 
     // Fetch teams from DB
     useEffect(() => {
@@ -310,6 +337,11 @@ export default function TopupPage({ onMenuClick }) {
         fetch(`${API_BASE}/api/vendors`)
             .then(res => res.json())
             .then(json => { if (json.success) setVendors(json.data); })
+            .catch(() => { });
+
+        fetch(`${API_BASE}/api/companies`)
+            .then(res => res.json())
+            .then(json => { if (json.success) setCompanies(json.data); })
             .catch(() => { });
     }, []);
 
@@ -349,7 +381,7 @@ export default function TopupPage({ onMenuClick }) {
     const [editingId, setEditingId] = useState(null);
     const [formData, setFormData] = useState({
         transaction_id: '', type: 'income', team_id: '', payment_method: 'pingpong',
-        amount: '', currency: 'USD', status: 'pending', image: '', vendor_id: ''
+        amount: '', currency: 'USD', status: 'pending', image: '', vendor_id: '', company_id: ''
     });
 
     const [previewImage, setPreviewImage] = useState(null);
@@ -399,7 +431,7 @@ export default function TopupPage({ onMenuClick }) {
     useEffect(() => { fetchData(); }, [typeFilter, teamFilter, yearFilter, paymentMethodFilter, statusFilter, page]);
     useEffect(() => { setPage(1); }, [typeFilter, teamFilter, yearFilter, paymentMethodFilter, statusFilter, search]);
 
-    const resetForm = () => setFormData({ transaction_id: '', type: 'income', team_id: '', payment_method: 'pingpong', vendor_id: '', amount: '', currency: 'USD', status: 'pending', image: '' });
+    const resetForm = () => setFormData({ transaction_id: '', type: 'income', team_id: '', payment_method: 'pingpong', vendor_id: '', company_id: '', amount: '', currency: 'USD', status: 'pending', image: '' });
 
     const openCreateModal = () => { setModalMode('create'); resetForm(); setModalOpen(true); };
     const openEditModal = (row) => {
@@ -407,8 +439,8 @@ export default function TopupPage({ onMenuClick }) {
         setEditingId(row.id);
         setFormData({
             transaction_id: row.transaction_id || '', type: row.type || 'income', team_id: row.team_id || '',
-            payment_method: row.payment_method || 'pingpong', vendor_id: row.vendor_id || '', amount: row.amount || '',
-            currency: row.currency || 'USD', status: row.status || 'pending', image: row.image || '',
+            payment_method: row.payment_method || 'pingpong', vendor_id: row.vendor_id || '', company_id: row.company_id || '',
+            amount: row.amount || '', currency: row.currency || 'USD', status: row.status || 'pending', image: row.image || '',
         });
         setModalOpen(true);
     };
@@ -473,8 +505,12 @@ export default function TopupPage({ onMenuClick }) {
             render: (row) => <span style={{ color: 'var(--primary-light)', fontWeight: 600 }}>{(PAYMENT_METHODS.find(p => p.value === row.payment_method) || {}).label || row.payment_method}</span>,
         },
         {
-            key: 'vendor_name', label: 'Vendor', width: '10%',
+            key: 'vendor_name', label: 'Vendor', width: '8%',
             render: (row) => <span style={{ fontWeight: 600 }}>{row.vendor_name || '—'}</span>,
+        },
+        {
+            key: 'company_name', label: 'Company', width: '8%',
+            render: (row) => <span style={{ fontWeight: 600 }}>{row.company_name || '—'}</span>,
         },
         {
             key: 'type', label: 'Type', width: '9%',
@@ -520,18 +556,43 @@ export default function TopupPage({ onMenuClick }) {
     // Footer totals row
     const footerRow = useMemo(() => {
         if (!summary || !data.length) return null;
+        const pageIncome = Number(summary.page_income ?? 0);
+        const pageExpense = Number(summary.page_expense ?? 0);
+        const pageVendor = Number(summary.page_vendor ?? 0);
+        const pageCompany = Number(summary.page_company ?? 0);
+        const pageNet = pageIncome - pageExpense;
+        const fmt = (v) => Number(v).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '$';
         return (
             <tr>
-                <td style={{ fontWeight: 700, whiteSpace: 'nowrap', padding: '14px 16px' }} colSpan={6}>
-                    TOTAL: {summary.total_transactions ?? 0} transactions
-                </td>
-                <td className="text-right" style={{ fontWeight: 700, padding: '14px 16px' }}>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', alignItems: 'flex-end' }}>
-                        <span style={{ color: 'var(--success)', fontSize: '13px' }}>Income: {Number(summary.page_income ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}$</span>
-                        <span style={{ color: 'var(--danger)', fontSize: '13px' }}>Expense: {Number(summary.page_expense ?? 0).toLocaleString('en-US', { minimumFractionDigits: 2 })}$</span>
+                <td colSpan={12}>
+                    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px', padding: '2px 0' }}>
+                        <span style={{ fontWeight: 700, fontSize: '13px', whiteSpace: 'nowrap' }}>
+                            TOTAL: {summary.total_transactions ?? 0} transactions
+                        </span>
+                        <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', alignItems: 'center' }}>
+                            <span style={{ fontSize: '12px', fontWeight: 600 }}>
+                                <span style={{ color: 'var(--text-muted)' }}>Income: </span>
+                                <span style={{ color: 'var(--success)' }}>{fmt(pageIncome)}</span>
+                            </span>
+                            <span style={{ fontSize: '12px', fontWeight: 600 }}>
+                                <span style={{ color: 'var(--text-muted)' }}>Expense: </span>
+                                <span style={{ color: 'var(--danger)' }}>{fmt(pageExpense)}</span>
+                            </span>
+                            <span style={{ fontSize: '12px', fontWeight: 600 }}>
+                                <span style={{ color: 'var(--text-muted)' }}>Vendor: </span>
+                                <span style={{ color: '#a855f7' }}>{fmt(pageVendor)}</span>
+                            </span>
+                            <span style={{ fontSize: '12px', fontWeight: 600 }}>
+                                <span style={{ color: 'var(--text-muted)' }}>Company: </span>
+                                <span style={{ color: '#6366f1' }}>{fmt(pageCompany)}</span>
+                            </span>
+                            <span style={{ fontSize: '13px', fontWeight: 800, borderLeft: '2px solid var(--border-color)', paddingLeft: '16px' }}>
+                                <span style={{ color: 'var(--text-muted)' }}>Net: </span>
+                                <span style={{ color: pageNet >= 0 ? 'var(--success)' : 'var(--danger)' }}>{fmt(pageNet)}</span>
+                            </span>
+                        </div>
                     </div>
                 </td>
-                <td colSpan={4}></td>
             </tr>
         );
     }, [summary, data]);
@@ -665,6 +726,7 @@ export default function TopupPage({ onMenuClick }) {
                 onChange={handleFormChange}
                 teams={teams}
                 vendors={vendors}
+                companies={companies}
                 title={modalMode === 'create' ? 'New Transaction' : 'Update Transaction'}
                 submitLabel={modalMode === 'create' ? 'Create' : 'Update'}
             />

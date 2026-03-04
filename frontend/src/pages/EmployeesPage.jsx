@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Users, Plus, Pencil, Trash2, X, Search, CheckCircle, XCircle, FileText, Eye, Shield } from 'lucide-react';
+import { Users, Plus, Pencil, Trash2, X, Search, CheckCircle, XCircle, FileText, Eye, Shield, Upload, Download } from 'lucide-react';
 import Topbar from '../components/Topbar';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
@@ -248,6 +248,114 @@ function EmployeeFormModal({ isOpen, onClose, onSubmit, formData, onChange, titl
     );
 }
 
+/* ── Import Modal ── */
+function ImportModal({ isOpen, onClose, onImport, importing, importResult }) {
+    const [file, setFile] = useState(null);
+
+    if (!isOpen) return null;
+
+    const downloadTemplate = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch(`${API_BASE}/api/employees/template`, {
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+            });
+            if (!res.ok) throw new Error('Download failed');
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'employee_import_template.xlsx';
+            a.click();
+            URL.revokeObjectURL(url);
+        } catch (err) {
+            console.error('Template download error:', err);
+        }
+    };
+
+    return (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,.7)', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={onClose}>
+            <div style={{
+                background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: 12,
+                width: 560, maxWidth: '95vw', maxHeight: '90vh', overflow: 'auto',
+                boxShadow: '0 20px 60px rgba(0,0,0,.5)', animation: 'slideInUp .25s ease-out',
+            }} onClick={e => e.stopPropagation()}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 24px', borderBottom: '1px solid var(--border-color)' }}>
+                    <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: 'var(--text-primary)' }}>Import Employees</h3>
+                    <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 4, borderRadius: 4 }}><X size={18} /></button>
+                </div>
+                <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 20 }}>
+                    {/* Template Info */}
+                    <div style={{ padding: 16, background: 'rgba(99,102,241,.06)', borderRadius: 8, border: '1px solid rgba(99,102,241,.15)' }}>
+                        <div style={{ fontSize: 13, fontWeight: 600, color: 'var(--text-primary)', marginBottom: 8 }}>XLSX Template Format</div>
+                        <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 12 }}>
+                            The Excel template contains <strong>2 sheets</strong>:
+                            <ul style={{ margin: '8px 0 0', paddingLeft: 18, lineHeight: 1.8 }}>
+                                <li><strong>Employees</strong> sheet: Basic info (name, cccd, phone...). Use <code>ref_id</code> to link new employees to contracts.</li>
+                                <li><strong>Contracts</strong> sheet: Add one or more contracts per employee using <code>employee_ref_id</code>.</li>
+                            </ul>
+                        </div>
+                        <button className="btn btn-ghost" onClick={downloadTemplate} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 14px', fontSize: 13, background: 'var(--bg-card)', border: '1px solid var(--border-color)' }}>
+                            <Download size={14} /> Download Template (.xlsx)
+                        </button>
+                        <div style={{ fontSize: 11, color: 'var(--text-muted)', marginTop: 8, fontStyle: 'italic' }}>
+                            Supported formats: .xlsx, .xls
+                        </div>
+                    </div>
+
+                    {/* File upload */}
+                    <div>
+                        <label className="modal-label">Select File *</label>
+                        <input
+                            type="file"
+                            accept=".xlsx,.xls"
+                            onChange={(e) => setFile(e.target.files[0])}
+                            style={{
+                                width: '100%', padding: '10px 12px', fontSize: 13,
+                                background: 'var(--bg-input)', border: '1px solid var(--border-color)',
+                                borderRadius: 8, color: 'var(--text-primary)',
+                            }}
+                        />
+                    </div>
+
+                    {/* Import result */}
+                    {importResult && (
+                        <div style={{
+                            padding: 14, borderRadius: 8, fontSize: 13,
+                            background: importResult.errors?.length > 0 ? 'rgba(245,158,11,.08)' : 'rgba(16,185,129,.08)',
+                            border: `1px solid ${importResult.errors?.length > 0 ? 'rgba(245,158,11,.2)' : 'rgba(16,185,129,.2)'}`,
+                        }}>
+                            <div style={{ fontWeight: 600, color: 'var(--text-primary)', marginBottom: 6 }}>
+                                ✓ Created {importResult.created} / {importResult.total_rows} employees
+                            </div>
+                            {importResult.errors?.length > 0 && (
+                                <div style={{ maxHeight: 120, overflow: 'auto', fontSize: 12, color: 'var(--danger)', lineHeight: 1.6 }}>
+                                    {importResult.errors.map((err, i) => (
+                                        <div key={i}>• {err}</div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Footer */}
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 8, paddingTop: 8, borderTop: '1px solid var(--border-color)' }}>
+                        <button className="btn btn-ghost" onClick={onClose} style={{ padding: '10px 20px' }}>Close</button>
+                        <button
+                            className="btn btn-primary"
+                            disabled={!file || importing}
+                            onClick={() => onImport(file)}
+                            style={{ padding: '10px 20px', display: 'flex', alignItems: 'center', gap: 6 }}
+                        >
+                            <Upload size={14} /> {importing ? 'Importing...' : 'Import'}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
 const emptyForm = { name: '', date_of_birth: '', gender: 'male', cccd: '', hometown: '', email: '', phone: '', bank_code: '', bank_name: '', qr_code: '', has_insurance: false, insurance_number: '', start_date: '', end_date: '', status: 'active', note: '', contracts: [] };
 
 /* ── Main Page ── */
@@ -287,6 +395,11 @@ export default function EmployeesPage({ onMenuClick }) {
 
     const [toasts, setToasts] = useState([]);
     const [uploadingQr, setUploadingQr] = useState(false);
+
+    // Import/Export
+    const [importModalOpen, setImportModalOpen] = useState(false);
+    const [importing, setImporting] = useState(false);
+    const [importResult, setImportResult] = useState(null);
 
     const addToast = useCallback((message, type = 'success') => {
         const id = Date.now();
@@ -423,6 +536,56 @@ export default function EmployeesPage({ onMenuClick }) {
         finally { setConfirmOpen(false); setDeletingId(null); }
     };
 
+    const handleImport = async (file) => {
+        setImporting(true);
+        setImportResult(null);
+        try {
+            const formDataUpload = new FormData();
+            formDataUpload.append('file', file);
+            const token = localStorage.getItem('token');
+            const res = await fetch(`${API_BASE}/api/employees/import`, {
+                method: 'POST',
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+                body: formDataUpload,
+            });
+            const json = await res.json();
+            if (json.success) {
+                setImportResult(json.data);
+                addToast(json.message);
+                fetchEmployees();
+            } else {
+                addToast(json.message || 'Import failed!', 'error');
+            }
+        } catch (err) {
+            addToast('Import error: ' + err.message, 'error');
+        } finally {
+            setImporting(false);
+        }
+    };
+
+    const handleExport = async () => {
+        try {
+            const params = new URLSearchParams();
+            if (statusFilter) params.append('status', statusFilter);
+            if (nameFilter) params.append('name', nameFilter);
+            const token = localStorage.getItem('token');
+            const res = await fetch(`${API_BASE}/api/employees/export?${params}`, {
+                headers: token ? { 'Authorization': `Bearer ${token}` } : {},
+            });
+            if (!res.ok) throw new Error('Export failed');
+            const blob = await res.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `employees_${new Date().toISOString().slice(0, 10)}.xlsx`;
+            a.click();
+            URL.revokeObjectURL(url);
+            addToast('Export downloaded successfully!');
+        } catch (err) {
+            addToast('Export error: ' + err.message, 'error');
+        }
+    };
+
     const activeCount = employees.filter(e => e.status === 'active').length;
     const insuredCount = employees.filter(e => e.has_insurance).length;
 
@@ -495,7 +658,13 @@ export default function EmployeesPage({ onMenuClick }) {
                         </select>
                     </div>
 
-                    <div style={{ marginLeft: 'auto' }}>
+                    <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
+                        <button className="btn btn-ghost" onClick={() => { setImportResult(null); setImportModalOpen(true); }} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <Upload size={14} /> Import
+                        </button>
+                        <button className="btn btn-ghost" onClick={handleExport} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                            <Download size={14} /> Export
+                        </button>
                         <button className="btn btn-primary" onClick={openCreateModal}>
                             <Plus size={14} /> New Employee
                         </button>
@@ -608,6 +777,7 @@ export default function EmployeesPage({ onMenuClick }) {
 
             <EmployeeFormModal isOpen={modalOpen} onClose={() => setModalOpen(false)} onSubmit={handleSubmit} formData={formData} onChange={handleFormChange} title={modalMode === 'create' ? 'New Employee' : 'Update Employee'} submitLabel={modalMode === 'create' ? 'Create' : 'Update'} submitting={submitting} onUploadQr={handleUploadQr} uploadingQr={uploadingQr} />
             <ConfirmModal isOpen={confirmOpen} onClose={() => setConfirmOpen(false)} onConfirm={handleDelete} title="Confirm Delete" message="Are you sure you want to delete this employee? This action cannot be undone." />
+            <ImportModal isOpen={importModalOpen} onClose={() => setImportModalOpen(false)} onImport={handleImport} importing={importing} importResult={importResult} />
             <ToastContainer toasts={toasts} removeToast={removeToast} />
         </>
     );
