@@ -10,6 +10,8 @@ const BANKS = [
     { value: 'Vietcombank', label: 'Vietcombank' },
     { value: 'Techcombank', label: 'Techcombank' },
     { value: 'Sacombank', label: 'Sacombank' },
+    { value: 'Vietinbank', label: 'Vietinbank' },
+    { value: 'MB Bank', label: 'MB Bank' },
 ];
 
 const STATUSES = [
