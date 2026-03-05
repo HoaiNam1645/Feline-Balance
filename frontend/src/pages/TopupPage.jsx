@@ -37,10 +37,9 @@ const STATUSES = [
     { value: 'rejected', label: 'Rejected' },
 ];
 
-function formatMoney(value, currency = 'USD') {
+function formatMoney(value) {
     if (value == null || Number(value) === 0) return '—';
-    const cur = CURRENCIES.find(c => c.value === currency) || CURRENCIES[0];
-    return `${Number(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}${cur.symbol}`;
+    return Number(value).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function StatusBadge({ status }) {
@@ -296,7 +295,7 @@ function TopupStatsCards({ summary }) {
         { label: 'Net (Vendor - Company)', value: netVendorCompany, icon: DollarSign, color: 'indigo', sub: 'Vendor - Company' },
     ];
 
-    const fmt = (v) => Number(v).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '$';
+    const fmt = (v) => Number(v * 25000).toLocaleString('vi-VN') + 'đ';
 
     return (
         <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
@@ -496,7 +495,7 @@ export default function TopupPage({ onMenuClick }) {
             render: (_, idx) => <span style={{ color: 'var(--text-muted)' }}>{(pagination.current_page - 1) * pagination.per_page + idx + 1}</span>,
         },
         {
-            key: 'team_name', label: 'Team', width: '8%',
+            key: 'team_name', label: 'Team', width: '7%',
             render: (row) => <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{row.team_name || '—'}</span>,
         },
         {
@@ -504,27 +503,31 @@ export default function TopupPage({ onMenuClick }) {
             render: (row) => <span style={{ color: 'var(--primary-light)', fontWeight: 600 }}>{(PAYMENT_METHODS.find(p => p.value === row.payment_method) || {}).label || row.payment_method}</span>,
         },
         {
-            key: 'vendor_name', label: 'Vendor', width: '10%',
+            key: 'vendor_name', label: 'Vendor', width: '7%',
             render: (row) => <span style={{ fontWeight: 600 }}>{row.vendor_name || '—'}</span>,
         },
         {
-            key: 'type', label: 'Type', width: '10%',
+            key: 'type', label: 'Type', width: '8%',
             render: (row) => <TypeBadge type={row.type} />,
         },
         {
-            key: 'transaction_id', label: 'Transaction ID', width: '14%',
+            key: 'transaction_id', label: 'Transaction ID', width: '11%',
             render: (row) => <span style={{ fontFamily: 'monospace', fontSize: '13px', color: 'var(--text-secondary)', wordBreak: 'break-all' }}>{row.transaction_id || '—'}</span>,
         },
         {
-            key: 'amount', label: 'Amount', className: 'text-right', width: '12%',
+            key: 'amount', label: 'Amount', className: 'text-right', width: '11%',
             render: (row) => (
                 <span style={{ fontWeight: 600, fontVariantNumeric: 'tabular-nums', color: row.type === 'income' ? 'var(--success)' : 'var(--danger)' }}>
-                    {formatMoney(row.amount, row.currency)}
+                    {formatMoney(row.amount)}
                 </span>
             ),
         },
         {
-            key: 'status', label: 'Status', width: '10%',
+            key: 'currency', label: 'Currency', width: '5%', style: { textAlign: 'center' }, tdStyle: { textAlign: 'center' },
+            render: (row) => <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary)' }}>{row.currency || 'USD'}</span>,
+        },
+        {
+            key: 'status', label: 'Status', width: '9%',
             render: (row) => <StatusBadge status={row.status} />,
         },
         {
@@ -541,12 +544,12 @@ export default function TopupPage({ onMenuClick }) {
         },
         {
             key: 'created_at', label: 'Time', width: '10%',
-            render: (row) => <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{new Date(row.created_at).toLocaleString('vi-VN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>,
+            render: (row) => <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{new Date(row.created_at).toLocaleString('vi-VN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>,
         },
         {
-            key: 'action', label: 'Action', width: '5%', style: { textAlign: 'right' }, tdStyle: { textAlign: 'right' },
+            key: 'action', label: 'Action', width: '6%', style: { textAlign: 'center' }, tdStyle: { textAlign: 'center' },
             render: (row) => (
-                <div style={{ display: 'flex', gap: '4px', justifyContent: 'flex-end' }}>
+                <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
                     <button className="btn btn-ghost" style={{ padding: '6px 8px' }} onClick={() => openEditModal(row)} title="Edit"><Pencil size={14} /></button>
                     <button className="btn btn-ghost" style={{ padding: '6px 8px', color: 'var(--danger)' }} onClick={() => confirmDelete(row.id)} title="Delete"><Trash2 size={14} /></button>
                 </div>
@@ -562,10 +565,10 @@ export default function TopupPage({ onMenuClick }) {
         const pageVendor = Number(summary.page_vendor ?? 0);
         const pageCompany = Number(summary.page_company ?? 0);
         const pageNet = pageIncome - pageExpense;
-        const fmt = (v) => Number(v).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '$';
+        const fmtVND = (v) => Number(v * 25000).toLocaleString('vi-VN') + 'đ';
         return (
             <tr>
-                <td colSpan={12}>
+                <td colSpan={13}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px', padding: '2px 0' }}>
                         <span style={{ fontWeight: 700, fontSize: '13px', whiteSpace: 'nowrap' }}>
                             TOTAL: {summary.total_transactions ?? 0} transactions
@@ -573,19 +576,23 @@ export default function TopupPage({ onMenuClick }) {
                         <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', alignItems: 'center' }}>
                             <span style={{ fontSize: '12px', fontWeight: 600 }}>
                                 <span style={{ color: 'var(--text-muted)' }}>Income: </span>
-                                <span style={{ color: 'var(--success)' }}>{fmt(pageIncome)}</span>
+                                <span style={{ color: 'var(--success)' }}>{fmtVND(pageIncome)}</span>
                             </span>
                             <span style={{ fontSize: '12px', fontWeight: 600 }}>
                                 <span style={{ color: 'var(--text-muted)' }}>Expense: </span>
-                                <span style={{ color: 'var(--danger)' }}>{fmt(pageExpense)}</span>
+                                <span style={{ color: 'var(--danger)' }}>{fmtVND(pageExpense)}</span>
                             </span>
                             <span style={{ fontSize: '12px', fontWeight: 600 }}>
                                 <span style={{ color: 'var(--text-muted)' }}>Vendor: </span>
-                                <span style={{ color: '#a855f7' }}>{fmt(pageVendor)}</span>
+                                <span style={{ color: '#a855f7' }}>{fmtVND(pageVendor)}</span>
+                            </span>
+                            <span style={{ fontSize: '12px', fontWeight: 600 }}>
+                                <span style={{ color: 'var(--text-muted)' }}>Company: </span>
+                                <span style={{ color: '#6366f1' }}>{fmtVND(pageCompany)}</span>
                             </span>
                             <span style={{ fontSize: '13px', fontWeight: 800, borderLeft: '2px solid var(--border-color)', paddingLeft: '16px' }}>
                                 <span style={{ color: 'var(--text-muted)' }}>Net: </span>
-                                <span style={{ color: pageNet >= 0 ? 'var(--success)' : 'var(--danger)' }}>{fmt(pageNet)}</span>
+                                <span style={{ color: pageNet >= 0 ? 'var(--success)' : 'var(--danger)' }}>{fmtVND(pageNet)}</span>
                             </span>
                         </div>
                     </div>
