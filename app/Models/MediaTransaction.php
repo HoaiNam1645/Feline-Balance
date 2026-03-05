@@ -11,7 +11,7 @@ class MediaTransaction extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'company_id',
+        'team_id',
         'expense_type',
         'image',
         'transaction_code',
@@ -27,8 +27,8 @@ class MediaTransaction extends Model
         'amount' => 'decimal:2',
     ];
 
-    public function company()
+    public function team()
     {
-        return $this->belongsTo(Company::class);
+        return $this->belongsTo(Team::class);
     }
 }

@@ -111,7 +111,7 @@ function ImagePreview({ src, onClose }) {
 }
 
 /* ── Media Form Modal ── */
-function MediaFormModal({ isOpen, onClose, onSubmit, formData, onChange, title, submitLabel, companies, uploading, onUpload }) {
+function MediaFormModal({ isOpen, onClose, onSubmit, formData, onChange, title, submitLabel, teams, uploading, onUpload }) {
     if (!isOpen) return null;
     return (
         <div style={{
@@ -132,10 +132,11 @@ function MediaFormModal({ isOpen, onClose, onSubmit, formData, onChange, title, 
                 {/* Body */}
                 <div style={{ padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px', maxHeight: '60vh', overflowY: 'auto' }}>
                     <div>
-                        <label className="modal-label">Company *</label>
-                        <select className="filter-select" name="company_id" value={formData.company_id} onChange={onChange} style={{ width: '100%' }}>
-                            <option value="">— Select Company —</option>
-                            {companies.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                        <label className="modal-label">Team / Company *</label>
+                        <select className="filter-select" name="team_id" value={formData.team_id} onChange={onChange} style={{ width: '100%' }}>
+                            <option value="">— Select Team —</option>
+                            <option value="company" style={{ fontWeight: 600 }}>Company (Công ty)</option>
+                            {teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                         </select>
                     </div>
                     <div>
@@ -252,7 +253,7 @@ function StatsCards({ summary }) {
 export default function MediaPage({ onMenuClick }) {
     const [data, setData] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [companies, setCompanies] = useState([]);
+    const [teams, setTeams] = useState([]);
     const [summary, setSummary] = useState(null);
     const [pagination, setPagination] = useState({ current_page: 1, last_page: 1, per_page: 15, total: 0 });
     const [searchParams, setSearchParams] = useSearchParams();
@@ -271,8 +272,8 @@ export default function MediaPage({ onMenuClick }) {
 
     const [search, setSearch] = useState('');
 
-    const companyFilter = searchParams.get('company_id') || '';
-    const setCompanyFilter = (v) => updateParam('company_id', v);
+    const teamFilter = searchParams.get('team_id') || '';
+    const setTeamFilter = (v) => updateParam('team_id', v);
 
     const bankFilter = searchParams.get('bank') || '';
     const setBankFilter = (v) => updateParam('bank', v);
@@ -293,7 +294,7 @@ export default function MediaPage({ onMenuClick }) {
     const now = new Date();
     const defaultDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}T${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
     const [formData, setFormData] = useState({
-        company_id: '', expense_type: '', image: '', transaction_code: '', bank: 'Vietcombank',
+        team_id: '', expense_type: '', image: '', transaction_code: '', bank: 'Vietcombank',
         transaction_date: defaultDate, amount: '', status: 'pending', note: ''
     });
 
@@ -316,10 +317,10 @@ export default function MediaPage({ onMenuClick }) {
     }, []);
     const removeToast = useCallback((id) => setToasts(prev => prev.filter(t => t.id !== id)), []);
 
-    // Fetch companies
+    // Fetch teams
     useEffect(() => {
-        fetch(`${API_BASE}/api/companies`).then(r => r.json()).then(j => {
-            if (j.success) setCompanies(j.data);
+        fetch(`${API_BASE}/api/teams`).then(r => r.json()).then(j => {
+            if (j.success) setTeams(j.data);
         }).catch(() => { });
     }, []);
 
@@ -329,7 +330,7 @@ export default function MediaPage({ onMenuClick }) {
         try {
             const params = new URLSearchParams({ page, per_page: 15 });
             if (search.trim()) params.append('search', search.trim());
-            if (companyFilter) params.append('company_id', companyFilter);
+            if (teamFilter) params.append('team_id', teamFilter);
             if (expenseTypeFilter) params.append('expense_type', expenseTypeFilter);
             if (bankFilter) params.append('bank', bankFilter);
             if (statusFilter) params.append('status', statusFilter);
@@ -347,7 +348,7 @@ export default function MediaPage({ onMenuClick }) {
         } finally {
             setLoading(false);
         }
-    }, [page, search, companyFilter, expenseTypeFilter, bankFilter, statusFilter, yearFilter]);
+    }, [page, search, teamFilter, expenseTypeFilter, bankFilter, statusFilter, yearFilter]);
 
     useEffect(() => { fetchData(); }, [fetchData]);
 
@@ -359,7 +360,7 @@ export default function MediaPage({ onMenuClick }) {
         setEditingId(null);
         const n = new Date();
         setFormData({
-            company_id: '', expense_type: '', image: '', transaction_code: '', bank: 'Vietcombank',
+            team_id: '', expense_type: '', image: '', transaction_code: '', bank: 'Vietcombank',
             transaction_date: `${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, '0')}-${String(n.getDate()).padStart(2, '0')}T${String(n.getHours()).padStart(2, '0')}:${String(n.getMinutes()).padStart(2, '0')}`,
             amount: '', status: 'pending', note: ''
         });
@@ -370,7 +371,7 @@ export default function MediaPage({ onMenuClick }) {
         setModalMode('edit');
         setEditingId(row.id);
         setFormData({
-            company_id: row.company_id || '',
+            team_id: row.team_id === null ? 'company' : (row.team_id || ''),
             expense_type: row.expense_type || '',
             image: row.image || '',
             transaction_code: row.transaction_code || '',
@@ -384,7 +385,7 @@ export default function MediaPage({ onMenuClick }) {
     };
 
     const handleSubmit = async () => {
-        if (!formData.company_id) { addToast('Please select a company', 'error'); return; }
+        if (!formData.team_id) { addToast('Please select a team or company', 'error'); return; }
         if (!formData.expense_type) { addToast('Please select an expense type', 'error'); return; }
         if (!formData.bank) { addToast('Please select a bank', 'error'); return; }
 
@@ -457,8 +458,8 @@ export default function MediaPage({ onMenuClick }) {
             render: (_, idx) => <span style={{ color: 'var(--text-muted)' }}>{(pagination.current_page - 1) * pagination.per_page + idx + 1}</span>,
         },
         {
-            key: 'company_name', label: 'Company', width: '12%',
-            render: (row) => <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{row.company_name || '—'}</span>,
+            key: 'team_name', label: 'Company / Team', width: '12%',
+            render: (row) => <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{row.team_name || '—'}</span>,
         },
         {
             key: 'expense_type', label: 'Type', width: '10%',
@@ -589,16 +590,17 @@ export default function MediaPage({ onMenuClick }) {
                     </div>
 
                     <div className="filter-group">
-                        <select className="filter-select" value={companyFilter} onChange={(e) => {
+                        <select className="filter-select" value={teamFilter} onChange={(e) => {
                             const v = e.target.value;
                             setSearchParams(prev => {
-                                if (v) prev.set('company_id', v); else prev.delete('company_id');
+                                if (v) prev.set('team_id', v); else prev.delete('team_id');
                                 prev.delete('page');
                                 return prev;
                             }, { replace: true });
                         }}>
-                            <option value="">All Companies</option>
-                            {companies.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
+                            <option value="">All Teams (inc. Company)</option>
+                            <option value="company" style={{ fontWeight: 600 }}>Company (Công ty)</option>
+                            {teams.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
                         </select>
                     </div>
 
@@ -661,7 +663,7 @@ export default function MediaPage({ onMenuClick }) {
                 onChange={onChange}
                 title={modalMode === 'create' ? 'New Cost Record' : 'Edit Cost Record'}
                 submitLabel={modalMode === 'create' ? 'Create' : 'Update'}
-                companies={companies}
+                teams={teams}
                 uploading={uploading}
                 onUpload={handleUpload}
             />

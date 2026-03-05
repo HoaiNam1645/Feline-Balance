@@ -15,8 +15,12 @@ class MediaTransactionService
     {
         $query = MediaTransaction::query();
 
-        if (!empty($filters['company_id'])) {
-            $query->where('company_id', $filters['company_id']);
+        if (!empty($filters['team_id'])) {
+            if ($filters['team_id'] === 'company') {
+                $query->whereNull('team_id');
+            } else {
+                $query->where('team_id', $filters['team_id']);
+            }
         }
 
         if (!empty($filters['bank'])) {
@@ -51,16 +55,16 @@ class MediaTransactionService
         $totalComplete = (clone $summaryQuery)->where('status', 'complete')->count();
 
         $perPage = $filters['per_page'] ?? 15;
-        $paginator = $query->with('company')->latest('transaction_date')->paginate($perPage);
+        $paginator = $query->with('team')->latest('transaction_date')->paginate($perPage);
 
         // Page totals
         $pageItems = collect($paginator->items());
         $pageAmount = $pageItems->sum('amount');
 
-        // Map company name
+        // Map team/company name
         $items = $pageItems->map(function ($item) {
             $arr = $item->toArray();
-            $arr['company_name'] = $item->company?->name ?? null;
+            $arr['team_name'] = $item->team?->name ?? 'Company';
             return $arr;
         });
 
@@ -84,6 +88,9 @@ class MediaTransactionService
 
     public function createMediaTransaction(array $data): MediaTransaction
     {
+        if (isset($data['team_id']) && $data['team_id'] === 'company') {
+            $data['team_id'] = null;
+        }
         return MediaTransaction::create($data);
     }
 
@@ -95,7 +102,7 @@ class MediaTransactionService
         }
 
         $fillableData = collect($data)->only([
-            'company_id',
+            'team_id',
             'expense_type',
             'image',
             'transaction_code',
@@ -105,6 +112,11 @@ class MediaTransactionService
             'status',
             'note',
         ])->toArray();
+
+        // If team_id is 'company', set it to null
+        if (isset($fillableData['team_id']) && $fillableData['team_id'] === 'company') {
+            $fillableData['team_id'] = null;
+        }
 
         // If image changed, delete the old one from B2
         if (array_key_exists('image', $fillableData) && $fillableData['image'] !== $record->image) {
