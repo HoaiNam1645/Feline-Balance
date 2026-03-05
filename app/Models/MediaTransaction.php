@@ -11,7 +11,7 @@ class MediaTransaction extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'team_id',
+        'company_id',
         'expense_type',
         'image',
         'transaction_code',
@@ -19,6 +19,7 @@ class MediaTransaction extends Model
         'transaction_date',
         'amount',
         'status',
+        'note',
     ];
 
     protected $casts = [
@@ -26,8 +27,8 @@ class MediaTransaction extends Model
         'amount' => 'decimal:2',
     ];
 
-    public function team()
+    public function company()
     {
-        return $this->belongsTo(Team::class);
+        return $this->belongsTo(Company::class);
     }
 }

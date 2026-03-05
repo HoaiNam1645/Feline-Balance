@@ -15,8 +15,8 @@ class MediaTransactionService
     {
         $query = MediaTransaction::query();
 
-        if (!empty($filters['team_id'])) {
-            $query->where('team_id', $filters['team_id']);
+        if (!empty($filters['company_id'])) {
+            $query->where('company_id', $filters['company_id']);
         }
 
         if (!empty($filters['bank'])) {
@@ -51,16 +51,16 @@ class MediaTransactionService
         $totalComplete = (clone $summaryQuery)->where('status', 'complete')->count();
 
         $perPage = $filters['per_page'] ?? 15;
-        $paginator = $query->with('team')->latest('transaction_date')->paginate($perPage);
+        $paginator = $query->with('company')->latest('transaction_date')->paginate($perPage);
 
         // Page totals
         $pageItems = collect($paginator->items());
         $pageAmount = $pageItems->sum('amount');
 
-        // Map team name
+        // Map company name
         $items = $pageItems->map(function ($item) {
             $arr = $item->toArray();
-            $arr['team_name'] = $item->team?->name ?? null;
+            $arr['company_name'] = $item->company?->name ?? null;
             return $arr;
         });
 
@@ -95,7 +95,7 @@ class MediaTransactionService
         }
 
         $fillableData = collect($data)->only([
-            'team_id',
+            'company_id',
             'expense_type',
             'image',
             'transaction_code',
@@ -103,6 +103,7 @@ class MediaTransactionService
             'transaction_date',
             'amount',
             'status',
+            'note',
         ])->toArray();
 
         // If image changed, delete the old one from B2
