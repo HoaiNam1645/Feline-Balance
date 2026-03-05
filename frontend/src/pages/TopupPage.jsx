@@ -237,6 +237,10 @@ function TransactionModal({ isOpen, onClose, onSubmit, formData, onChange, title
                         </select>
                     </div>
                     <div>
+                        <label className="modal-label">Note</label>
+                        <input className="filter-input" name="note" placeholder="Note..." value={formData.note} onChange={onChange} style={{ width: '100%' }} />
+                    </div>
+                    <div>
                         <label className="modal-label" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                             <span>Image (URL)</span>
                             <label style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px', fontSize: '12px', color: 'var(--primary)', fontWeight: 600 }}>
@@ -381,10 +385,11 @@ export default function TopupPage({ onMenuClick }) {
     const [editingId, setEditingId] = useState(null);
     const [formData, setFormData] = useState({
         transaction_id: '', type: 'income', team_id: '', payment_method: 'pingpong',
-        amount: '', currency: 'USD', status: 'pending', image: '', vendor_id: '', company_id: ''
+        amount: '', currency: 'USD', status: 'pending', image: '', vendor_id: '', company_id: '', note: ''
     });
 
     const [previewImage, setPreviewImage] = useState(null);
+    const [notePreview, setNotePreview] = useState(null);
 
     // Confirm Modal state
     const [confirmOpen, setConfirmOpen] = useState(false);
@@ -431,7 +436,7 @@ export default function TopupPage({ onMenuClick }) {
     useEffect(() => { fetchData(); }, [typeFilter, teamFilter, yearFilter, paymentMethodFilter, statusFilter, page]);
     useEffect(() => { setPage(1); }, [typeFilter, teamFilter, yearFilter, paymentMethodFilter, statusFilter, search]);
 
-    const resetForm = () => setFormData({ transaction_id: '', type: 'income', team_id: '', payment_method: 'pingpong', vendor_id: '', company_id: '', amount: '', currency: 'USD', status: 'pending', image: '' });
+    const resetForm = () => setFormData({ transaction_id: '', type: 'income', team_id: '', payment_method: 'pingpong', vendor_id: '', company_id: '', amount: '', currency: 'USD', status: 'pending', image: '', note: '' });
 
     const openCreateModal = () => { setModalMode('create'); resetForm(); setModalOpen(true); };
     const openEditModal = (row) => {
@@ -441,6 +446,7 @@ export default function TopupPage({ onMenuClick }) {
             transaction_id: row.transaction_id || '', type: row.type || 'income', team_id: row.team_id || '',
             payment_method: row.payment_method || 'pingpong', vendor_id: row.vendor_id || '', company_id: row.company_id || '',
             amount: row.amount || '', currency: row.currency || 'USD', status: row.status || 'pending', image: row.image || '',
+            note: row.note || '',
         });
         setModalOpen(true);
     };
@@ -529,8 +535,14 @@ export default function TopupPage({ onMenuClick }) {
             ),
         },
         {
-            key: 'status', label: 'Status', width: '8%',
+            key: 'status', label: 'Status', width: '7%',
             render: (row) => <StatusBadge status={row.status} />,
+        },
+        {
+            key: 'note', label: 'Note', width: '8%',
+            render: (row) => row.note
+                ? <span onClick={() => setNotePreview(row.note)} style={{ fontSize: '12px', color: 'var(--primary-light)', display: 'block', maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', cursor: 'pointer' }}>{row.note}</span>
+                : <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>—</span>,
         },
         {
             key: 'image', label: 'Image', width: '7%', style: { textAlign: 'center' }, tdStyle: { textAlign: 'center' },
@@ -564,7 +576,7 @@ export default function TopupPage({ onMenuClick }) {
         const fmt = (v) => Number(v).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '$';
         return (
             <tr>
-                <td colSpan={12}>
+                <td colSpan={13}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px', padding: '2px 0' }}>
                         <span style={{ fontWeight: 700, fontSize: '13px', whiteSpace: 'nowrap' }}>
                             TOTAL: {summary.total_transactions ?? 0} transactions
@@ -740,6 +752,19 @@ export default function TopupPage({ onMenuClick }) {
             />
 
             <ImagePreview src={previewImage} onClose={() => setPreviewImage(null)} />
+            {notePreview && (
+                <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setNotePreview(null)}>
+                    <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '12px', width: '480px', maxWidth: '95vw', boxShadow: '0 20px 60px rgba(0,0,0,0.5)', animation: 'slideInUp 0.25s ease-out' }} onClick={e => e.stopPropagation()}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 24px', borderBottom: '1px solid var(--border-color)' }}>
+                            <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)' }}>Note</h3>
+                            <button onClick={() => setNotePreview(null)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '4px' }}><X size={18} /></button>
+                        </div>
+                        <div style={{ padding: '20px 24px', fontSize: '14px', color: 'var(--text-secondary)', lineHeight: 1.7, whiteSpace: 'pre-wrap', wordBreak: 'break-word', maxHeight: '60vh', overflowY: 'auto' }}>
+                            {notePreview}
+                        </div>
+                    </div>
+                </div>
+            )}
             <ToastContainer toasts={toasts} removeToast={removeToast} />
         </>
     );

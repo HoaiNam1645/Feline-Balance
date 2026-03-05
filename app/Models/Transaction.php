@@ -21,6 +21,7 @@ class Transaction extends Model
         'currency',
         'image',
         'status',
+        'note',
     ];
 
     public function team()

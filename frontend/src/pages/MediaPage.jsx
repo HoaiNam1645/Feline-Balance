@@ -305,6 +305,9 @@ export default function MediaPage({ onMenuClick }) {
     // Image preview
     const [previewImg, setPreviewImg] = useState(null);
 
+    // Note preview
+    const [notePreview, setNotePreview] = useState(null);
+
     // Upload
     const [uploading, setUploading] = useState(false);
 
@@ -518,7 +521,9 @@ export default function MediaPage({ onMenuClick }) {
         },
         {
             key: 'note', label: 'Note', width: '10%',
-            render: (row) => <span style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>{row.note || '—'}</span>,
+            render: (row) => row.note
+                ? <span onClick={() => setNotePreview(row.note)} style={{ fontSize: '12px', color: 'var(--primary-light)', display: 'block', maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', cursor: 'pointer' }}>{row.note}</span>
+                : <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>—</span>,
         },
         {
             key: 'actions', label: 'Actions', width: '8%', style: { textAlign: 'right' }, tdStyle: { textAlign: 'right' },
@@ -677,6 +682,19 @@ export default function MediaPage({ onMenuClick }) {
             />
 
             <ImagePreview src={previewImg} onClose={() => setPreviewImg(null)} />
+            {notePreview && (
+                <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setNotePreview(null)}>
+                    <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '12px', width: '480px', maxWidth: '95vw', boxShadow: '0 20px 60px rgba(0,0,0,0.5)', animation: 'slideInUp 0.25s ease-out' }} onClick={e => e.stopPropagation()}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 24px', borderBottom: '1px solid var(--border-color)' }}>
+                            <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)' }}>Note</h3>
+                            <button onClick={() => setNotePreview(null)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '4px' }}><X size={18} /></button>
+                        </div>
+                        <div style={{ padding: '20px 24px', fontSize: '14px', color: 'var(--text-secondary)', lineHeight: 1.7, whiteSpace: 'pre-wrap', wordBreak: 'break-word', maxHeight: '60vh', overflowY: 'auto' }}>
+                            {notePreview}
+                        </div>
+                    </div>
+                </div>
+            )}
             <ToastContainer toasts={toasts} removeToast={removeToast} />
         </>
     );

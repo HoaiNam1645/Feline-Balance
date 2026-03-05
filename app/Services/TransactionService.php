@@ -124,6 +124,7 @@ class TransactionService
             'currency',
             'image',
             'status',
+            'note',
         ])->toArray();
 
         // Check if image is updated, then delete the old one
