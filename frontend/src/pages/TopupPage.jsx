@@ -211,13 +211,6 @@ function TransactionModal({ isOpen, onClose, onSubmit, formData, onChange, title
                         </div>
                     </div>
                     <div>
-                        <label className="modal-label">Company</label>
-                        <select className="filter-select" name="company_id" value={formData.company_id || ''} onChange={onChange} style={{ width: '100%' }}>
-                            <option value="">Select Company...</option>
-                            {companies.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                        </select>
-                    </div>
-                    <div>
                         <label className="modal-label">Transaction ID</label>
                         <input className="filter-input" name="transaction_id" placeholder="VD: tr042026..." value={formData.transaction_id} onChange={onChange} style={{ width: '100%' }} />
                     </div>
@@ -385,7 +378,7 @@ export default function TopupPage({ onMenuClick }) {
     const [editingId, setEditingId] = useState(null);
     const [formData, setFormData] = useState({
         transaction_id: '', type: 'income', team_id: '', payment_method: 'pingpong',
-        amount: '', currency: 'USD', status: 'pending', image: '', vendor_id: '', company_id: '', note: ''
+        amount: '', currency: 'USD', status: 'pending', image: '', vendor_id: '', note: ''
     });
 
     const [previewImage, setPreviewImage] = useState(null);
@@ -436,7 +429,7 @@ export default function TopupPage({ onMenuClick }) {
     useEffect(() => { fetchData(); }, [typeFilter, teamFilter, yearFilter, paymentMethodFilter, statusFilter, page]);
     useEffect(() => { setPage(1); }, [typeFilter, teamFilter, yearFilter, paymentMethodFilter, statusFilter, search]);
 
-    const resetForm = () => setFormData({ transaction_id: '', type: 'income', team_id: '', payment_method: 'pingpong', vendor_id: '', company_id: '', amount: '', currency: 'USD', status: 'pending', image: '', note: '' });
+    const resetForm = () => setFormData({ transaction_id: '', type: 'income', team_id: '', payment_method: 'pingpong', vendor_id: '', amount: '', currency: 'USD', status: 'pending', image: '', note: '' });
 
     const openCreateModal = () => { setModalMode('create'); resetForm(); setModalOpen(true); };
     const openEditModal = (row) => {
@@ -444,7 +437,7 @@ export default function TopupPage({ onMenuClick }) {
         setEditingId(row.id);
         setFormData({
             transaction_id: row.transaction_id || '', type: row.type || 'income', team_id: row.team_id || '',
-            payment_method: row.payment_method || 'pingpong', vendor_id: row.vendor_id || '', company_id: row.company_id || '',
+            payment_method: row.payment_method || 'pingpong', vendor_id: row.vendor_id || '',
             amount: row.amount || '', currency: row.currency || 'USD', status: row.status || 'pending', image: row.image || '',
             note: row.note || '',
         });
@@ -499,31 +492,27 @@ export default function TopupPage({ onMenuClick }) {
 
     const columns = useMemo(() => [
         {
-            key: 'index', label: '#', width: '4%',
+            key: 'index', label: '#', width: '3%',
             render: (_, idx) => <span style={{ color: 'var(--text-muted)' }}>{(pagination.current_page - 1) * pagination.per_page + idx + 1}</span>,
         },
         {
-            key: 'team_name', label: 'Team', width: '10%',
+            key: 'team_name', label: 'Team', width: '8%',
             render: (row) => <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{row.team_name || '—'}</span>,
         },
         {
-            key: 'payment_method', label: 'Bank', width: '10%',
+            key: 'payment_method', label: 'Bank', width: '8%',
             render: (row) => <span style={{ color: 'var(--primary-light)', fontWeight: 600 }}>{(PAYMENT_METHODS.find(p => p.value === row.payment_method) || {}).label || row.payment_method}</span>,
         },
         {
-            key: 'vendor_name', label: 'Vendor', width: '8%',
+            key: 'vendor_name', label: 'Vendor', width: '10%',
             render: (row) => <span style={{ fontWeight: 600 }}>{row.vendor_name || '—'}</span>,
         },
         {
-            key: 'company_name', label: 'Company', width: '8%',
-            render: (row) => <span style={{ fontWeight: 600 }}>{row.company_name || '—'}</span>,
-        },
-        {
-            key: 'type', label: 'Type', width: '9%',
+            key: 'type', label: 'Type', width: '10%',
             render: (row) => <TypeBadge type={row.type} />,
         },
         {
-            key: 'transaction_id', label: 'Transaction ID', width: '15%',
+            key: 'transaction_id', label: 'Transaction ID', width: '14%',
             render: (row) => <span style={{ fontFamily: 'monospace', fontSize: '13px', color: 'var(--text-secondary)', wordBreak: 'break-all' }}>{row.transaction_id || '—'}</span>,
         },
         {
@@ -535,23 +524,23 @@ export default function TopupPage({ onMenuClick }) {
             ),
         },
         {
-            key: 'status', label: 'Status', width: '7%',
+            key: 'status', label: 'Status', width: '10%',
             render: (row) => <StatusBadge status={row.status} />,
         },
         {
-            key: 'note', label: 'Note', width: '8%',
+            key: 'note', label: 'Note', width: '10%',
             render: (row) => row.note
                 ? <span onClick={() => setNotePreview(row.note)} style={{ fontSize: '12px', color: 'var(--primary-light)', display: 'block', maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', cursor: 'pointer' }}>{row.note}</span>
                 : <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>—</span>,
         },
         {
-            key: 'image', label: 'Image', width: '7%', style: { textAlign: 'center' }, tdStyle: { textAlign: 'center' },
+            key: 'image', label: 'Image', width: '5%', style: { textAlign: 'center' }, tdStyle: { textAlign: 'center' },
             render: (row) => row.image
                 ? <img src={row.image} alt="" style={{ width: '36px', height: '36px', borderRadius: '6px', objectFit: 'cover', cursor: 'pointer', border: '1px solid var(--border-color)' }} onClick={() => setPreviewImage(row.image)} />
                 : <span style={{ color: 'var(--text-muted)' }}>—</span>,
         },
         {
-            key: 'created_at', label: 'Time', width: '14%',
+            key: 'created_at', label: 'Time', width: '10%',
             render: (row) => <span style={{ fontSize: '13px', color: 'var(--text-muted)' }}>{new Date(row.created_at).toLocaleString('vi-VN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>,
         },
         {
@@ -576,7 +565,7 @@ export default function TopupPage({ onMenuClick }) {
         const fmt = (v) => Number(v).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '$';
         return (
             <tr>
-                <td colSpan={13}>
+                <td colSpan={12}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px', padding: '2px 0' }}>
                         <span style={{ fontWeight: 700, fontSize: '13px', whiteSpace: 'nowrap' }}>
                             TOTAL: {summary.total_transactions ?? 0} transactions
@@ -593,10 +582,6 @@ export default function TopupPage({ onMenuClick }) {
                             <span style={{ fontSize: '12px', fontWeight: 600 }}>
                                 <span style={{ color: 'var(--text-muted)' }}>Vendor: </span>
                                 <span style={{ color: '#a855f7' }}>{fmt(pageVendor)}</span>
-                            </span>
-                            <span style={{ fontSize: '12px', fontWeight: 600 }}>
-                                <span style={{ color: 'var(--text-muted)' }}>Company: </span>
-                                <span style={{ color: '#6366f1' }}>{fmt(pageCompany)}</span>
                             </span>
                             <span style={{ fontSize: '13px', fontWeight: 800, borderLeft: '2px solid var(--border-color)', paddingLeft: '16px' }}>
                                 <span style={{ color: 'var(--text-muted)' }}>Net: </span>
