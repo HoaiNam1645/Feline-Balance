@@ -43,11 +43,39 @@ class EmployeeController extends Controller
             $query->where('status', $request->status);
         }
 
+        // Filter by join_month (YYYY-MM)
+        if ($request->filled('join_month')) {
+            $parts = explode('-', $request->join_month);
+            if (count($parts) === 2) {
+                $query->whereYear('start_date', $parts[0])
+                    ->whereMonth('start_date', $parts[1]);
+            }
+        }
+
+        // Calculate summary based on current filters
+        $summaryQuery = clone $query;
+        $totalResigned = (clone $summaryQuery)->where('status', 'resigned')->count();
+        $totalActive = (clone $summaryQuery)->where('status', 'active')->count();
+
+        $totalOfficial = (clone $summaryQuery)->whereHas('currentContract', function ($q) {
+            $q->where('type', 'official');
+        })->where('status', 'active')->count();
+
+        $totalProbation = (clone $summaryQuery)->whereHas('currentContract', function ($q) {
+            $q->where('type', 'probation');
+        })->where('status', 'active')->count();
+
         $employees = $query->orderBy('id', 'desc')->paginate($request->get('per_page', 15));
 
         return response()->json([
             'success' => true,
             'data' => $employees,
+            'summary' => [
+                'resigned' => $totalResigned,
+                'active' => $totalActive,
+                'official' => $totalOfficial,
+                'probation' => $totalProbation,
+            ]
         ]);
     }
 

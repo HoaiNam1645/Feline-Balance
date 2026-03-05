@@ -387,8 +387,12 @@ export default function EmployeesPage({ onMenuClick }) {
     const statusFilter = searchParams.get('status') || '';
     const setStatusFilter = (v) => updateParam('status', v);
 
+    const joinMonthFilter = searchParams.get('join_month') || '';
+    const setJoinMonthFilter = (v) => updateParam('join_month', v);
+
     const [totalPages, setTotalPages] = useState(1);
     const [total, setTotal] = useState(0);
+    const [summary, setSummary] = useState({ active: 0, resigned: 0, official: 0, probation: 0 });
     const [nameFilter, setNameFilter] = useState('');
     const [phoneFilter, setPhoneFilter] = useState('');
     const [cccdFilter, setCccdFilter] = useState('');
@@ -425,12 +429,14 @@ export default function EmployeesPage({ onMenuClick }) {
             if (phoneFilter) params.append('phone', phoneFilter);
             if (cccdFilter) params.append('cccd', cccdFilter);
             if (statusFilter) params.append('status', statusFilter);
+            if (joinMonthFilter) params.append('join_month', joinMonthFilter);
             const res = await fetch(`${API_BASE}/api/employees?${params}`);
             const json = await res.json();
             if (json.success) {
                 setEmployees(json.data.data || []);
                 setTotalPages(json.data.last_page || 1);
                 setTotal(json.data.total || 0);
+                if (json.summary) setSummary(json.summary);
             }
         } catch (err) {
             addToast('Error loading employees: ' + err.message, 'error');
@@ -439,8 +445,8 @@ export default function EmployeesPage({ onMenuClick }) {
         }
     };
 
-    useEffect(() => { fetchEmployees(); }, [page, statusFilter]);
-    useEffect(() => { setPage(1); }, [statusFilter, nameFilter, phoneFilter, cccdFilter]);
+    useEffect(() => { fetchEmployees(); }, [page, statusFilter, joinMonthFilter]);
+    useEffect(() => { setPage(1); }, [statusFilter, joinMonthFilter, nameFilter, phoneFilter, cccdFilter]);
 
     const handleSearch = (e) => { if (e.key === 'Enter') fetchEmployees(); };
 
@@ -595,9 +601,6 @@ export default function EmployeesPage({ onMenuClick }) {
         }
     };
 
-    const activeCount = employees.filter(e => e.status === 'active').length;
-    const insuredCount = employees.filter(e => e.has_insurance).length;
-
     const fmt = (d) => d ? new Date(d).toLocaleDateString() : '—';
     const fmtMoney = (v) => v ? Number(v).toLocaleString('en-US') + ' VND' : '—';
 
@@ -609,21 +612,31 @@ export default function EmployeesPage({ onMenuClick }) {
             />
             <div className="page-content">
                 {/* Stats */}
-                <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)', marginBottom: 24 }}>
+                <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(5, 1fr)', marginBottom: 24 }}>
                     <div className="stat-card">
                         <div className="stat-card-header"><div className="stat-card-icon blue"><Users size={20} /></div><span className="stat-card-label">Total Employees</span></div>
                         <div className="stat-card-value">{total}</div>
-                        <div className="stat-card-sub">All registered employees</div>
+                        <div className="stat-card-sub">All registered</div>
                     </div>
                     <div className="stat-card">
                         <div className="stat-card-header"><div className="stat-card-icon green"><CheckCircle size={20} /></div><span className="stat-card-label">Active</span></div>
-                        <div className="stat-card-value">{activeCount}</div>
-                        <div className="stat-card-sub">Currently on this page</div>
+                        <div className="stat-card-value">{summary.active}</div>
+                        <div className="stat-card-sub">Currently working</div>
                     </div>
                     <div className="stat-card">
-                        <div className="stat-card-header"><div className="stat-card-icon purple"><Shield size={20} /></div><span className="stat-card-label">Insured</span></div>
-                        <div className="stat-card-value">{insuredCount}</div>
-                        <div className="stat-card-sub">Has insurance registered</div>
+                        <div className="stat-card-header"><div className="stat-card-icon red" style={{ background: 'rgba(239, 68, 68, 0.12)', color: '#ef4444' }}><XCircle size={20} /></div><span className="stat-card-label">Resigned</span></div>
+                        <div className="stat-card-value">{summary.resigned}</div>
+                        <div className="stat-card-sub">Have resigned</div>
+                    </div>
+                    <div className="stat-card">
+                        <div className="stat-card-header"><div className="stat-card-icon purple"><Shield size={20} /></div><span className="stat-card-label">Official</span></div>
+                        <div className="stat-card-value">{summary.official}</div>
+                        <div className="stat-card-sub">Official contracts</div>
+                    </div>
+                    <div className="stat-card">
+                        <div className="stat-card-header"><div className="stat-card-icon amber"><FileText size={20} /></div><span className="stat-card-label">Probation</span></div>
+                        <div className="stat-card-value">{summary.probation}</div>
+                        <div className="stat-card-sub">Probation periods</div>
                     </div>
                 </div>
 
@@ -660,11 +673,21 @@ export default function EmployeesPage({ onMenuClick }) {
                         />
                     </div>
                     <div className="filter-group">
-                        <select className="filter-select" value={statusFilter} onChange={e => setStatusFilter(e.target.value)} style={{ width: '140px', minWidth: '140px' }}>
+                        <select className="filter-select" value={statusFilter} onChange={e => setStatusFilter(e.target.value)} style={{ width: '120px', minWidth: '120px' }}>
                             <option value="">All statuses</option>
                             <option value="active">Active</option>
                             <option value="resigned">Resigned</option>
                         </select>
+                    </div>
+                    <div className="filter-group">
+                        <input
+                            type="month"
+                            className="filter-input"
+                            value={joinMonthFilter}
+                            onChange={(e) => setJoinMonthFilter(e.target.value)}
+                            style={{ width: '140px', minWidth: '140px' }}
+                            title="Join Month"
+                        />
                     </div>
 
                     <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
