@@ -49,6 +49,8 @@ function ConfirmModal({ isOpen, onClose, onConfirm, title, message }) {
 }
 
 /* ── Employee Form Modal ── */
+const TEAM_OPTIONS = ['FELA', 'TIKTOK FELINE', 'ETSY FELINE', 'CASHSTORM', 'GOLDEN PINE', 'GOWIN', 'GAMBLE', 'TẦNG 2'];
+
 function EmployeeFormModal({ isOpen, onClose, onSubmit, formData, onChange, title, submitLabel, submitting, onUploadQr, uploadingQr }) {
     if (!isOpen) return null;
     const genderOptions = [
@@ -68,11 +70,18 @@ function EmployeeFormModal({ isOpen, onClose, onSubmit, formData, onChange, titl
                     <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 4, borderRadius: 4 }}><X size={18} /></button>
                 </div>
                 <form onSubmit={e => { e.preventDefault(); onSubmit(); }} style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 16 }}>
-                    {/* Row 1 - Name & Gender */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: 16 }}>
+                    {/* Row 1 - Name & Gender & Team */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 1fr', gap: 16 }}>
                         <div>
                             <label className="modal-label">Full Name *</label>
                             <input className="filter-input" name="name" value={formData.name} onChange={onChange} required style={{ width: '100%' }} placeholder="e.g. John Doe" />
+                        </div>
+                        <div>
+                            <label className="modal-label">Team</label>
+                            <select className="filter-input" name="team" value={formData.team || ''} onChange={onChange} style={{ width: '100%' }}>
+                                <option value="">No Team</option>
+                                {TEAM_OPTIONS.map(t => <option key={t} value={t}>{t}</option>)}
+                            </select>
                         </div>
                         <div>
                             <label className="modal-label">Gender</label>
@@ -356,7 +365,7 @@ function ImportModal({ isOpen, onClose, onImport, importing, importResult }) {
     );
 }
 
-const emptyForm = { name: '', date_of_birth: '', gender: 'male', cccd: '', hometown: '', email: '', phone: '', bank_code: '', bank_name: '', qr_code: '', has_insurance: false, insurance_number: '', start_date: '', end_date: '', status: 'active', note: '', contracts: [] };
+const emptyForm = { name: '', team: '', date_of_birth: '', gender: 'male', cccd: '', hometown: '', email: '', phone: '', bank_code: '', bank_name: '', qr_code: '', has_insurance: false, insurance_number: '', start_date: '', end_date: '', status: 'active', note: '', contracts: [] };
 
 /* ── Main Page ── */
 export default function EmployeesPage({ onMenuClick }) {
@@ -484,7 +493,7 @@ export default function EmployeesPage({ onMenuClick }) {
         setModalMode('edit');
         setEditingId(emp.id);
         setFormData({
-            name: emp.name || '', date_of_birth: emp.date_of_birth ? emp.date_of_birth.substring(0, 10) : '',
+            name: emp.name || '', team: emp.team || '', date_of_birth: emp.date_of_birth ? emp.date_of_birth.substring(0, 10) : '',
             gender: emp.gender || 'male', cccd: emp.cccd || '', hometown: emp.hometown || '',
             email: emp.email || '', phone: emp.phone || '', bank_code: emp.bank_code || '',
             bank_name: emp.bank_name || '', qr_code: emp.qr_code || '',
@@ -688,6 +697,7 @@ export default function EmployeesPage({ onMenuClick }) {
                                     <tr>
                                         <th style={{ width: 50 }}>#</th>
                                         <th>Name</th>
+                                        <th>Team</th>
                                         <th>Phone</th>
                                         <th>Contract Salary</th>
                                         <th>Insurance</th>
@@ -723,6 +733,7 @@ export default function EmployeesPage({ onMenuClick }) {
                                                     </div>
                                                 </div>
                                             </td>
+                                            <td><span style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: 13 }}>{emp.team || '—'}</span></td>
                                             <td><span style={{ color: 'var(--text-secondary)', fontSize: 13 }}>{emp.phone || '—'}</span></td>
                                             <td><span style={{ fontWeight: 600, color: 'var(--text-primary)', fontSize: 13 }}>{emp.current_contract ? fmtMoney(emp.current_contract.salary) : '—'}</span></td>
                                             <td>

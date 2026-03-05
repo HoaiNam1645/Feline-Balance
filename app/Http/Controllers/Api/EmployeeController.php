@@ -58,6 +58,7 @@ class EmployeeController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
+            'team' => 'nullable|string|max:255',
             'date_of_birth' => 'nullable|date',
             'gender' => 'nullable|in:male,female,other',
             'cccd' => 'nullable|string|max:20|unique:employees,cccd',
@@ -126,6 +127,7 @@ class EmployeeController extends Controller
 
         $validated = $request->validate([
             'name' => 'sometimes|string|max:255',
+            'team' => 'nullable|string|max:255',
             'date_of_birth' => 'nullable|date',
             'gender' => 'nullable|in:male,female,other',
             'cccd' => ['nullable', 'string', 'max:20', \Illuminate\Validation\Rule::unique('employees')->ignore($employee->id)],
