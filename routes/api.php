@@ -20,6 +20,7 @@ use App\Http\Controllers\Api\TeamFinanceController;
 use App\Http\Controllers\Api\StoreController;
 use App\Http\Controllers\Api\RoleController;
 use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\TelegramWebhookController;
 
 /*
 |--------------------------------------------------------------------------
@@ -30,6 +31,9 @@ use App\Http\Controllers\Api\DashboardController;
 Route::post('/auth/login', [AuthController::class, 'login']);
 Route::post('/save-tiktok-data', [TikTokFinanceController::class, 'saveData']);
 Route::get('/auth/me', [AuthController::class, 'me']);
+
+// Telegram Webhook (must be public — Telegram sends POST here)
+Route::post('/telegram/webhook', [TelegramWebhookController::class, 'handle']);
 /*
 |--------------------------------------------------------------------------
 | Protected Routes — admin + super_admin
@@ -112,6 +116,10 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::get('/team-finances', [TeamFinanceController::class, 'index']);
     Route::get('/vendors', [VendorController::class, 'index']);
     Route::get('/companies', [CompanyController::class, 'index']);
+
+    // Telegram Bot management
+    Route::post('/telegram/set-webhook', [TelegramWebhookController::class, 'setWebhook']);
+    Route::get('/telegram/webhook-info', [TelegramWebhookController::class, 'webhookInfo']);
 });
 
 /*

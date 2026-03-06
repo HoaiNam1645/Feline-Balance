@@ -63,6 +63,18 @@ class MediaTransactionController extends Controller
 
             $record = $this->service->createMediaTransaction($data);
 
+            // Send Telegram notification
+            try {
+                $creatorName = 'Unknown';
+                if (auth()->check()) {
+                    $creatorName = auth()->user()->name ?? auth()->user()->email ?? 'Unknown';
+                }
+                $telegramService = app(\App\Services\TelegramService::class);
+                $telegramService->sendMediaTransactionNotification($record, $creatorName);
+            } catch (\Exception $e) {
+                \Illuminate\Support\Facades\Log::error('Telegram notification failed', ['error' => $e->getMessage()]);
+            }
+
             return response()->json([
                 'code'    => HttpCode::CREATED,
                 'status'  => true,
