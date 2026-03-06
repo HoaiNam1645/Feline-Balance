@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, Plus, Trash2, Pencil, X, Image as ImageIcon, DollarSign, Hash, Upload, Clock, CheckCircle2, Filter, Send } from 'lucide-react';
+import { Search, Plus, Trash2, Pencil, X, Image as ImageIcon, DollarSign, Hash, Upload, Clock, CheckCircle2, Filter, Send, XCircle } from 'lucide-react';
 import Topbar from '../components/Topbar';
 import DataTable from '../components/DataTable';
 
@@ -17,6 +17,7 @@ const BANKS = [
 const STATUSES = [
     { value: 'pending', label: 'Pending' },
     { value: 'complete', label: 'Complete' },
+    { value: 'rejected', label: 'Rejected' },
 ];
 
 const EXPENSE_TYPES = [
@@ -41,7 +42,8 @@ function StatusBadge({ status }) {
     const s = status.toLowerCase();
     let cls = 'pending';
     if (s === 'complete') cls = 'active';
-    return <span className={`status - badge ${cls} `}>{status.charAt(0).toUpperCase() + status.slice(1)}</span>;
+    if (s === 'rejected') cls = 'resigned';
+    return <span className={`status-badge ${cls}`}>{status.charAt(0).toUpperCase() + status.slice(1)}</span>;
 }
 
 /* ── Toast ── */
@@ -214,7 +216,7 @@ function MediaFormModal({ isOpen, onClose, onSubmit, formData, onChange, title, 
 function StatsCards({ summary }) {
     if (!summary) return null;
     return (
-        <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)', marginBottom: '24px' }}>
+        <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(5, 1fr)', marginBottom: '24px' }}>
             <div className="stat-card">
                 <div className="stat-card-header">
                     <div className="stat-card-icon blue"><Hash size={20} /></div>
@@ -246,6 +248,14 @@ function StatsCards({ summary }) {
                 </div>
                 <div className="stat-card-value">{summary.total_complete ?? 0}</div>
                 <div className="stat-card-sub">Completed</div>
+            </div>
+            <div className="stat-card">
+                <div className="stat-card-header">
+                    <div className="stat-card-icon red" style={{ background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444' }}><XCircle size={20} /></div>
+                    <span className="stat-card-label">Rejected</span>
+                </div>
+                <div className="stat-card-value">{summary.total_rejected ?? 0}</div>
+                <div className="stat-card-sub">Declined</div>
             </div>
         </div>
     );

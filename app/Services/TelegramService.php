@@ -108,6 +108,8 @@ class TelegramService
         string $pendingAmount,
         int $completeCount,
         string $completeAmount,
+        int $rejectedCount,
+        string $rejectedAmount,
         int $totalCount,
         string $totalAmount
     ): void {
@@ -122,6 +124,7 @@ class TelegramService
             . "━━━━━━━━━━━━━━━\n"
             . "⏳ <b>Pending:</b> {$pendingCount} transactions — <code>{$pendingAmount}</code>\n"
             . "✅ <b>Complete:</b> {$completeCount} transactions — <code>{$completeAmount}</code>\n"
+            . "❌ <b>Rejected:</b> {$rejectedCount} transactions — <code>{$rejectedAmount}</code>\n"
             . "━━━━━━━━━━━━━━━\n"
             . "💰 <b>Total:</b> {$totalCount} transactions — <code>{$totalAmount}</code>\n"
             . "━━━━━━━━━━━━━━━\n"

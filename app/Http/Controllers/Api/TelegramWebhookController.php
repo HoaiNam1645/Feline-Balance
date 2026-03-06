@@ -91,14 +91,28 @@ class TelegramWebhookController extends Controller
                 $pendingAmount = MediaTransaction::where('status', 'pending')->whereNull('deleted_at')->sum('amount');
                 $completeCount = MediaTransaction::where('status', 'complete')->whereNull('deleted_at')->count();
                 $completeAmount = MediaTransaction::where('status', 'complete')->whereNull('deleted_at')->sum('amount');
+                $rejectedCount = MediaTransaction::where('status', 'rejected')->whereNull('deleted_at')->count();
+                $rejectedAmount = MediaTransaction::where('status', 'rejected')->whereNull('deleted_at')->sum('amount');
+
+                // Total only includes pending and complete
                 $totalCount = $pendingCount + $completeCount;
                 $totalAmount = $pendingAmount + $completeAmount;
 
                 $fmtPending = number_format((float) $pendingAmount, 0, ',', '.') . ' VND';
                 $fmtComplete = number_format((float) $completeAmount, 0, ',', '.') . ' VND';
+                $fmtRejected = number_format((float) $rejectedAmount, 0, ',', '.') . ' VND';
                 $fmtTotal = number_format((float) $totalAmount, 0, ',', '.') . ' VND';
 
-                $telegramService->sendSummaryMessage($pendingCount, $fmtPending, $completeCount, $fmtComplete, $totalCount, $fmtTotal);
+                $telegramService->sendSummaryMessage(
+                    $pendingCount,
+                    $fmtPending,
+                    $completeCount,
+                    $fmtComplete,
+                    $rejectedCount,
+                    $fmtRejected,
+                    $totalCount,
+                    $fmtTotal
+                );
 
                 return response()->json([
                     'success' => true,

@@ -49,17 +49,22 @@ class MediaTransactionService
 
         // Summary (before pagination)
         $summaryQuery = clone $query;
-        $totalAmount = $summaryQuery->sum('amount');
+        // Total amount excludes rejected
+        $totalAmount = (clone $summaryQuery)->where('status', '!=', 'rejected')->sum('amount');
+        // Total count excludes rejected? The prompt says "Phần gửi thông báo tele tổng tiền kìa bạn... Sửa lại tele chỉ gửi total pending + complete... Chỉnh sửa ở giao diện cuối table phần total loại status là Rejected nha?". Let's keep totalCount as all records (or excluding rejected if that makes sense, but they asked for "total loại status là Rejected" meaning exclude rejected amount from total). 
+        // I will exclude rejected from totalAmount.
         $totalCount = (clone $summaryQuery)->count();
         $totalPending = (clone $summaryQuery)->where('status', 'pending')->count();
         $totalComplete = (clone $summaryQuery)->where('status', 'complete')->count();
+        $totalRejected = (clone $summaryQuery)->where('status', 'rejected')->count();
 
         $perPage = $filters['per_page'] ?? 15;
         $paginator = $query->with('team')->latest('transaction_date')->paginate($perPage);
 
         // Page totals
         $pageItems = collect($paginator->items());
-        $pageAmount = $pageItems->sum('amount');
+        // Page amount excludes rejected
+        $pageAmount = $pageItems->where('status', '!=', 'rejected')->sum('amount');
 
         // Map team/company name
         $items = $pageItems->map(function ($item) {
@@ -81,6 +86,7 @@ class MediaTransactionService
                 'total_amount'   => round($totalAmount, 2),
                 'total_pending'  => $totalPending,
                 'total_complete' => $totalComplete,
+                'total_rejected' => $totalRejected,
                 'page_amount'    => round($pageAmount, 2),
             ],
         ];
