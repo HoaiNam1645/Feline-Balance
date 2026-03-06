@@ -101,6 +101,48 @@ class TelegramService
     }
 
     /**
+     * Send a summary message with totals to Telegram.
+     */
+    public function sendSummaryMessage(
+        int $pendingCount,
+        string $pendingAmount,
+        int $completeCount,
+        string $completeAmount,
+        int $totalCount,
+        string $totalAmount
+    ): void {
+        if (empty($this->botToken) || empty($this->chatId)) {
+            Log::warning('Telegram bot_token or chat_id not configured.');
+            return;
+        }
+
+        $now = now()->format('d/m/Y H:i');
+
+        $text = "📊 <b>COST SUMMARY REPORT</b>\n"
+            . "━━━━━━━━━━━━━━━\n"
+            . "⏳ <b>Pending:</b> {$pendingCount} transactions — <code>{$pendingAmount}</code>\n"
+            . "✅ <b>Complete:</b> {$completeCount} transactions — <code>{$completeAmount}</code>\n"
+            . "━━━━━━━━━━━━━━━\n"
+            . "💰 <b>Total:</b> {$totalCount} transactions — <code>{$totalAmount}</code>\n"
+            . "━━━━━━━━━━━━━━━\n"
+            . "🕐 Report at: {$now}";
+
+        try {
+            $response = Http::post("{$this->apiBase}/sendMessage", [
+                'chat_id' => $this->chatId,
+                'text' => $text,
+                'parse_mode' => 'HTML',
+            ]);
+
+            if (!$response->successful()) {
+                Log::error('Telegram summary send error', ['body' => $response->body()]);
+            }
+        } catch (\Exception $e) {
+            Log::error('Failed to send Telegram summary', ['error' => $e->getMessage()]);
+        }
+    }
+
+    /**
      * Handle callback query from inline button press.
      */
     public function handleCallbackQuery(array $callbackQuery): void
@@ -123,23 +165,23 @@ class TelegramService
             $record = MediaTransaction::find($mediaId);
 
             if (!$record) {
-                $this->answerCallbackQuery($callbackId, '❌ Giao dịch không tồn tại!');
+                $this->answerCallbackQuery($callbackId, '❌ Transaction not found!');
                 return;
             }
 
             if ($record->status === 'complete') {
-                $this->answerCallbackQuery($callbackId, '⚠️ Giao dịch đã được duyệt trước đó!');
+                $this->answerCallbackQuery($callbackId, '⚠️ Transaction already approved!');
                 return;
             }
 
             if ($action === 'approve') {
                 $record->update(['status' => 'complete']);
-                $statusText = "✅ ĐÃ DUYỆT";
-                $this->answerCallbackQuery($callbackId, '✅ Đã duyệt giao dịch thành công!');
+                $statusText = "✅ APPROVED";
+                $this->answerCallbackQuery($callbackId, '✅ Transaction approved!');
             } else {
                 $record->update(['status' => 'rejected']);
-                $statusText = "❌ ĐÃ TỪ CHỐI";
-                $this->answerCallbackQuery($callbackId, '❌ Đã từ chối giao dịch!');
+                $statusText = "❌ REJECTED";
+                $this->answerCallbackQuery($callbackId, '❌ Transaction rejected!');
             }
 
             // Update the original message to reflect the new status
@@ -175,18 +217,18 @@ class TelegramService
             : '—';
         $note = $record->note ?? '—';
 
-        return "📢 <b>Giao dịch #MT-{$record->id}</b>\n"
+        return "📢 <b>Transaction #MT-{$record->id}</b>\n"
             . "━━━━━━━━━━━━━━━\n"
             . "🏢 <b>Team:</b> {$teamName}\n"
-            . "📋 <b>Loại chi phí:</b> {$expenseType}\n"
-            . "🏦 <b>Ngân hàng:</b> {$bank}\n"
-            . "💰 <b>Số tiền:</b> <code>{$amount}</code>\n"
-            . "🧾 <b>Mã GD:</b> <code>{$txCode}</code>\n"
-            . "📅 <b>Ngày:</b> {$date}\n"
-            . "📝 <b>Ghi chú:</b> {$note}\n"
+            . "📋 <b>Expense Type:</b> {$expenseType}\n"
+            . "🏦 <b>Bank:</b> {$bank}\n"
+            . "💰 <b>Amount:</b> <code>{$amount}</code>\n"
+            . "🧾 <b>TX Code:</b> <code>{$txCode}</code>\n"
+            . "📅 <b>Date:</b> {$date}\n"
+            . "📝 <b>Note:</b> {$note}\n"
             . "━━━━━━━━━━━━━━━\n"
             . "{$statusText}\n"
-            . "👤 Bởi: @{$approver} lúc {$time}";
+            . "👤 By: @{$approver} at {$time}";
     }
 
     /**

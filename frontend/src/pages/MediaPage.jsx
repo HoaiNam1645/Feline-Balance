@@ -69,7 +69,7 @@ function ToastContainer({ toasts, removeToast }) {
 }
 
 /* ── Confirm Modal ── */
-function ConfirmModal({ isOpen, onClose, onConfirm, title, message }) {
+function ConfirmModal({ isOpen, onClose, onConfirm, title, message, confirmText = 'Delete', isDanger = true }) {
     if (!isOpen) return null;
     return (
         <div style={{
@@ -90,7 +90,7 @@ function ConfirmModal({ isOpen, onClose, onConfirm, title, message }) {
                 </div>
                 <div style={{ padding: '16px 24px', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
                     <button className="btn btn-ghost" onClick={onClose} style={{ padding: '8px 16px' }}>Cancel</button>
-                    <button className="btn btn-primary" onClick={onConfirm} style={{ padding: '8px 16px', background: 'linear-gradient(135deg, #ef4444, #dc2626)', border: 'none' }}>Delete</button>
+                    <button className="btn btn-primary" onClick={onConfirm} style={{ padding: '8px 16px', background: isDanger ? 'linear-gradient(135deg, #ef4444, #dc2626)' : 'linear-gradient(135deg, #3b82f6, #2563eb)', border: 'none' }}>{confirmText}</button>
                 </div>
             </div>
         </div>
@@ -471,13 +471,14 @@ export default function MediaPage({ onMenuClick }) {
     };
 
     // Resend Telegram
-    const handleResendTelegram = async () => {
+    const handleResendTelegram = async (type = 'detail') => {
         setResending(true);
         try {
             const token = localStorage.getItem('token');
             const res = await fetch(`${API_BASE}/api/telegram/resend-pending`, {
                 method: 'POST',
-                headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` }
+                headers: { 'Accept': 'application/json', 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({ type })
             });
             const json = await res.json();
             if (json.success) {
@@ -732,13 +733,51 @@ export default function MediaPage({ onMenuClick }) {
                 message="Are you sure you want to delete this record? This action cannot be undone."
             />
 
-            <ConfirmModal
-                isOpen={resendConfirmOpen}
-                onClose={() => setResendConfirmOpen(false)}
-                onConfirm={handleResendTelegram}
-                title="Resend Pending to Telegram"
-                message={resending ? "Sending to Telegram... Please wait." : "Are you sure you want to resend all PENDING transactions to Telegram? This will send them one-by-one, newest first."}
-            />
+            {/* Resend Telegram Modal */}
+            {resendConfirmOpen && (
+                <div style={{
+                    position: 'fixed', inset: 0, zIndex: 9999,
+                    background: 'rgba(0,0,0,0.7)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }} onClick={() => !resending && setResendConfirmOpen(false)}>
+                    <div style={{
+                        background: 'var(--bg-card)', border: '1px solid var(--border-color)',
+                        borderRadius: '12px', width: '440px', maxWidth: '95vw',
+                        boxShadow: '0 20px 60px rgba(0,0,0,0.5)', animation: 'slideInUp 0.25s ease-out',
+                    }} onClick={e => e.stopPropagation()}>
+                        <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border-color)' }}>
+                            <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)' }}>📤 Send to Telegram</h3>
+                        </div>
+                        <div style={{ padding: '20px 24px' }}>
+                            {resending ? (
+                                <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: '14px', textAlign: 'center' }}>⏳ Sending... Please wait.</p>
+                            ) : (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                    <button
+                                        className="btn btn-primary"
+                                        onClick={() => handleResendTelegram('detail')}
+                                        style={{ width: '100%', padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: 'linear-gradient(135deg, #3b82f6, #2563eb)', border: 'none', borderRadius: '8px' }}
+                                    >
+                                        <Send size={14} /> Resend each Pending transaction
+                                    </button>
+                                    <button
+                                        className="btn btn-primary"
+                                        onClick={() => handleResendTelegram('summary')}
+                                        style={{ width: '100%', padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', background: 'linear-gradient(135deg, #8b5cf6, #7c3aed)', border: 'none', borderRadius: '8px' }}
+                                    >
+                                        <DollarSign size={14} /> Send Summary Report (Pending + Complete + Total)
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+                        {!resending && (
+                            <div style={{ padding: '16px 24px', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'flex-end' }}>
+                                <button className="btn btn-ghost" onClick={() => setResendConfirmOpen(false)} style={{ padding: '8px 16px' }}>Cancel</button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
 
             <ImagePreview src={previewImg} onClose={() => setPreviewImg(null)} />
             {notePreview && (

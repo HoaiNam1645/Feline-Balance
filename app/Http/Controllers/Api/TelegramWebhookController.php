@@ -74,15 +74,42 @@ class TelegramWebhookController extends Controller
     }
 
     /**
-     * Resend all pending media transactions to Telegram.
-     * Newest first so old items end up at top of chat.
+     * Resend pending media transactions to Telegram.
+     * type=detail → resend each pending record individually
+     * type=summary → send a single summary message with totals
      */
-    public function resendPending(): JsonResponse
+    public function resendPending(Request $request): JsonResponse
     {
+        $type = $request->input('type', 'detail');
+
         try {
+            $telegramService = app(TelegramService::class);
+
+            if ($type === 'summary') {
+                // Send summary message
+                $pendingCount = MediaTransaction::where('status', 'pending')->whereNull('deleted_at')->count();
+                $pendingAmount = MediaTransaction::where('status', 'pending')->whereNull('deleted_at')->sum('amount');
+                $completeCount = MediaTransaction::where('status', 'complete')->whereNull('deleted_at')->count();
+                $completeAmount = MediaTransaction::where('status', 'complete')->whereNull('deleted_at')->sum('amount');
+                $totalCount = $pendingCount + $completeCount;
+                $totalAmount = $pendingAmount + $completeAmount;
+
+                $fmtPending = number_format((float) $pendingAmount, 0, ',', '.') . ' VND';
+                $fmtComplete = number_format((float) $completeAmount, 0, ',', '.') . ' VND';
+                $fmtTotal = number_format((float) $totalAmount, 0, ',', '.') . ' VND';
+
+                $telegramService->sendSummaryMessage($pendingCount, $fmtPending, $completeCount, $fmtComplete, $totalCount, $fmtTotal);
+
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Summary sent to Telegram.',
+                ]);
+            }
+
+            // Default: detail — resend each pending record
             $pendings = MediaTransaction::where('status', 'pending')
-                ->where('deleted_at', null)
-                ->orderBy('created_at', 'desc') // newest first → sent first → appears at bottom
+                ->whereNull('deleted_at')
+                ->orderBy('created_at', 'desc')
                 ->get();
 
             if ($pendings->isEmpty()) {
@@ -93,7 +120,6 @@ class TelegramWebhookController extends Controller
                 ]);
             }
 
-            $telegramService = app(TelegramService::class);
             $sent = 0;
             $failed = 0;
 
@@ -101,7 +127,6 @@ class TelegramWebhookController extends Controller
                 try {
                     $telegramService->sendMediaTransactionNotification($record, 'Resend');
                     $sent++;
-                    // Sleep 500ms between sends to avoid Telegram rate limit (30 msg/sec)
                     usleep(500000);
                 } catch (\Exception $e) {
                     $failed++;
