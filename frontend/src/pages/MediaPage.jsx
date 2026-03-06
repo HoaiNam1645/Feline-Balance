@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, Plus, Trash2, Pencil, X, Image as ImageIcon, DollarSign, Hash, Upload, Clock, CheckCircle2, Filter } from 'lucide-react';
+import { Search, Plus, Trash2, Pencil, X, Image as ImageIcon, DollarSign, Hash, Upload, Clock, CheckCircle2, Filter, Send } from 'lucide-react';
 import Topbar from '../components/Topbar';
 import DataTable from '../components/DataTable';
 
@@ -300,9 +300,21 @@ export default function MediaPage({ onMenuClick }) {
         transaction_date: defaultDate, amount: '', status: 'pending', note: ''
     });
 
-    // Confirm delete
+    const user = useMemo(() => {
+        try {
+            return JSON.parse(localStorage.getItem('user')) || {};
+        } catch (e) {
+            return {};
+        }
+    }, []);
+    const isSuperAdmin = user?.role === 'super_admin';
+
+    // Confirm modals
     const [confirmOpen, setConfirmOpen] = useState(false);
     const [deletingId, setDeletingId] = useState(null);
+
+    const [resendConfirmOpen, setResendConfirmOpen] = useState(false);
+    const [resending, setResending] = useState(false);
 
     // Image preview
     const [previewImg, setPreviewImg] = useState(null);
@@ -442,7 +454,11 @@ export default function MediaPage({ onMenuClick }) {
     const confirmDelete = (id) => { setDeletingId(id); setConfirmOpen(true); };
     const handleDelete = async () => {
         try {
-            const res = await fetch(`${API_BASE}/api/media-transactions/${deletingId}`, { method: 'DELETE', headers: { 'Accept': 'application/json' } });
+            const token = localStorage.getItem('token');
+            const res = await fetch(`${API_BASE}/api/media-transactions/${deletingId}`, {
+                method: 'DELETE',
+                headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` }
+            });
             const json = await res.json();
             if (json.success) { addToast('Deleted!'); fetchData(); }
             else addToast(json.message || 'Delete failed', 'error');
@@ -454,7 +470,30 @@ export default function MediaPage({ onMenuClick }) {
         }
     };
 
-    const handleSearch = (e) => { if (e.key === 'Enter') { setPage(1); fetchData(); } };
+    // Resend Telegram
+    const handleResendTelegram = async () => {
+        setResending(true);
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch(`${API_BASE}/api/telegram/resend-pending`, {
+                method: 'POST',
+                headers: { 'Accept': 'application/json', 'Authorization': `Bearer ${token}` }
+            });
+            const json = await res.json();
+            if (json.success) {
+                addToast(json.message);
+            } else {
+                addToast(json.message || 'Resend failed', 'error');
+            }
+        } catch (err) {
+            addToast('Error: ' + err.message, 'error');
+        } finally {
+            setResending(false);
+            setResendConfirmOpen(false);
+        }
+    };
+
+    const handleSearch = (e) => { if (e.key === 'Enter') { fetchData(); } };
 
     // Columns
     const columns = useMemo(() => [
@@ -640,6 +679,16 @@ export default function MediaPage({ onMenuClick }) {
                     </div>
 
                     <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
+                        {isSuperAdmin && (
+                            <button
+                                className="btn btn-ghost"
+                                onClick={() => setResendConfirmOpen(true)}
+                                style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--primary-light)' }}
+                                title="Resend Pending to Telegram"
+                            >
+                                <Send size={14} /> Resend Pending
+                            </button>
+                        )}
                         <button className="btn btn-primary" onClick={openCreateModal} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                             <Plus size={14} /> New Record
                         </button>
@@ -681,6 +730,14 @@ export default function MediaPage({ onMenuClick }) {
                 onConfirm={handleDelete}
                 title="Confirm Delete"
                 message="Are you sure you want to delete this record? This action cannot be undone."
+            />
+
+            <ConfirmModal
+                isOpen={resendConfirmOpen}
+                onClose={() => setResendConfirmOpen(false)}
+                onConfirm={handleResendTelegram}
+                title="Resend Pending to Telegram"
+                message={resending ? "Sending to Telegram... Please wait." : "Are you sure you want to resend all PENDING transactions to Telegram? This will send them one-by-one, newest first."}
             />
 
             <ImagePreview src={previewImg} onClose={() => setPreviewImg(null)} />

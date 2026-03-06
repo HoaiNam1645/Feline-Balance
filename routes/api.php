@@ -162,4 +162,7 @@ Route::middleware(['jwt.auth', 'role.admin'])->group(function () {
     Route::post('/companies', [CompanyController::class, 'store']);
     Route::put('/companies/{id}', [CompanyController::class, 'update']);
     Route::delete('/companies/{id}', [CompanyController::class, 'destroy']);
+
+    // Telegram Bot management
+    Route::post('/telegram/resend-pending', [TelegramWebhookController::class, 'resendPending']);
 });
