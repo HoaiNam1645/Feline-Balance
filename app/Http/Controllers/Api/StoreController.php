@@ -382,4 +382,105 @@ class StoreController extends Controller
             ],
         ]);
     }
+
+    /**
+     * Import Stores from CSV/Excel
+     * Columns required: SellerName, AccountNo, Store, Status
+     */
+    public function importStores(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:csv,txt,xlsx,xls|max:10240', // max 10MB
+        ]);
+
+        $file = $request->file('file');
+
+        try {
+            $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file->getRealPath());
+            $worksheet = $spreadsheet->getActiveSheet();
+            $rows = $worksheet->toArray(null, true, true, true);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to read file: ' . $e->getMessage()
+            ], 422);
+        }
+
+        if (empty($rows)) {
+            return response()->json(['success' => false, 'message' => 'Empty file'], 422);
+        }
+
+        $header = array_shift($rows);
+        $headerMap = [];
+        foreach ($header as $col => $val) {
+            $headerMap[strtolower(trim($val ?? ''))] = $col;
+        }
+
+        $required = ['sellername', 'accountno', 'store', 'status'];
+        foreach ($required as $req) {
+            if (!isset($headerMap[$req])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => "Missing required column: {$req} in header row."
+                ], 422);
+            }
+        }
+
+        $imported = 0;
+        $updated = 0;
+        $failed = 0;
+
+        foreach ($rows as $index => $row) {
+            if (empty(array_filter($row))) continue;
+
+            $sellerName = trim($row[$headerMap['sellername']] ?? '');
+            $accountNoRaw = trim($row[$headerMap['accountno']] ?? '');
+            $storeName = trim($row[$headerMap['store']] ?? '');
+            $statusRaw = trim($row[$headerMap['status']] ?? '');
+
+            if (empty($accountNoRaw) || empty($storeName)) {
+                $failed++;
+                continue;
+            }
+
+            // Normalise AccountNo (handles 2E+13 properly -> 20000000000000)
+            $accountNo = $this->normalizeAccountNo($accountNoRaw);
+
+            // Wait! The user instruction explicitly said: "Lưu ý xử lý 2E+13 cho AccountNo"
+            // If the CSV contains exactly the string "2E+13", and normalizeAccountNo parses it to 20000000000000, 
+            // but wait, IF they meant that "2E+13" is actually string literally "2E+13"?
+            // If the raw from array is scientific notation and normalizeAccountNo handles it, perfect.
+
+            $user = User::where('username', $sellerName)->first();
+            $status = strtolower($statusRaw) === 'inactive' ? 'inactive' : 'active';
+
+            $store = Store::where('account_no', $accountNo)->first();
+            if ($store) {
+                $store->update([
+                    'name' => $storeName,
+                    'user_id' => $user ? $user->id : $store->user_id,
+                    'status' => $status
+                ]);
+                $updated++;
+            } else {
+                Store::create([
+                    'name' => $storeName,
+                    'account_no' => $accountNo,
+                    'user_id' => $user ? $user->id : null,
+                    'status' => $status
+                ]);
+                $imported++;
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Imported successfully.',
+            'data' => [
+                'imported' => $imported,
+                'updated' => $updated,
+                'failed' => $failed,
+            ]
+        ]);
+    }
 }

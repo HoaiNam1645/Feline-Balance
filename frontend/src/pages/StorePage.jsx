@@ -338,6 +338,10 @@ export default function StorePage({ onMenuClick }) {
     const [importResult, setImportResult] = useState(null);
     const [importFile, setImportFile] = useState(null);
 
+    // Import Stores
+    const [importStoresModalOpen, setImportStoresModalOpen] = useState(false);
+    const [importingStores, setImportingStores] = useState(false);
+
     // Toasts
     const [toasts, setToasts] = useState([]);
     const addToast = useCallback((message, type = 'success') => {
@@ -510,6 +514,36 @@ export default function StorePage({ onMenuClick }) {
         }
     };
 
+    const handleImportStores = async () => {
+        if (!importFile) {
+            addToast('Please select a CSV or Excel file', 'error');
+            return;
+        }
+        setImportingStores(true);
+        setImportResult(null);
+        try {
+            const fd = new FormData();
+            fd.append('file', importFile);
+            const res = await fetch(`${API_BASE}/api/stores/import-stores`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` },
+                body: fd,
+            });
+            const json = await res.json();
+            if (json.success) {
+                setImportResult(json.data);
+                addToast(`Imported ${json.data.imported} and updated ${json.data.updated} stores`);
+                fetchStores();
+            } else {
+                addToast(json.message || 'Import failed', 'error');
+            }
+        } catch (err) {
+            addToast('Import error: ' + err.message, 'error');
+        } finally {
+            setImportingStores(false);
+        }
+    };
+
     const formatDate = (dateStr) => {
         if (!dateStr) return '—';
         const d = new Date(dateStr);
@@ -602,8 +636,11 @@ export default function StorePage({ onMenuClick }) {
                     </div>
 
                     <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
+                        <button className="btn btn-ghost" onClick={() => { setImportFile(null); setImportResult(null); setImportStoresModalOpen(true); }} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <StoreIcon size={14} /> Import Stores
+                        </button>
                         <button className="btn btn-ghost" onClick={() => { setImportFile(null); setImportResult(null); setImportModalOpen(true); }} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                            <Upload size={14} /> Import CSV
+                            <Upload size={14} /> Import Payments
                         </button>
                         <button className="btn btn-primary" onClick={openCreateModal} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                             <Plus size={14} /> New Store
@@ -885,6 +922,90 @@ export default function StorePage({ onMenuClick }) {
                                 <button className="btn btn-ghost" onClick={() => setImportModalOpen(false)}>Close</button>
                                 <button className="btn btn-primary" onClick={handleImportCsv} disabled={importing || !importFile} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                                     {importing ? 'Importing...' : <><Upload size={14} /> Import</>}
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Import Stores Modal */}
+            {importStoresModalOpen && (
+                <div style={{
+                    position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.7)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }} onClick={() => setImportStoresModalOpen(false)}>
+                    <div style={{
+                        background: 'var(--bg-card)', border: '1px solid var(--border-color)',
+                        borderRadius: '12px', width: '520px', maxWidth: '95vw',
+                        boxShadow: '0 20px 60px rgba(0,0,0,0.5)', animation: 'slideInUp 0.25s ease-out',
+                    }} onClick={e => e.stopPropagation()}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '20px 24px', borderBottom: '1px solid var(--border-color)' }}>
+                            <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                <StoreIcon size={20} color="var(--primary)" /> Import Stores (CSV/Excel)
+                            </h3>
+                            <button onClick={() => setImportStoresModalOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '4px', borderRadius: '4px' }}><X size={18} /></button>
+                        </div>
+                        <div style={{ padding: '24px' }}>
+                            <label style={{
+                                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+                                border: '2px dashed var(--border-color)', borderRadius: '10px',
+                                padding: '32px 20px', cursor: 'pointer', transition: 'all 0.2s',
+                                background: importFile ? 'rgba(16,185,129,0.05)' : 'var(--bg-base)',
+                                borderColor: importFile ? '#10b981' : undefined,
+                            }}
+                                onDragOver={e => { e.preventDefault(); e.currentTarget.style.borderColor = 'var(--primary)'; e.currentTarget.style.background = 'rgba(99,102,241,0.05)'; }}
+                                onDragLeave={e => { e.currentTarget.style.borderColor = importFile ? '#10b981' : 'var(--border-color)'; e.currentTarget.style.background = importFile ? 'rgba(16,185,129,0.05)' : 'var(--bg-base)'; }}
+                                onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) setImportFile(f); setImportResult(null); e.currentTarget.style.borderColor = '#10b981'; e.currentTarget.style.background = 'rgba(16,185,129,0.05)'; }}
+                            >
+                                <input type="file" accept=".csv,.xlsx,.xls" style={{ display: 'none' }} onChange={e => { setImportFile(e.target.files[0] || null); setImportResult(null); }} />
+                                {importFile ? (
+                                    <>
+                                        <CheckCircle size={32} color="#10b981" />
+                                        <span style={{ color: 'var(--text-primary)', fontWeight: 600, marginTop: '8px' }}>{importFile.name}</span>
+                                        <span style={{ color: 'var(--text-muted)', fontSize: '12px' }}>{(importFile.size / 1024).toFixed(1)} KB — Click to change</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Upload size={32} color="var(--text-muted)" />
+                                        <span style={{ color: 'var(--text-secondary)', marginTop: '8px', fontWeight: 500 }}>Click to select or drag & drop file</span>
+                                        <span style={{ color: 'var(--text-muted)', fontSize: '12px', marginTop: '4px' }}>Required columns: SellerName, AccountNo, Store, Status</span>
+                                    </>
+                                )}
+                            </label>
+
+                            {importResult && (
+                                <div style={{ marginTop: '16px' }}>
+                                    <div style={{
+                                        padding: '14px 16px', borderRadius: '10px',
+                                        background: 'rgba(16,185,129,0.08)',
+                                        border: '1px solid rgba(16,185,129,0.2)',
+                                    }}>
+                                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '8px' }}>
+                                            <CheckCircle size={20} color="#10b981" />
+                                            <span style={{ fontSize: '15px', fontWeight: 700, color: '#10b981' }}>
+                                                Successfully parsed file
+                                            </span>
+                                        </div>
+                                        <div style={{ display: 'flex', gap: '16px', fontSize: '13px', color: 'var(--text-secondary)', paddingLeft: '30px' }}>
+                                            <span>✅ {importResult.imported} new stores created</span>
+                                        </div>
+                                        <div style={{ display: 'flex', gap: '16px', fontSize: '13px', color: 'var(--text-secondary)', paddingLeft: '30px', marginTop: '4px' }}>
+                                            <span>🔄 {importResult.updated} stores updated</span>
+                                        </div>
+                                        {importResult.failed > 0 && (
+                                            <div style={{ display: 'flex', gap: '16px', fontSize: '13px', color: '#ef4444', paddingLeft: '30px', marginTop: '4px' }}>
+                                                <span>❌ {importResult.failed} failed</span>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
+
+                            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '20px', borderTop: '1px solid var(--border-color)', paddingTop: '16px' }}>
+                                <button className="btn btn-ghost" onClick={() => setImportStoresModalOpen(false)}>Close</button>
+                                <button className="btn btn-primary" onClick={handleImportStores} disabled={importingStores || !importFile} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                    {importingStores ? 'Importing...' : <><Upload size={14} /> Import</>}
                                 </button>
                             </div>
                         </div>

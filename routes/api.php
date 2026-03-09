@@ -109,6 +109,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::delete('/stores/{id}', [StoreController::class, 'destroy']);
     Route::get('/stores/{id}/payment-history', [StoreController::class, 'paymentHistory']);
     Route::post('/stores/import-csv', [StoreController::class, 'importCsv']);
+    Route::post('/stores/import-stores', [StoreController::class, 'importStores']);
 
     // Roles (Read-only for all authenticated users to populate dropdowns)
     Route::get('/roles', [RoleController::class, 'index']);
