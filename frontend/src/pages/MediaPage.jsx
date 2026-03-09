@@ -12,6 +12,7 @@ const BANKS = [
     { value: 'Sacombank', label: 'Sacombank' },
     { value: 'Vietinbank', label: 'Vietinbank' },
     { value: 'MB Bank', label: 'MB Bank' },
+    { value: '__other__', label: 'Other (Khác)' },
 ];
 
 const STATUSES = [
@@ -153,10 +154,33 @@ function MediaFormModal({ isOpen, onClose, onSubmit, formData, onChange, title, 
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                         <div>
                             <label className="modal-label">Bank *</label>
-                            <select className="filter-select" name="bank" value={formData.bank} onChange={onChange} style={{ width: '100%' }}>
+                            <select
+                                className="filter-select"
+                                name="bank"
+                                value={BANKS.find(b => b.value === formData.bank) ? formData.bank : '__other__'}
+                                onChange={(e) => {
+                                    if (e.target.value === '__other__') {
+                                        onChange({ target: { name: 'bank', value: '' } });
+                                    } else {
+                                        onChange(e);
+                                    }
+                                }}
+                                style={{ width: '100%' }}
+                            >
                                 <option value="">— Select —</option>
                                 {BANKS.map(b => <option key={b.value} value={b.value}>{b.label}</option>)}
                             </select>
+                            {(!BANKS.find(b => b.value === formData.bank) || formData.bank === '__other__') && (
+                                <input
+                                    className="filter-input"
+                                    name="bank"
+                                    placeholder="Enter bank name..."
+                                    value={formData.bank === '__other__' ? '' : formData.bank}
+                                    onChange={onChange}
+                                    style={{ width: '100%', marginTop: '8px' }}
+                                    autoFocus
+                                />
+                            )}
                         </div>
                         <div>
                             <label className="modal-label">Status</label>

@@ -13,6 +13,7 @@ const PAYMENT_METHODS = [
     { value: 'vietcombank', label: 'Vietcombank' },
     { value: 'techcombank', label: 'Techcombank' },
     { value: 'sacombank', label: 'Sacombank' },
+    { value: 'other', label: 'Other' },
 ];
 
 const CURRENCIES = [
@@ -188,9 +189,26 @@ function TransactionModal({ isOpen, onClose, onSubmit, formData, onChange, title
                         </div>
                         <div>
                             <label className="modal-label">Payment Method</label>
-                            <select className="filter-select" name="payment_method" value={formData.payment_method} onChange={onChange} style={{ width: '100%' }}>
+                            <select className="filter-select" name="payment_method" value={formData.payment_method === 'other' || !PAYMENT_METHODS.find(p => p.value === formData.payment_method) ? 'other' : formData.payment_method} onChange={(e) => {
+                                if (e.target.value !== 'other') {
+                                    onChange(e);
+                                } else {
+                                    onChange({ target: { name: 'payment_method', value: '' } });
+                                }
+                            }} style={{ width: '100%' }}>
                                 {PAYMENT_METHODS.map(p => <option key={p.value} value={p.value}>{p.label}</option>)}
                             </select>
+                            {(!PAYMENT_METHODS.find(p => p.value === formData.payment_method) || formData.payment_method === 'other') && (
+                                <input
+                                    className="filter-input"
+                                    name="payment_method"
+                                    placeholder="Enter bank name..."
+                                    value={formData.payment_method === 'other' ? '' : formData.payment_method}
+                                    onChange={onChange}
+                                    style={{ width: '100%', marginTop: '8px' }}
+                                    autoFocus
+                                />
+                            )}
                         </div>
                     </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
