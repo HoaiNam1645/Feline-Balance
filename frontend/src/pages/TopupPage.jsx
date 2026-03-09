@@ -313,7 +313,7 @@ function TopupStatsCards({ summary }) {
         { label: 'Net (Vendor - Company)', value: netVendorCompany, icon: DollarSign, color: 'indigo', sub: 'Vendor - Company' },
     ];
 
-    const fmt = (v) => Number(v * 25000).toLocaleString('vi-VN') + 'đ';
+    const fmt = (v) => Number(v).toLocaleString('vi-VN') + 'đ';
 
     return (
         <div className="stats-grid" style={{ gridTemplateColumns: 'repeat(3, 1fr)' }}>
@@ -521,7 +521,7 @@ export default function TopupPage({ onMenuClick }) {
             render: (_, idx) => <span style={{ color: 'var(--text-muted)' }}>{(pagination.current_page - 1) * pagination.per_page + idx + 1}</span>,
         },
         {
-            key: 'team_name', label: 'Team', width: '7%',
+            key: 'team_name', label: 'Team', width: '8%',
             render: (row) => <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{row.team_name || '—'}</span>,
         },
         {
@@ -529,48 +529,49 @@ export default function TopupPage({ onMenuClick }) {
             render: (row) => <span style={{ color: 'var(--primary-light)', fontWeight: 600 }}>{(PAYMENT_METHODS.find(p => p.value === row.payment_method) || {}).label || row.payment_method}</span>,
         },
         {
-            key: 'vendor_name', label: 'Vendor', width: '7%',
+            key: 'vendor_name', label: 'Vendor', width: '9%',
             render: (row) => <span style={{ fontWeight: 600 }}>{row.vendor_name || '—'}</span>,
         },
         {
-            key: 'type', label: 'Type', width: '8%',
+            key: 'type', label: 'Type', width: '10%',
             render: (row) => <TypeBadge type={row.type} />,
         },
         {
-            key: 'transaction_id', label: 'Transaction ID', width: '11%',
+            key: 'transaction_id', label: 'Transaction ID', width: '13%',
             render: (row) => <span style={{ fontFamily: 'monospace', fontSize: '13px', color: 'var(--text-secondary)', wordBreak: 'break-all' }}>{row.transaction_id || '—'}</span>,
         },
         {
-            key: 'amount', label: 'Amount', className: 'text-right', width: '11%',
+            key: 'amount', label: 'Amount', className: 'text-right', width: '12%',
             render: (row) => (
-                <span style={{ fontWeight: 600, fontVariantNumeric: 'tabular-nums', color: row.type === 'income' ? 'var(--success)' : 'var(--danger)' }}>
-                    {formatMoney(row.amount)}
-                </span>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '2px' }}>
+                    <span style={{ fontWeight: 600, fontVariantNumeric: 'tabular-nums', color: row.type === 'income' ? 'var(--success)' : 'var(--danger)' }}>
+                        {formatMoney(row.amount)}
+                    </span>
+                    <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', background: 'var(--bg-hover)', padding: '1px 4px', borderRadius: '4px' }}>
+                        {row.currency || 'USD'}
+                    </span>
+                </div>
             ),
-        },
-        {
-            key: 'currency', label: 'Currency', width: '5%', style: { textAlign: 'center' }, tdStyle: { textAlign: 'center' },
-            render: (row) => <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-secondary)' }}>{row.currency || 'USD'}</span>,
         },
         {
             key: 'status', label: 'Status', width: '9%',
             render: (row) => <StatusBadge status={row.status} />,
         },
         {
-            key: 'note', label: 'Note', width: '10%',
+            key: 'note', label: 'Note', width: 'auto',
             render: (row) => row.note
                 ? <span onClick={() => setNotePreview(row.note)} style={{ fontSize: '12px', color: 'var(--primary-light)', display: 'block', maxWidth: '100%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', cursor: 'pointer' }}>{row.note}</span>
                 : <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>—</span>,
         },
         {
-            key: 'image', label: 'Image', width: '5%', style: { textAlign: 'center' }, tdStyle: { textAlign: 'center' },
+            key: 'image', label: 'Img', width: '5%', style: { textAlign: 'center' }, tdStyle: { textAlign: 'center' },
             render: (row) => row.image
-                ? <img src={row.image} alt="" style={{ width: '36px', height: '36px', borderRadius: '6px', objectFit: 'cover', cursor: 'pointer', border: '1px solid var(--border-color)' }} onClick={() => setPreviewImage(row.image)} />
+                ? <img src={row.image} alt="" style={{ width: '28px', height: '28px', borderRadius: '4px', objectFit: 'cover', cursor: 'pointer', border: '1px solid var(--border-color)' }} onClick={() => setPreviewImage(row.image)} />
                 : <span style={{ color: 'var(--text-muted)' }}>—</span>,
         },
         {
-            key: 'created_at', label: 'Time', width: '10%',
-            render: (row) => <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{new Date(row.created_at).toLocaleString('vi-VN', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>,
+            key: 'created_at', label: 'Time', width: '9%',
+            render: (row) => <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>{new Date(row.created_at).toLocaleString('vi-VN', { year: '2-digit', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })}</span>,
         },
         {
             key: 'action', label: 'Action', width: '6%', style: { textAlign: 'center' }, tdStyle: { textAlign: 'center' },
@@ -591,10 +592,10 @@ export default function TopupPage({ onMenuClick }) {
         const pageVendor = Number(summary.page_vendor ?? 0);
         const pageCompany = Number(summary.page_company ?? 0);
         const pageNet = pageIncome - pageExpense;
-        const fmtVND = (v) => Number(v * 25000).toLocaleString('vi-VN') + 'đ';
+        const fmtVND = (v) => Number(v).toLocaleString('vi-VN') + 'đ';
         return (
             <tr>
-                <td colSpan={13}>
+                <td colSpan={12}>
                     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '16px', padding: '2px 0' }}>
                         <span style={{ fontWeight: 700, fontSize: '13px', whiteSpace: 'nowrap' }}>
                             TOTAL: {summary.total_transactions ?? 0} transactions

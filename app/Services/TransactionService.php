@@ -54,24 +54,33 @@ class TransactionService
             $query->whereDate('created_at', $filters['date']);
         }
 
-        // Summary from filtered query (before pagination)
+        // Calculate amounts in VND
+        $sumSql = \Illuminate\Support\Facades\DB::raw("CASE WHEN currency = 'USD' THEN amount * 25000 WHEN currency = 'EUR' THEN amount * 27000 WHEN currency = 'CNY' THEN amount * 3500 ELSE amount END");
+
         $summaryQuery = clone $query;
-        $totalIncome = (clone $summaryQuery)->where('type', 'income')->sum('amount');
-        $totalExpense = (clone $summaryQuery)->where('type', 'expense')->sum('amount');
-        $totalVendor = (clone $summaryQuery)->whereNotNull('vendor_id')->sum('amount');
-        $totalCompany = (clone $summaryQuery)->where('type', 'company_expense')->sum('amount');
+        $totalIncome = (clone $summaryQuery)->where('type', 'income')->sum($sumSql);
+        $totalExpense = (clone $summaryQuery)->where('type', 'expense')->sum($sumSql);
+        $totalVendor = (clone $summaryQuery)->whereNotNull('vendor_id')->sum($sumSql);
+        $totalCompany = (clone $summaryQuery)->where('type', 'company_expense')->sum($sumSql);
         $totalTransactions = $summaryQuery->count();
-        $totalAmount = (clone $query)->sum('amount');
+        $totalAmount = (clone $query)->sum($sumSql);
 
         $perPage = $filters['per_page'] ?? 15;
         $paginator = $query->with(['team', 'vendor'])->latest()->paginate($perPage);
 
         // Page totals
         $pageItems = collect($paginator->items());
-        $pageIncome = $pageItems->where('type', 'income')->sum('amount');
-        $pageExpense = $pageItems->where('type', 'expense')->sum('amount');
-        $pageVendor = $pageItems->whereNotNull('vendor_id')->sum('amount');
-        $pageCompany = $pageItems->where('type', 'company_expense')->sum('amount');
+        $calcAmount = function ($item) {
+            $amt = (float)$item->amount;
+            if ($item->currency === 'USD') return $amt * 26273;
+            if ($item->currency === 'EUR') return $amt * 30000;
+            if ($item->currency === 'CNY') return $amt * 3500;
+            return $amt;
+        };
+        $pageIncome = $pageItems->where('type', 'income')->sum($calcAmount);
+        $pageExpense = $pageItems->where('type', 'expense')->sum($calcAmount);
+        $pageVendor = $pageItems->whereNotNull('vendor_id')->sum($calcAmount);
+        $pageCompany = $pageItems->where('type', 'company_expense')->sum($calcAmount);
 
         // Append team name and vendor name
         $items = collect($paginator->items())->map(function ($item) {
