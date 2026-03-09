@@ -323,6 +323,12 @@ export default function MediaPage({ onMenuClick }) {
     const yearFilter = searchParams.has('year') ? Number(searchParams.get('year')) : ''; // Changed default to '' to match previous useState behavior
     const setYearFilter = (v) => updateParam('year', v);
 
+    const monthFilter = searchParams.get('month') || '';
+    const setMonthFilter = (v) => updateParam('month', v);
+
+    const dateFilter = searchParams.get('date') || '';
+    const setDateFilter = (v) => updateParam('date', v);
+
     // Modal
     const [modalOpen, setModalOpen] = useState(false);
     const [modalMode, setModalMode] = useState('create');
@@ -386,6 +392,8 @@ export default function MediaPage({ onMenuClick }) {
             if (bankFilter) params.append('bank', bankFilter);
             if (statusFilter) params.append('status', statusFilter);
             if (yearFilter) params.append('year', yearFilter);
+            if (monthFilter) params.append('month', monthFilter);
+            if (dateFilter) params.append('date', dateFilter);
 
             const res = await fetch(`${API_BASE}/api/media-transactions?${params}`);
             const json = await res.json();
@@ -399,7 +407,7 @@ export default function MediaPage({ onMenuClick }) {
         } finally {
             setLoading(false);
         }
-    }, [page, search, teamFilter, expenseTypeFilter, bankFilter, statusFilter, yearFilter]);
+    }, [page, search, teamFilter, expenseTypeFilter, bankFilter, statusFilter, yearFilter, monthFilter, dateFilter]);
 
     useEffect(() => { fetchData(); }, [fetchData]);
 
@@ -668,6 +676,31 @@ export default function MediaPage({ onMenuClick }) {
                             <option value="">Year</option>
                             {[2024, 2025, 2026].map(y => <option key={y} value={y}>{y}</option>)}
                         </select>
+                    </div>
+
+                    <div className="filter-group">
+                        <select className="filter-select" value={monthFilter} onChange={(e) => {
+                            const v = e.target.value;
+                            setSearchParams(prev => {
+                                if (v) prev.set('month', v); else prev.delete('month');
+                                prev.delete('page');
+                                return prev;
+                            }, { replace: true });
+                        }}>
+                            <option value="">Month</option>
+                            {Array.from({ length: 12 }, (_, i) => i + 1).map(m => <option key={m} value={m}>Tháng {m}</option>)}
+                        </select>
+                    </div>
+
+                    <div className="filter-group">
+                        <input type="date" className="filter-input" value={dateFilter} onChange={(e) => {
+                            const v = e.target.value;
+                            setSearchParams(prev => {
+                                if (v) prev.set('date', v); else prev.delete('date');
+                                prev.delete('page');
+                                return prev;
+                            }, { replace: true });
+                        }} style={{ width: '130px' }} />
                     </div>
 
                     <div className="filter-group">

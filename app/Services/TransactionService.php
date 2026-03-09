@@ -46,6 +46,14 @@ class TransactionService
             $query->whereYear('created_at', $filters['year']);
         }
 
+        if (!empty($filters['month'])) {
+            $query->whereMonth('created_at', $filters['month']);
+        }
+
+        if (!empty($filters['date'])) {
+            $query->whereDate('created_at', $filters['date']);
+        }
+
         // Summary from filtered query (before pagination)
         $summaryQuery = clone $query;
         $totalIncome = (clone $summaryQuery)->where('type', 'income')->sum('amount');

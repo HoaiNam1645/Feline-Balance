@@ -377,6 +377,12 @@ export default function TopupPage({ onMenuClick }) {
     const yearFilter = searchParams.has('year') ? Number(searchParams.get('year')) : new Date().getFullYear();
     const setYearFilter = (v) => updateParam('year', v);
 
+    const monthFilter = searchParams.get('month') || '';
+    const setMonthFilter = (v) => updateParam('month', v);
+
+    const dateFilter = searchParams.get('date') || '';
+    const setDateFilter = (v) => updateParam('date', v);
+
     const paymentMethodFilter = searchParams.get('payment_method') || '';
     const setPaymentMethodFilter = (v) => updateParam('payment_method', v);
 
@@ -422,6 +428,8 @@ export default function TopupPage({ onMenuClick }) {
             if (typeFilter) params.append('type', typeFilter);
             if (teamFilter) params.append('team_id', teamFilter);
             if (yearFilter) params.append('year', yearFilter);
+            if (monthFilter) params.append('month', monthFilter);
+            if (dateFilter) params.append('date', dateFilter);
             if (paymentMethodFilter) params.append('payment_method', paymentMethodFilter);
             if (statusFilter) params.append('status', statusFilter);
             if (search) params.append('search', search);
@@ -443,8 +451,8 @@ export default function TopupPage({ onMenuClick }) {
         }
     };
 
-    useEffect(() => { fetchData(); }, [typeFilter, teamFilter, yearFilter, paymentMethodFilter, statusFilter, page]);
-    useEffect(() => { setPage(1); }, [typeFilter, teamFilter, yearFilter, paymentMethodFilter, statusFilter, search]);
+    useEffect(() => { fetchData(); }, [typeFilter, teamFilter, yearFilter, monthFilter, dateFilter, paymentMethodFilter, statusFilter, page]);
+    useEffect(() => { setPage(1); }, [typeFilter, teamFilter, yearFilter, monthFilter, dateFilter, paymentMethodFilter, statusFilter, search]);
 
     const resetForm = () => setFormData({ transaction_id: '', type: 'income', team_id: '', payment_method: 'pingpong', vendor_id: '', amount: '', currency: 'USD', status: 'pending', image: '', note: '' });
 
@@ -658,6 +666,31 @@ export default function TopupPage({ onMenuClick }) {
                             <option value="">Year</option>
                             {[2024, 2025, 2026].map(y => <option key={y} value={y}>{y}</option>)}
                         </select>
+                    </div>
+
+                    <div className="filter-group">
+                        <select className="filter-select" value={monthFilter} onChange={(e) => {
+                            const v = e.target.value;
+                            setSearchParams(prev => {
+                                if (v) prev.set('month', v); else prev.delete('month');
+                                prev.delete('page');
+                                return prev;
+                            }, { replace: true });
+                        }}>
+                            <option value="">Month</option>
+                            {Array.from({ length: 12 }, (_, i) => i + 1).map(m => <option key={m} value={m}>Tháng {m}</option>)}
+                        </select>
+                    </div>
+
+                    <div className="filter-group">
+                        <input type="date" className="filter-input" value={dateFilter} onChange={(e) => {
+                            const v = e.target.value;
+                            setSearchParams(prev => {
+                                if (v) prev.set('date', v); else prev.delete('date');
+                                prev.delete('page');
+                                return prev;
+                            }, { replace: true });
+                        }} style={{ width: '130px' }} />
                     </div>
 
                     <div className="filter-group">

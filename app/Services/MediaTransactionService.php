@@ -47,6 +47,10 @@ class MediaTransactionService
             $query->whereMonth('transaction_date', $filters['month']);
         }
 
+        if (!empty($filters['date'])) {
+            $query->whereDate('transaction_date', $filters['date']);
+        }
+
         // Summary (before pagination)
         $summaryQuery = clone $query;
         // Total amount excludes rejected
