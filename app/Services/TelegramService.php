@@ -56,32 +56,41 @@ class TelegramService
             . "━━━━━━━━━━━━━━━\n"
             . "⏳ <b>Trạng thái:</b> {$status}";
 
-        $inlineKeyboard = [
-            'inline_keyboard' => [
-                [
-                    ['text' => '✅ Approve', 'callback_data' => "approve_media_{$record->id}"],
-                    ['text' => '❌ Reject', 'callback_data' => "reject_media_{$record->id}"],
+        $inlineKeyboard = [];
+        if ($status === 'PENDING') {
+            $inlineKeyboard = [
+                'inline_keyboard' => [
+                    [
+                        ['text' => '✅ Approve', 'callback_data' => "approve_media_{$record->id}"],
+                        ['text' => '❌ Reject', 'callback_data' => "reject_media_{$record->id}"],
+                    ]
                 ]
-            ]
-        ];
+            ];
+        }
 
         try {
             // If there's an image, send as photo with caption
             if (!empty($record->image)) {
-                $response = Http::post("{$this->apiBase}/sendPhoto", [
+                $payload = [
                     'chat_id' => $this->chatId,
                     'photo' => $record->image,
                     'caption' => $text,
                     'parse_mode' => 'HTML',
-                    'reply_markup' => json_encode($inlineKeyboard),
-                ]);
+                ];
+                if (!empty($inlineKeyboard)) {
+                    $payload['reply_markup'] = json_encode($inlineKeyboard);
+                }
+                $response = Http::post("{$this->apiBase}/sendPhoto", $payload);
             } else {
-                $response = Http::post("{$this->apiBase}/sendMessage", [
+                $payload = [
                     'chat_id' => $this->chatId,
                     'text' => $text,
                     'parse_mode' => 'HTML',
-                    'reply_markup' => json_encode($inlineKeyboard),
-                ]);
+                ];
+                if (!empty($inlineKeyboard)) {
+                    $payload['reply_markup'] = json_encode($inlineKeyboard);
+                }
+                $response = Http::post("{$this->apiBase}/sendMessage", $payload);
             }
 
             if (!$response->successful()) {
