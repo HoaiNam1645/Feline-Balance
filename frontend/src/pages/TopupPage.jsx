@@ -28,6 +28,7 @@ const TYPES = [
     { value: 'expense', label: 'Expense' },
     { value: 'topup_factory', label: 'Factory Top up' },
     { value: 'company_expense', label: 'Company Expense' },
+    { value: 'cash', label: 'Cash' },
 ];
 
 
