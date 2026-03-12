@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { DollarSign, Plus, Pencil, Trash2, X, Search, CheckCircle, Clock, Zap, Calculator } from 'lucide-react';
+import { DollarSign, Plus, Pencil, Trash2, X, Search, CheckCircle, Clock, Zap, Calculator, RefreshCw } from 'lucide-react';
 import Topbar from '../components/Topbar';
 
 const API_BASE = import.meta.env.VITE_API_URL || '';
@@ -208,6 +208,8 @@ export default function PayrollsPage({ onMenuClick }) {
     const [deletingId, setDeletingId] = useState(null);
 
     const [showFormula, setShowFormula] = useState(false);
+    const [syncing, setSyncing] = useState(false);
+    const [syncConfirmOpen, setSyncConfirmOpen] = useState(false);
 
     const [toasts, setToasts] = useState([]);
     const addToast = useCallback((msg, type = 'success') => {
@@ -316,6 +318,29 @@ export default function PayrollsPage({ onMenuClick }) {
         finally { setConfirmOpen(false); setDeletingId(null); }
     };
 
+    const handleSync = async () => {
+        setSyncing(true);
+        setSyncConfirmOpen(false);
+        try {
+            const res = await fetch(`${API_BASE}/api/payrolls/generate`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+                body: JSON.stringify({ month: filterMonth, year: filterYear }),
+            });
+            const json = await res.json();
+            if (json.success) {
+                addToast(`${json.message || 'Sync completed!'} (${json.data?.created || 0} created)`);
+                fetchPayrolls();
+            } else {
+                addToast(json.message || 'Sync failed!', 'error');
+            }
+        } catch (err) {
+            addToast('Sync error: ' + err.message, 'error');
+        } finally {
+            setSyncing(false);
+        }
+    };
+
     const fmtMoney = (v) => v != null ? Number(v).toLocaleString('en-US') + ' VND' : '—';
 
     return (
@@ -396,6 +421,15 @@ export default function PayrollsPage({ onMenuClick }) {
                         </div>
 
                         <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
+                            <button
+                                className="btn btn-ghost"
+                                onClick={() => setSyncConfirmOpen(true)}
+                                disabled={syncing}
+                                style={{ display: 'flex', alignItems: 'center', gap: 6, color: 'var(--primary-light)' }}
+                                title={`Sync all active employees for Month ${filterMonth}/${filterYear}`}
+                            >
+                                <RefreshCw size={14} className={syncing ? 'spin' : ''} /> {syncing ? 'Syncing...' : 'Sync Employees'}
+                            </button>
                             <button className="btn btn-primary" onClick={openCreateModal}>
                                 <Plus size={14} style={{ marginRight: 6 }} /> New Payroll
                             </button>
@@ -559,6 +593,34 @@ export default function PayrollsPage({ onMenuClick }) {
             )}
 
             <ConfirmModal isOpen={confirmOpen} onClose={() => setConfirmOpen(false)} onConfirm={handleDelete} title="Confirm Delete" message="Are you sure you want to delete this payroll?" />
+
+            {/* Sync Confirm Modal */}
+            {syncConfirmOpen && (
+                <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,.7)', display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={() => setSyncConfirmOpen(false)}>
+                    <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: 12, width: 460, maxWidth: '95vw', boxShadow: '0 20px 60px rgba(0,0,0,.5)', animation: 'slideInUp .25s ease-out' }} onClick={e => e.stopPropagation()}>
+                        <div style={{ padding: '20px 24px', borderBottom: '1px solid var(--border-color)' }}>
+                            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 700, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <RefreshCw size={18} /> Sync Employees
+                            </h3>
+                        </div>
+                        <div style={{ padding: '20px 24px' }}>
+                            <p style={{ margin: 0, color: 'var(--text-secondary)', fontSize: 14, lineHeight: 1.6 }}>
+                                This will generate payroll entries for <strong>all active employees</strong> with their <strong>current contract</strong> for <strong>Month {filterMonth}/{filterYear}</strong>.
+                            </p>
+                            <p style={{ margin: '12px 0 0', color: 'var(--text-muted)', fontSize: 13 }}>
+                                ⚡ Employees who already have a payroll for this month will be skipped.
+                            </p>
+                        </div>
+                        <div style={{ padding: '16px 24px', borderTop: '1px solid var(--border-color)', display: 'flex', justifyContent: 'flex-end', gap: 8 }}>
+                            <button className="btn btn-ghost" onClick={() => setSyncConfirmOpen(false)} style={{ padding: '8px 16px' }}>Cancel</button>
+                            <button className="btn btn-primary" onClick={handleSync} style={{ padding: '8px 20px', display: 'flex', alignItems: 'center', gap: 6 }}>
+                                <RefreshCw size={14} /> Sync Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
             <ToastContainer toasts={toasts} removeToast={removeToast} />
         </>
     );
