@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, Plus, Trash2, Pencil, X, Image as ImageIcon, DollarSign, Hash, Upload, Clock, CheckCircle2, Filter, Send, XCircle } from 'lucide-react';
+import { Search, Plus, Trash2, Pencil, X, Image as ImageIcon, DollarSign, Hash, Upload, Clock, CheckCircle2, Filter, Send, XCircle, Download } from 'lucide-react';
 import Topbar from '../components/Topbar';
 import DataTable from '../components/DataTable';
 
@@ -409,6 +409,52 @@ export default function MediaPage({ onMenuClick }) {
         }
     }, [page, search, teamFilter, expenseTypeFilter, bankFilter, statusFilter, yearFilter, monthFilter, dateFilter]);
 
+    const [exporting, setExporting] = useState(false);
+
+    const handleExport = async () => {
+        setExporting(true);
+        const params = new URLSearchParams();
+        if (search.trim()) params.append('search', search.trim());
+        if (teamFilter) params.append('team_id', teamFilter);
+        if (expenseTypeFilter) params.append('expense_type', expenseTypeFilter);
+        if (bankFilter) params.append('bank', bankFilter);
+        if (statusFilter) params.append('status', statusFilter);
+        if (yearFilter) params.append('year', yearFilter);
+        if (monthFilter) params.append('month', monthFilter);
+        if (dateFilter) params.append('date', dateFilter);
+
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch(`${API_BASE}/api/media-transactions/export?${params.toString()}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!res.ok) {
+                let msg = 'Export failed!';
+                try { const data = await res.json(); msg = data.message || msg; } catch (e) { }
+                throw new Error(msg);
+            }
+
+            const blob = await res.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `cost_management_${new Date().toISOString().slice(0, 10).replace(/-/g, '_')}.xlsx`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+            addToast('Export successful!', 'success');
+        } catch (err) {
+            addToast(err.message, 'error');
+        } finally {
+            setExporting(false);
+        }
+    };
+
     useEffect(() => { fetchData(); }, [fetchData]);
 
     // Form
@@ -747,6 +793,15 @@ export default function MediaPage({ onMenuClick }) {
                     </div>
 
                     <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
+                        <button
+                            className="btn btn-ghost"
+                            onClick={handleExport}
+                            disabled={exporting}
+                            style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--success)' }}
+                            title="Export to Excel"
+                        >
+                            <Download size={14} /> {exporting ? 'Exporting...' : 'Export CSV/Excel'}
+                        </button>
                         {isSuperAdmin && (
                             <button
                                 className="btn btn-ghost"

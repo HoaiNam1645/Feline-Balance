@@ -96,6 +96,52 @@ class MediaTransactionService
         ];
     }
 
+    /**
+     * Get all media transactions for export without pagination.
+     */
+    public function exportMediaTransactions(array $filters): \Illuminate\Support\Collection
+    {
+        $query = MediaTransaction::query();
+
+        if (!empty($filters['team_id'])) {
+            if ($filters['team_id'] === 'company') {
+                $query->whereNull('team_id');
+            } else {
+                $query->where('team_id', $filters['team_id']);
+            }
+        }
+
+        if (!empty($filters['bank'])) {
+            $query->where('bank', $filters['bank']);
+        }
+
+        if (!empty($filters['expense_type'])) {
+            $query->where('expense_type', $filters['expense_type']);
+        }
+
+        if (!empty($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+
+        if (!empty($filters['search'])) {
+            $query->where('transaction_code', 'like', '%' . $filters['search'] . '%');
+        }
+
+        if (!empty($filters['year'])) {
+            $query->whereYear('transaction_date', $filters['year']);
+        }
+
+        if (!empty($filters['month'])) {
+            $query->whereMonth('transaction_date', $filters['month']);
+        }
+
+        if (!empty($filters['date'])) {
+            $query->whereDate('transaction_date', $filters['date']);
+        }
+
+        return $query->with('team')->latest('transaction_date')->get();
+    }
+
     public function createMediaTransaction(array $data): MediaTransaction
     {
         if (isset($data['team_id']) && $data['team_id'] === 'company') {

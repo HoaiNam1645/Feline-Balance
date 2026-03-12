@@ -67,6 +67,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::get('/fulfillment-statistics', [App\Http\Controllers\Api\FulfillmentStatisticsController::class, 'index']);
 
     // Media Transactions
+    Route::get('/media-transactions/export', [MediaTransactionController::class, 'export']);
     Route::get('/media-transactions', [MediaTransactionController::class, 'index']);
     Route::post('/media-transactions', [MediaTransactionController::class, 'store']);
     Route::post('/media-transactions/upload', [MediaTransactionController::class, 'uploadImage']);

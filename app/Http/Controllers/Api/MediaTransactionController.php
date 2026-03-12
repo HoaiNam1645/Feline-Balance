@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Storage;
 use Exception;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class MediaTransactionController extends Controller
 {
@@ -42,6 +44,72 @@ class MediaTransactionController extends Controller
                 'success' => false,
                 'message' => ResponseMessage::ERROR,
                 'error'   => $e->getMessage(),
+            ], HttpCode::INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Export media transactions to XLSX.
+     */
+    public function export(Request $request)
+    {
+        try {
+            $filters = $request->only(['team_id', 'expense_type', 'bank', 'status', 'search', 'year', 'month', 'date']);
+            $records = $this->service->exportMediaTransactions($filters);
+
+            $spreadsheet = new Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
+            $sheet->setTitle('Media Transactions');
+
+            $headers = [
+                'ID',
+                'Team',
+                'Transaction Code',
+                'Expense Type',
+                'Bank',
+                'Amount',
+                'Status',
+                'Transaction Date',
+                'Note',
+            ];
+
+            $sheet->fromArray($headers, null, 'A1');
+
+            $rowNum = 2;
+            foreach ($records as $record) {
+                // Ensure text format for some columns or format normally
+                $sheet->fromArray([
+                    $record->id,
+                    $record->team ? $record->team->name : 'Company',
+                    $record->transaction_code ?? '',
+                    $record->expense_type ?? '',
+                    $record->bank ?? '',
+                    $record->amount,
+                    $record->status ?? '',
+                    $record->transaction_date ? $record->transaction_date->format('Y-m-d H:i') : '',
+                    $record->note ?? '',
+                ], null, 'A' . $rowNum++);
+            }
+
+            // Auto-size columns
+            foreach (range('A', 'I') as $col) {
+                $sheet->getColumnDimension($col)->setAutoSize(true);
+            }
+
+            $writer = new Xlsx($spreadsheet);
+            $fileName = 'cost_management_' . date('Y_m_d_His') . '.xlsx';
+            $tempFile = tempnam(sys_get_temp_dir(), 'export');
+            $writer->save($tempFile);
+
+            return response()->download($tempFile, $fileName, [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            ])->deleteFileAfterSend(true);
+        } catch (Exception $e) {
+            return response()->json([
+                'code'    => HttpCode::INTERNAL_SERVER_ERROR,
+                'status'  => false,
+                'success' => false,
+                'message' => 'Export failed: ' . $e->getMessage(),
             ], HttpCode::INTERNAL_SERVER_ERROR);
         }
     }
