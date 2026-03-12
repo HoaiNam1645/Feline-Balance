@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Search, Plus, Trash2, Pencil, X, Filter, Image as ImageIcon, ArrowDownCircle, ArrowUpCircle, DollarSign, Hash, Upload, Building2, ShoppingBag } from 'lucide-react';
+import { Search, Plus, Trash2, Pencil, X, Filter, Image as ImageIcon, ArrowDownCircle, ArrowUpCircle, DollarSign, Hash, Upload, Building2, ShoppingBag, Download } from 'lucide-react';
 import Topbar from '../components/Topbar';
 import DataTable from '../components/DataTable';
 
@@ -452,6 +452,52 @@ export default function TopupPage({ onMenuClick }) {
         }
     };
 
+    const [exporting, setExporting] = useState(false);
+
+    const handleExport = async () => {
+        setExporting(true);
+        const params = new URLSearchParams();
+        if (typeFilter) params.append('type', typeFilter);
+        if (teamFilter) params.append('team_id', teamFilter);
+        if (yearFilter) params.append('year', yearFilter);
+        if (monthFilter) params.append('month', monthFilter);
+        if (dateFilter) params.append('date', dateFilter);
+        if (paymentMethodFilter) params.append('payment_method', paymentMethodFilter);
+        if (statusFilter) params.append('status', statusFilter);
+        if (search.trim()) params.append('search', search.trim());
+
+        try {
+            const token = localStorage.getItem('token');
+            const res = await fetch(`${API_BASE}/api/transactions/export?${params.toString()}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            if (!res.ok) {
+                let msg = 'Export failed!';
+                try { const data = await res.json(); msg = data.message || msg; } catch (e) { }
+                throw new Error(msg);
+            }
+
+            const blob = await res.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `topup_${new Date().toISOString().slice(0, 10).replace(/-/g, '_')}.xlsx`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+            addToast('Export successful!', 'success');
+        } catch (err) {
+            addToast(err.message, 'error');
+        } finally {
+            setExporting(false);
+        }
+    };
+
     useEffect(() => { fetchData(); }, [typeFilter, teamFilter, yearFilter, monthFilter, dateFilter, paymentMethodFilter, statusFilter, page]);
     useEffect(() => { setPage(1); }, [typeFilter, teamFilter, yearFilter, monthFilter, dateFilter, paymentMethodFilter, statusFilter, search]);
 
@@ -752,6 +798,15 @@ export default function TopupPage({ onMenuClick }) {
                     </div>
 
                     <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
+                        <button
+                            className="btn btn-ghost"
+                            onClick={handleExport}
+                            disabled={exporting}
+                            style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--success)' }}
+                            title="Export to Excel"
+                        >
+                            <Download size={14} /> {exporting ? 'Exporting...' : 'Export CSV/Excel'}
+                        </button>
                         <button className="btn btn-primary" onClick={openCreateModal} style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                             <Plus size={14} /> New Transaction
                         </button>

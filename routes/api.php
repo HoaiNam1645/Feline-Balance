@@ -57,6 +57,7 @@ Route::middleware(['jwt.auth'])->group(function () {
     Route::post('/profiles/import-seller-csv', [ProfileController::class, 'importSellerCsv']);
 
     // Transactions
+    Route::get('/transactions/export', [TransactionController::class, 'export']);
     Route::get('/transactions', [TransactionController::class, 'index']);
     Route::post('/transactions', [TransactionController::class, 'store']);
     Route::put('/transactions/{id}', [TransactionController::class, 'update']);

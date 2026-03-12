@@ -476,6 +476,7 @@ export default function PayrollsPage({ onMenuClick }) {
                                         <th style={{ width: 50 }}>#</th>
                                         <th>Employee</th>
                                         <th>Contract Type</th>
+                                        <th>Std. Days</th>
                                         <th>Work Days</th>
                                         <th>Leave</th>
                                         <th>Ins. Deduction</th>
@@ -510,7 +511,8 @@ export default function PayrollsPage({ onMenuClick }) {
                                                     {p.contract?.type === 'official' ? 'Official' : 'Probation'}
                                                 </span>
                                             </td>
-                                            <td><span style={{ color: 'var(--text-secondary)', fontSize: 13 }}>{p.work_days}</span></td>
+                                            <td><span style={{ color: 'var(--text-secondary)', fontSize: 13 }}>{p.contract?.standard_work_days || 27}</span></td>
+                                            <td><span style={{ color: 'var(--text-secondary)', fontSize: 13, fontWeight: 500 }}>{p.work_days}</span></td>
                                             <td><span style={{ color: 'var(--text-muted)', fontSize: 13 }}>{Number(p.paid_leave_days) > 0 ? p.paid_leave_days : '—'}</span></td>
                                             <td><span style={{ color: '#f87171', fontSize: 13 }}>{Number(p.insurance_deduction) > 0 ? '-' + fmtMoney(p.insurance_deduction) : '—'}</span></td>
                                             <td>

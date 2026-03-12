@@ -113,6 +113,52 @@ class TransactionService
         ];
     }
 
+    /**
+     * Get all transactions for export (without pagination).
+     */
+    public function exportTransactions(array $filters): \Illuminate\Support\Collection
+    {
+        $query = Transaction::query();
+
+        if (!empty($filters['type'])) {
+            $query->where('type', $filters['type']);
+        }
+
+        if (!empty($filters['payment_method'])) {
+            $query->where('payment_method', $filters['payment_method']);
+        }
+
+        if (!empty($filters['status'])) {
+            $query->where('status', $filters['status']);
+        }
+
+        if (!empty($filters['search'])) {
+            $query->where('transaction_id', 'like', '%' . $filters['search'] . '%');
+        }
+
+        if (!empty($filters['team_id'])) {
+            $query->where('team_id', $filters['team_id']);
+        }
+
+        if (!empty($filters['vendor_id'])) {
+            $query->where('vendor_id', $filters['vendor_id']);
+        }
+
+        if (!empty($filters['year'])) {
+            $query->whereYear('created_at', $filters['year']);
+        }
+
+        if (!empty($filters['month'])) {
+            $query->whereMonth('created_at', $filters['month']);
+        }
+
+        if (!empty($filters['date'])) {
+            $query->whereDate('created_at', $filters['date']);
+        }
+
+        return $query->with(['team', 'vendor'])->latest()->get();
+    }
+
     public function createTransaction(array $data): Transaction
     {
         return Transaction::create($data);

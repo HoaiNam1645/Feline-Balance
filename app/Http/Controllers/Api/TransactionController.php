@@ -8,6 +8,8 @@ use App\Constants\HttpCode;
 use App\Constants\ResponseMessage;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use Exception;
 
 class TransactionController extends Controller
@@ -41,6 +43,75 @@ class TransactionController extends Controller
                 'success' => false,
                 'message' => ResponseMessage::ERROR,
                 'error'   => $e->getMessage(),
+            ], HttpCode::INTERNAL_SERVER_ERROR);
+        }
+    }
+
+    /**
+     * Export transactions to XLSX.
+     */
+    public function export(Request $request)
+    {
+        try {
+            $filters = $request->only(['type', 'team_id', 'year', 'month', 'date', 'payment_method', 'status', 'search']);
+            $records = $this->transactionService->exportTransactions($filters);
+
+            $spreadsheet = new Spreadsheet();
+            $sheet = $spreadsheet->getActiveSheet();
+            $sheet->setTitle('Transactions');
+
+            $headers = [
+                'ID',
+                'Team',
+                'Vendor',
+                'Transaction ID',
+                'Type',
+                'Payment Method',
+                'Amount',
+                'Currency',
+                'Status',
+                'Date',
+                'Note',
+            ];
+
+            $sheet->fromArray($headers, null, 'A1');
+
+            $rowNum = 2;
+            foreach ($records as $record) {
+                $sheet->fromArray([
+                    $record->id,
+                    $record->team ? $record->team->name : '',
+                    $record->vendor ? $record->vendor->name : '',
+                    $record->transaction_id ?? '',
+                    $record->type ?? '',
+                    $record->payment_method ?? '',
+                    $record->amount,
+                    $record->currency ?? '',
+                    $record->status ?? '',
+                    $record->created_at ? $record->created_at->format('Y-m-d H:i') : '',
+                    $record->note ?? '',
+                ], null, 'A' . $rowNum++);
+            }
+
+            // Auto-size columns
+            foreach (range('A', 'K') as $col) {
+                $sheet->getColumnDimension($col)->setAutoSize(true);
+            }
+
+            $writer = new Xlsx($spreadsheet);
+            $fileName = 'topup_' . date('Y_m_d_His') . '.xlsx';
+            $tempFile = tempnam(sys_get_temp_dir(), 'export');
+            $writer->save($tempFile);
+
+            return response()->download($tempFile, $fileName, [
+                'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            ])->deleteFileAfterSend(true);
+        } catch (Exception $e) {
+            return response()->json([
+                'code'    => HttpCode::INTERNAL_SERVER_ERROR,
+                'status'  => false,
+                'success' => false,
+                'message' => 'Export failed: ' . $e->getMessage(),
             ], HttpCode::INTERNAL_SERVER_ERROR);
         }
     }
