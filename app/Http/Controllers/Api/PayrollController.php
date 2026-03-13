@@ -81,6 +81,7 @@ class PayrollController extends Controller
             'contract_id' => 'required|exists:contracts,id',
             'month' => 'required|integer|min:1|max:12',
             'year' => 'required|integer|min:2020|max:2099',
+            'standard_work_days' => 'nullable|numeric|min:1|max:31',
             'work_days' => 'required|numeric|min:0|max:31',
             'paid_leave_days' => 'nullable|numeric|min:0|max:31',
             'unpaid_leave_days' => 'nullable|numeric|min:0|max:31',
@@ -127,6 +128,7 @@ class PayrollController extends Controller
 
         $validated = $request->validate([
             'contract_id' => 'sometimes|exists:contracts,id',
+            'standard_work_days' => 'nullable|numeric|min:1|max:31',
             'work_days' => 'sometimes|numeric|min:0|max:31',
             'paid_leave_days' => 'nullable|numeric|min:0|max:31',
             'unpaid_leave_days' => 'nullable|numeric|min:0|max:31',

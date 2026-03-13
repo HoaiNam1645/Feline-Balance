@@ -105,38 +105,43 @@ function PayrollFormModal({ isOpen, onClose, onSubmit, formData, onChange, title
                     {/* Work days & Leave */}
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                         <div>
-                            <label className="modal-label">Work Days *</label>
-                            <input className="filter-input" name="work_days" type="number" step="0.5" min="0" max="31" value={formData.work_days} onChange={onChange} required style={{ width: '100%' }} />
+                            <label className="modal-label">Standard Work Days</label>
+                            <input className="filter-input" name="standard_work_days" type="number" step="0.5" min="1" max="31" value={formData.standard_work_days || ''} onChange={onChange} style={{ width: '100%' }} placeholder="Leave empty for contract default" />
                         </div>
                         <div>
-                            <label className="modal-label">Paid Leave</label>
-                            <input className="filter-input" name="paid_leave_days" type="number" step="0.5" min="0" max="31" value={formData.paid_leave_days} onChange={onChange} style={{ width: '100%' }} />
+                            <label className="modal-label">Work Days (Actual) *</label>
+                            <input className="filter-input" name="work_days" type="number" step="0.5" min="0" max="31" value={formData.work_days} onChange={onChange} required style={{ width: '100%' }} />
                         </div>
                     </div>
                     {/* Unpaid Leave & Bonus */}
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                         <div>
+                            <label className="modal-label">Paid Leave</label>
+                            <input className="filter-input" name="paid_leave_days" type="number" step="0.5" min="0" max="31" value={formData.paid_leave_days} onChange={onChange} style={{ width: '100%' }} />
+                        </div>
+                        <div>
                             <label className="modal-label">Unpaid Leave</label>
                             <input className="filter-input" name="unpaid_leave_days" type="number" step="0.5" min="0" max="31" value={formData.unpaid_leave_days} onChange={onChange} style={{ width: '100%' }} />
                         </div>
+                    </div>
+                    {/* Bonus & Penalty */}
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                         <div>
                             <label className="modal-label">Bonus (Optional)</label>
                             <input className="filter-input" name="bonus" type="number" min="0" value={formData.bonus} onChange={onChange} style={{ width: '100%' }} />
                         </div>
-                    </div>
-                    {/* Penalty & Status */}
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
                         <div>
                             <label className="modal-label">Penalty (Optional)</label>
                             <input className="filter-input" name="penalty" type="number" min="0" value={formData.penalty} onChange={onChange} style={{ width: '100%' }} />
                         </div>
-                        <div>
-                            <label className="modal-label">Payment Status</label>
-                            <select className="filter-input" name="payment_status" value={formData.payment_status} onChange={onChange} style={{ width: '100%' }}>
-                                <option value="pending">Pending</option>
-                                <option value="completed">Paid</option>
-                            </select>
-                        </div>
+                    </div>
+                    {/* Status */}
+                    <div>
+                        <label className="modal-label">Payment Status</label>
+                        <select className="filter-input" name="payment_status" value={formData.payment_status} onChange={onChange} style={{ width: '100%' }}>
+                            <option value="pending">Pending</option>
+                            <option value="completed">Paid</option>
+                        </select>
                     </div>
                     {/* Note */}
                     <div>
@@ -159,7 +164,7 @@ function PayrollFormModal({ isOpen, onClose, onSubmit, formData, onChange, title
     );
 }
 
-const emptyPayrollForm = { employee_id: '', contract_id: '', month: new Date().getMonth() + 1, year: new Date().getFullYear(), work_days: 27, paid_leave_days: 0, unpaid_leave_days: 0, bonus: 0, penalty: 0, payment_status: 'pending', note: '' };
+const emptyPayrollForm = { employee_id: '', contract_id: '', month: new Date().getMonth() + 1, year: new Date().getFullYear(), standard_work_days: '', work_days: 27, paid_leave_days: 0, unpaid_leave_days: 0, bonus: 0, penalty: 0, payment_status: 'pending', note: '' };
 
 /* ── Main Page ── */
 export default function PayrollsPage({ onMenuClick }) {
@@ -280,7 +285,7 @@ export default function PayrollsPage({ onMenuClick }) {
         setEditingId(p.id);
         setFormData({
             employee_id: p.employee_id, contract_id: p.contract_id,
-            month: p.month, year: p.year, work_days: p.work_days,
+            month: p.month, year: p.year, standard_work_days: p.standard_work_days || '', work_days: p.work_days,
             paid_leave_days: p.paid_leave_days, unpaid_leave_days: p.unpaid_leave_days,
             bonus: p.bonus, penalty: p.penalty, payment_status: p.payment_status, note: p.note || '',
         });

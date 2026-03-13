@@ -14,6 +14,7 @@ class Payroll extends Model
         'contract_id',
         'month',
         'year',
+        'standard_work_days',
         'work_days',
         'paid_leave_days',
         'unpaid_leave_days',
@@ -28,6 +29,7 @@ class Payroll extends Model
     protected function casts(): array
     {
         return [
+            'standard_work_days' => 'decimal:1',
             'work_days' => 'decimal:1',
             'paid_leave_days' => 'decimal:1',
             'unpaid_leave_days' => 'decimal:1',
@@ -61,7 +63,9 @@ class Payroll extends Model
         if (!$contract) return;
 
         $salary = (float) $contract->salary;
-        $standardDays = (int) $contract->standard_work_days ?: 27;
+        
+        // Use payroll's specific standard days if set, else fallback to contract, else 27
+        $standardDays = $this->standard_work_days ?? $contract->standard_work_days ?? 27;
 
         // BHXH deduction (only if employee has insurance)
         $employee = $this->employee ?? Employee::find($this->employee_id);
