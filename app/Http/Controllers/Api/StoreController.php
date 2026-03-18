@@ -34,6 +34,10 @@ class StoreController extends Controller
             $query->where('user_id', $request->user_id);
         }
 
+        if ($request->filled('no_payment_history') && $request->boolean('no_payment_history')) {
+            $query->doesntHave('paymentHistories');
+        }
+
         $perPage = $request->input('per_page', 15);
         $stores = $query->orderBy('created_at', 'desc')->paginate($perPage);
 

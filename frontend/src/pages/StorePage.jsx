@@ -310,6 +310,8 @@ export default function StorePage({ onMenuClick }) {
     const filterUser = searchParams.get('user_id') || '';
     const setFilterUser = (v) => updateParam('user_id', v);
 
+    const filterNoPayment = searchParams.get('no_payment') === 'true';
+
     const [totalPages, setTotalPages] = useState(1);
     const [totalStores, setTotalStores] = useState(0);
 
@@ -357,6 +359,7 @@ export default function StorePage({ onMenuClick }) {
             let url = `${API_BASE}/api/stores?page=${page}&search=${search}&per_page=15`;
             if (filterTeam) url += `&team_id=${filterTeam}`;
             if (filterUser) url += `&user_id=${filterUser}`;
+            if (filterNoPayment) url += `&no_payment_history=true`;
 
             const res = await fetch(url, {
                 headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
@@ -374,19 +377,19 @@ export default function StorePage({ onMenuClick }) {
         } finally {
             setLoading(false);
         }
-    }, [page, search, filterTeam, filterUser]);
+    }, [page, search, filterTeam, filterUser, filterNoPayment]);
 
     useEffect(() => { fetchStores(); }, [fetchStores]);
 
     // Reset page to 1 when filters or search change
-    const prevFiltersRef = useRef({ filterTeam, filterUser, search });
+    const prevFiltersRef = useRef({ filterTeam, filterUser, search, filterNoPayment });
     useEffect(() => {
         const prev = prevFiltersRef.current;
-        if (prev.filterTeam !== filterTeam || prev.filterUser !== filterUser || prev.search !== search) {
-            prevFiltersRef.current = { filterTeam, filterUser, search };
+        if (prev.filterTeam !== filterTeam || prev.filterUser !== filterUser || prev.search !== search || prev.filterNoPayment !== filterNoPayment) {
+            prevFiltersRef.current = { filterTeam, filterUser, search, filterNoPayment };
             if (page !== 1) updateParam('page', '');
         }
-    }, [filterTeam, filterUser, search]);
+    }, [filterTeam, filterUser, search, filterNoPayment]);
 
     const handleSearchSubmit = (e) => {
         e.preventDefault();
@@ -633,6 +636,23 @@ export default function StorePage({ onMenuClick }) {
                             <option value="">All Users</option>
                             {users.map(u => <option key={u.id} value={u.id}>{u.name}</option>)}
                         </select>
+                    </div>
+
+                    <div className="filter-group" style={{ display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }} onClick={() => {
+                        const nextValue = !filterNoPayment;
+                        setSearchParams(prev => {
+                            if (nextValue) prev.set('no_payment', 'true'); else prev.delete('no_payment');
+                            prev.delete('page');
+                            return prev;
+                        }, { replace: true });
+                    }}>
+                        <input
+                            type="checkbox"
+                            checked={filterNoPayment}
+                            readOnly
+                            style={{ cursor: 'pointer', margin: 0 }}
+                        />
+                        <span style={{ fontSize: '13px', color: 'var(--text-secondary)', userSelect: 'none' }}>Chưa có payment history</span>
                     </div>
 
                     <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
