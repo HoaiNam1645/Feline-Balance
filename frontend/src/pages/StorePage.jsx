@@ -652,7 +652,7 @@ export default function StorePage({ onMenuClick }) {
                             readOnly
                             style={{ cursor: 'pointer', margin: 0 }}
                         />
-                        <span style={{ fontSize: '13px', color: 'var(--text-secondary)', userSelect: 'none' }}>Chưa có payment history</span>
+                        <span style={{ fontSize: '13px', color: 'var(--text-secondary)', userSelect: 'none' }}>No payment history</span>
                     </div>
 
                     <div style={{ marginLeft: 'auto', display: 'flex', gap: '8px' }}>
